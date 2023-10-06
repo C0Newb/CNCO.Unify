@@ -1,7 +1,6 @@
-﻿using CNCO.Unify.Configuration.Encryption;
-using CNCO.Unify.Configuration.Storage;
+﻿using CNCO.Unify.Encryption;
 using CNCO.Unify.Security;
-using NUnit.Framework.Constraints;
+using CNCO.Unify.Storage;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -36,15 +35,17 @@ namespace UnifyTests.Configuration.Json {
             bool booleanValue = myJsonConfig.BoolValue;
 
             string jsonString = File.ReadAllText(TestFileName);
-            Assert.That(jsonString.StartsWith("1$"));
+            Assert.That(jsonString, Does.StartWith("1$"));
             jsonString = Encryption.Decrypt(jsonString, myEncryptionKeyProvider.GetEncryptionKey());
 
             var jsonObject = JsonSerializer.Deserialize<MySecureJsonConfig>(jsonString);
-            Assert.IsNotNull(jsonObject);
-            Assert.That(jsonObject.BoolValue, Is.EqualTo(booleanValue));
-            Assert.That(jsonObject.StringValue, Is.EqualTo(stringValue));
-            Assert.That(jsonObject.GuidValue, Is.EqualTo(guid));
-            Assert.That(jsonObject.IntValue, Is.EqualTo(intValue));
+            Assert.That(jsonObject, Is.Not.Null);
+            Assert.Multiple(() => {
+                Assert.That(jsonObject.BoolValue, Is.EqualTo(booleanValue));
+                Assert.That(jsonObject.StringValue, Is.EqualTo(stringValue));
+                Assert.That(jsonObject.GuidValue, Is.EqualTo(guid));
+                Assert.That(jsonObject.IntValue, Is.EqualTo(intValue));
+            });
         }
 
         [Test]
@@ -54,11 +55,12 @@ namespace UnifyTests.Configuration.Json {
             int intValue = new Random().Next(0, 50);
             bool booleanValue = false;
 
-            JsonObject sampleJson = new JsonObject();
-            sampleJson["StringValue"] = stringValue;
-            sampleJson["GuidValue"] = guid;
-            sampleJson["IntValue"] = intValue;
-            sampleJson["BoolValue"] = booleanValue;
+            JsonObject sampleJson = new JsonObject {
+                ["StringValue"] = stringValue,
+                ["GuidValue"] = guid,
+                ["IntValue"] = intValue,
+                ["BoolValue"] = booleanValue
+            };
 
             string jsonString = JsonSerializer.Serialize(sampleJson);
             jsonString = Encryption.Encrypt(jsonString, myEncryptionKeyProvider.GetEncryptionKey(), myEncryptionKeyProvider.GetProtections(),
@@ -66,11 +68,13 @@ namespace UnifyTests.Configuration.Json {
             File.WriteAllText(TestFileName, jsonString);
 
             var jsonObject = new MySecureJsonConfig(TestFileName, myFileStorage, myFileEncryption);
-            Assert.IsNotNull(jsonObject);
-            Assert.That(jsonObject.BoolValue, Is.EqualTo(booleanValue));
-            Assert.That(jsonObject.StringValue, Is.EqualTo(stringValue));
-            Assert.That(jsonObject.GuidValue, Is.EqualTo(guid));
-            Assert.That(jsonObject.IntValue, Is.EqualTo(intValue));
+            Assert.That(jsonObject, Is.Not.Null);
+            Assert.Multiple(() => {
+                Assert.That(jsonObject.BoolValue, Is.EqualTo(booleanValue));
+                Assert.That(jsonObject.StringValue, Is.EqualTo(stringValue));
+                Assert.That(jsonObject.GuidValue, Is.EqualTo(guid));
+                Assert.That(jsonObject.IntValue, Is.EqualTo(intValue));
+            });
         }
 
         [Test]
@@ -84,8 +88,10 @@ namespace UnifyTests.Configuration.Json {
             string protectedStringValue = myJsonConfig.StringValue;
 
             var myLoadedJsonConfig = new MySecureJsonConfig(TestFileName, myFileStorage, myFileEncryption);
-            Assert.That(protectedStringValue, Is.EqualTo(myLoadedJsonConfig.StringValue));
-            Assert.That(myLoadedJsonConfig.DecryptSecret(myJsonConfig.StringValue), Is.EqualTo(superSecretString));
+            Assert.Multiple(() => {
+                Assert.That(protectedStringValue, Is.EqualTo(myLoadedJsonConfig.StringValue));
+                Assert.That(myLoadedJsonConfig.DecryptSecret(myJsonConfig.StringValue), Is.EqualTo(superSecretString));
+            });
         }
     }
 }

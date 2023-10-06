@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.DataProtection;
-using Microsoft.Extensions.DependencyInjection;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
@@ -75,7 +74,7 @@ namespace CNCO.Unify.Security {
         }
 
         /// <summary>
-        /// Decrypts an encrypted string produced by <see cref="EncryptChaCha20Poly1305(byte[], byte[], byte[], byte[])"/>.
+        /// Decrypts an encrypted string produced by <see cref="EncryptChaCha20Poly1305(string, byte[], byte[], byte[])"/>.
         /// Encrypted data string must follow this format: <c>{version}$chacha20-poly1305${associated data}${cipher text}${none}${tag}</c>
         /// </summary>
         /// <param name="encryptedData">Encrypted string (<c>{version}$chacha20-poly1305${associated data}${cipher text}${none}${tag}</c>)</param>
@@ -108,9 +107,9 @@ namespace CNCO.Unify.Security {
             byte[] tag = Convert.FromHexString(encryptedDataParts[5]);
 
             if (nonce.Length != 12)
-                throw new ArgumentException(nameof(encryptedData) + " is invalid, nonce must be 12 bytes (96 bit)", nameof(nonce));
+                throw new NullReferenceException(nameof(encryptedData) + " is invalid, nonce must be 12 bytes (96 bit)");
             if (tag.Length != 16)
-                throw new ArgumentException(nameof(encryptedData) + " is invalid, tag must be 16 bytes (128 bit)", nameof(nonce));
+                throw new NullReferenceException(nameof(encryptedData) + " is invalid, tag must be 16 bytes (128 bit)");
 
             byte[] plainText = new byte[cipherText.Length];
             using (ChaCha20Poly1305 cipher = new(key)) {
@@ -199,26 +198,24 @@ namespace CNCO.Unify.Security {
                 throw new ArgumentException(nameof(encryptedData) + " must have 4 parts separated by dollar signs ($).");
 
             // {version}${cipher}${cipher text}${iv}
-            string versionString = encryptedDataParts[0];
+            //string versionString = encryptedDataParts[0];
             string cipher = encryptedDataParts[1];
             if (!cipher.StartsWith("aes", StringComparison.OrdinalIgnoreCase))
                 throw new ArgumentOutOfRangeException("Data encrypted using \"" + cipher + "\" not AES.");
+            var cipherParts = cipher.Split('.');
 
             // Determine which type of AES
-            int keySize = 256;
-            CipherMode mode = CipherMode.CBC;
-            var cipherParts = cipher.Split('.');
             if (cipherParts.Length != 2
-                || !int.TryParse(cipherParts[0][3..], out keySize)
-                || !Enum.TryParse(cipherParts[1], true, out mode))
+                || !int.TryParse(cipherParts[0][3..], out int keySize)
+                || !Enum.TryParse(cipherParts[1], true, out CipherMode mode)) {
                 throw new ArgumentOutOfRangeException("Unable to determine the key size or cipher mode of \"" + cipher + "\".");
-
+            }
 
             byte[] cipherText = Convert.FromBase64String(encryptedDataParts[2]);
             byte[] iv = Convert.FromHexString(encryptedDataParts[3]);
 
             if (iv == null || iv.Length <= 0)
-                throw new ArgumentNullException(nameof(iv));
+                throw new NullReferenceException(nameof(iv));
 
             string plainText = "";
             using (Aes aesAlg = Aes.Create()) {
@@ -260,7 +257,7 @@ namespace CNCO.Unify.Security {
             if (encryptedDataParts.Length != 3)
                 throw new ArgumentException(nameof(encryptedData) + " must have 3 parts separated by dollar signs ($).");
 
-            string versionString = encryptedDataParts[0];
+            //string versionString = encryptedDataParts[0];
             string cipher = encryptedDataParts[1];
             if (!string.Equals(cipher, "aspnet", StringComparison.OrdinalIgnoreCase))
                 throw new ArgumentOutOfRangeException("Data encrypted using \"" + cipher + "\" not the ASP.Net Core Data Protector.");
@@ -428,7 +425,7 @@ namespace CNCO.Unify.Security {
         /// <exception cref="ArgumentException"></exception>
         public static string Encrypt(string plainText, byte[] key, Protections protectionsToUse, byte[]? nonce = null, byte[]? associationData = null, byte[]? iv = null) {
             string cipherText = plainText;
-            
+
             byte[] actualKey = new byte[32];
             if (key.Length != 32) {
                 actualKey = DeriveKey(key, Array.Empty<byte>(), 32, 50000);
@@ -450,7 +447,7 @@ namespace CNCO.Unify.Security {
                 cipherText = EncryptChaCha20Poly1305(cipherText, actualKey, nonce, associationData ?? Array.Empty<byte>());
             }
 
-            actualKey = GenerateRandomBytes(32);
+            //actualKey = GenerateRandomBytes(32);
 
             if (protectionsToUse.HasFlag(Protections.AspNetCoreDataProtection))
                 cipherText = EncryptAspNetCoreDataProtector(cipherText);
@@ -527,7 +524,7 @@ namespace CNCO.Unify.Security {
         /// <summary>
         /// Allows you to set the subPurpose for the <see cref="IDataProtector"/>.
         /// </summary>
-        /// <param name="purpose">Optional sub purpose passed to <see cref="IDataProtectionProvider.CreateProtector(string, string)"/>.</param>
+        /// <param name="purpose">Optional sub purpose passed to <see cref="IDataProtectionProvider.CreateProtector"/>.</param>
         public void CreateProtector(string? purpose) {
             if (purpose is null)
                 _dataProtector = _dataProtectionProvider.CreateProtector("SteamAuthenticator.Core.Providers");
@@ -558,7 +555,6 @@ namespace CNCO.Unify.Security {
 
             return _dataProtector.Unprotect(data);
         }
-
     }
     #endregion
 }

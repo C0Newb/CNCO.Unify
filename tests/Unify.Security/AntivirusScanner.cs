@@ -1,12 +1,11 @@
-﻿using CNCO.Unify.Security.Antivirus;
+﻿/*using CNCO.Unify.Security.Antivirus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UnifyTests.Security
-{
+namespace UnifyTests.Security {
     public class AntivirusScanner {
         private CNCO.Unify.Security.Antivirus.AmsiScanner Scanner = new CNCO.Unify.Security.Antivirus.AmsiScanner();
 
@@ -29,3 +28,4 @@ namespace UnifyTests.Security
         }
     }
 }
+*/

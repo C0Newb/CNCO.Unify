@@ -1,6 +1,4 @@
-﻿using CNCO.Unify.Configuration.Encryption;
-using CNCO.Unify.Configuration.Storage;
-using CNCO.Unify.Security;
+﻿using CNCO.Unify.Storage;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -18,12 +16,12 @@ namespace UnifyTests.Configuration.Json {
 
         [TearDown]
         public void TearDown() {
-            myFileStorage.Delete(TestFileName);
+            _ = myFileStorage.Delete(TestFileName);
         }
 
         [Test]
         public void CanSave() {
-            MyJsonConfig myJsonConfig = new MyJsonConfig(TestFileName, myFileStorage);
+            var myJsonConfig = new MyJsonConfig(TestFileName, myFileStorage);
             myJsonConfig.Save();
 
             string stringValue = myJsonConfig.StringValue;
@@ -34,35 +32,40 @@ namespace UnifyTests.Configuration.Json {
             var fileText = File.ReadAllText(TestFileName);
             var jsonObject = JsonSerializer.Deserialize<MyJsonConfig>(fileText);
 
-            Assert.IsNotNull(jsonObject);
-            Assert.That(jsonObject.BoolValue, Is.EqualTo(booleanValue));
-            Assert.That(jsonObject.StringValue, Is.EqualTo(stringValue));
-            Assert.That(jsonObject.GuidValue, Is.EqualTo(guid));
-            Assert.That(jsonObject.IntValue, Is.EqualTo(intValue));
+            Assert.That(jsonObject, Is.Not.Null);
+            Assert.Multiple(() => {
+                Assert.That(jsonObject.BoolValue, Is.EqualTo(booleanValue));
+                Assert.That(jsonObject.StringValue, Is.EqualTo(stringValue));
+                Assert.That(jsonObject.GuidValue, Is.EqualTo(guid));
+                Assert.That(jsonObject.IntValue, Is.EqualTo(intValue));
+            });
         }
 
         [Test]
         public void CanLoad() {
             string stringValue = "MyStringValue";
-            Guid guid = new Guid();
+            var guid = new Guid();
             int intValue = new Random().Next(0, 50);
             bool booleanValue = false;
 
-            JsonObject sampleJson = new JsonObject();
-            sampleJson["StringValue"] = stringValue;
-            sampleJson["GuidValue"] = guid;
-            sampleJson["IntValue"] = intValue;
-            sampleJson["BoolValue"] = booleanValue;
+            var sampleJson = new JsonObject {
+                ["StringValue"] = stringValue,
+                ["GuidValue"] = guid,
+                ["IntValue"] = intValue,
+                ["BoolValue"] = booleanValue
+            };
 
 
             File.WriteAllText(TestFileName, JsonSerializer.Serialize(sampleJson));
-            MyJsonConfig jsonObject = new MyJsonConfig(TestFileName, myFileStorage);
+            var jsonObject = new MyJsonConfig(TestFileName, myFileStorage);
 
-            Assert.IsNotNull(jsonObject);
-            Assert.That(jsonObject.BoolValue, Is.EqualTo(booleanValue));
-            Assert.That(jsonObject.StringValue, Is.EqualTo(stringValue));
-            Assert.That(jsonObject.GuidValue, Is.EqualTo(guid));
-            Assert.That(jsonObject.IntValue, Is.EqualTo(intValue));
+            Assert.That(jsonObject, Is.Not.Null);
+            Assert.Multiple(() => {
+                Assert.That(jsonObject.BoolValue, Is.EqualTo(booleanValue));
+                Assert.That(jsonObject.StringValue, Is.EqualTo(stringValue));
+                Assert.That(jsonObject.GuidValue, Is.EqualTo(guid));
+                Assert.That(jsonObject.IntValue, Is.EqualTo(intValue));
+            });
         }
     }
 }

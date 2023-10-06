@@ -1,10 +1,8 @@
-﻿namespace CNCO.Unify.Configuration.Encryption
-{
+﻿namespace CNCO.Unify.Encryption {
     /// <summary>
     /// Used to process the encryption methods to a configuration item.
     /// </summary>
-    public interface IFileEncryption
-    {
+    public interface IFileEncryption {
         /// <summary>
         /// Encrypts a file's contents.
         /// </summary>
@@ -25,7 +23,6 @@
         /// Encrypts a file's contents as bytes.
         /// </summary>
         /// <param name="data">Encrypted (or decrypted) contents of the file. Method will determine whether the string actually needs to be decrypted.</param>
-        /// <param name="file">File that is being decrypted.</param>
         /// <returns>Encrypted string of <paramref name="data"/>.</returns>
         public byte[] EncryptBytes(byte[] data);
 

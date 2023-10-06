@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net6.0-android</TargetFrameworks>
@@ -16,11 +16,14 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">7.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 		<RootNamespace>CNCO.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Unify.Configuration\Unify.Configuration.csproj" />
+	  <ProjectReference Include="..\Unify.Notifications\Unify.Notifications.csproj" />
 	  <ProjectReference Include="..\Unify.Security\Unify.Security.csproj" />
+	  <ProjectReference Include="..\Unify.Strategies\Unify.Strategies.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

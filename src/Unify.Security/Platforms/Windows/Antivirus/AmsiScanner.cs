@@ -1,30 +1,21 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
-using System.Xml.Linq;
 
-namespace CNCO.Unify.Security.Antivirus
-{
+namespace CNCO.Unify.Security.Antivirus {
     // This needs work.
-    public class AmsiScanner : IDisposable
-    {
-        private AmsiContext amsiContext;
-        private AmsiSession amsiSession;
+    public class AmsiScanner : IDisposable {
+        private readonly AmsiContext amsiContext;
+        private readonly AmsiSession amsiSession;
 
 
-        public AmsiScanner()
-        {
-
-            try
-            {
-                using (var process = Process.GetCurrentProcess())
-                {
+        public AmsiScanner() {
+            try {
+                using (var process = Process.GetCurrentProcess()) {
                     amsiContext = AmsiContext.Create($"{AppDomain.CurrentDomain.FriendlyName} (PID: {process.Id})");
                 }
 
                 amsiSession = amsiContext.CreateSession();
-            }
-            catch (Win32Exception)
-            {
+            } catch (Win32Exception) {
                 throw AmsiException.FailedToInitialize();
             }
 
@@ -40,19 +31,16 @@ namespace CNCO.Unify.Security.Antivirus
         /// <param name="data">String to scan.</param>
         /// <param name="contentName">Optional name of the string your scanning. Used as the "file name" for most antivirus scanners.</param>
         /// <returns>The results of the scan.</returns>
-        public ScanResult ScanString(string data, string? contentName)
-        {
+        public ScanResult ScanString(string data, string? contentName) {
             DateTime startTime = DateTime.Now;
 
             var result = amsiSession.Scan(data, contentName ?? string.Empty);
 
-            ScanResult scanResult = new ScanResult()
-            {
+            ScanResult scanResult = new ScanResult() {
                 IsSafe = result == Internals.AmsiResult.AMSI_RESULT_CLEAN || result == Internals.AmsiResult.AMSI_RESULT_NOT_DETECTED,
                 TimeStamp = startTime,
             };
-            switch (result)
-            {
+            switch (result) {
                 case Internals.AmsiResult.AMSI_RESULT_CLEAN:
                     scanResult.Result = DetectionResult.Clean;
                     break;
@@ -72,12 +60,10 @@ namespace CNCO.Unify.Security.Antivirus
             return scanResult;
         }
 
-
-        public void Dispose()
-        {
+        public void Dispose() {
+            GC.SuppressFinalize(this);
             amsiSession.Dispose();
             amsiContext.Dispose();
         }
-
     }
 }

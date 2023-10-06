@@ -1,10 +1,5 @@
 ﻿using CNCO.Unify.Security.Antivirus.Internals;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CNCO.Unify.Security.Antivirus {
     public class AmsiContext {

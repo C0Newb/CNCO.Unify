@@ -1,5 +1,5 @@
-﻿using CNCO.Unify.Configuration.Encryption;
-using CNCO.Unify.Configuration.Storage;
+﻿using CNCO.Unify.Encryption;
+using CNCO.Unify.Storage;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -41,7 +41,7 @@ namespace CNCO.Unify.Configuration.Json {
         /// If the encryption strategy <paramref name="fileEncryption"/> is null or empty,
         /// the <see cref="NoopEncryption"/> will be used (no encryption).
         /// </remarks>
-        /// <param name="FilePath">Name of the configuration file.</param>
+        /// <param name="name">Name of the configuration file.</param>
         /// <param name="fileStorage">Storage strategy to use when reading/writing the configuration.</param>
         /// <param name="fileEncryption">
         /// File encryption strategy to use when reading/writing the configuration.
@@ -127,8 +127,8 @@ namespace CNCO.Unify.Configuration.Json {
             }
             jsonString = _fileEncryption.DecryptString(jsonString);
 
-            jsonString = this.ModifyAfterRead(jsonString);
-            
+            jsonString = ModifyAfterRead(jsonString);
+
             JsonNodeOptions nodeOptions = new JsonNodeOptions {
                 PropertyNameCaseInsensitive = true,
             };

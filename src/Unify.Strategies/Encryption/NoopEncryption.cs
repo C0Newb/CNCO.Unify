@@ -1,8 +1,8 @@
-﻿namespace CNCO.Unify.Configuration.Encryption {
+﻿namespace CNCO.Unify.Encryption {
     /// <summary>
     /// Used to provide no file encryption when a <see cref="IFileEncryption"/> object is required.
     /// </summary>
-    internal class NoopEncryption : IFileEncryption {
+    public class NoopEncryption : IFileEncryption {
         /// <summary>
         /// Returns <paramref name="data"/> without any operations preformed on it.
         /// </summary>

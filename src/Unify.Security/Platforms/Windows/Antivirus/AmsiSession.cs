@@ -29,7 +29,7 @@ namespace CNCO.Unify.Security.Antivirus {
         public bool IsMalware(string content, string contentName) => Amsi.AmsiResultIsMalware(Scan(content, contentName));
         public bool IsMalware(byte[] content, string contentName) => Amsi.AmsiResultIsMalware(Scan(content, contentName));
 
-        
+
 
         public static bool IsAvailable() => Amsi.IsDllImportPossible();
 

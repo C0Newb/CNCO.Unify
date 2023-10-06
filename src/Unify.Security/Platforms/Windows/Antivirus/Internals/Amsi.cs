@@ -2,10 +2,8 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace CNCO.Unify.Security.Antivirus.Internals
-{
-    internal static class Amsi
-    {
+namespace CNCO.Unify.Security.Antivirus.Internals {
+    internal static class Amsi {
         internal const string AmsiDllName = "Amsi.dll";
 
 
@@ -46,8 +44,7 @@ namespace CNCO.Unify.Security.Antivirus.Internals
         }
     }
 
-    internal enum AmsiResult
-    {
+    internal enum AmsiResult {
         AMSI_RESULT_CLEAN = 0,
         AMSI_RESULT_NOT_DETECTED = 1,
         AMSI_RESULT_BLOCKED_BY_ADMIN_START = 16384,
@@ -55,23 +52,19 @@ namespace CNCO.Unify.Security.Antivirus.Internals
         AMSI_RESULT_DETECTED = 32768,
     }
 
-    internal sealed class AmsiContextSafeHandle : SafeHandleZeroOrMinusOneIsInvalid
-    {
+    internal sealed class AmsiContextSafeHandle : SafeHandleZeroOrMinusOneIsInvalid {
         public AmsiContextSafeHandle() : base(ownsHandle: true) { }
-        protected override bool ReleaseHandle()
-        {
+        protected override bool ReleaseHandle() {
             Amsi.AmsiUninitialize(handle);
             return true;
         }
     }
 
-    internal sealed class AmsiSessionSafeHandle : SafeHandleZeroOrMinusOneIsInvalid
-    {
+    internal sealed class AmsiSessionSafeHandle : SafeHandleZeroOrMinusOneIsInvalid {
         internal AmsiContextSafeHandle? Context { get; set; }
         public AmsiSessionSafeHandle() : base(ownsHandle: true) { }
         public override bool IsInvalid => Context == null || Context.IsInvalid || base.IsInvalid;
-        protected override bool ReleaseHandle()
-        {
+        protected override bool ReleaseHandle() {
             Debug.Assert(Context != null);
             Amsi.AmsiCloseSession(Context, handle);
             return true;

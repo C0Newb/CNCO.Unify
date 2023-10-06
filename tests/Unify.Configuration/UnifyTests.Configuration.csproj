@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Unify.Configuration\Unify.Configuration.csproj" />
+    <ProjectReference Include="..\..\src\Unify\Unify.csproj" />
   </ItemGroup>
 
 </Project>

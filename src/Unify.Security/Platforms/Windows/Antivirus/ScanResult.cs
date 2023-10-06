@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CNCO.Unify.Security.Antivirus {
+﻿namespace CNCO.Unify.Security.Antivirus {
     public class ScanResult {
         /// <summary>
         /// Date and time when scan was started

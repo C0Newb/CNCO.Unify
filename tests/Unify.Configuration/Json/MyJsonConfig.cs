@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Configuration.Encryption;
-using CNCO.Unify.Configuration.Storage;
+﻿using CNCO.Unify.Encryption;
 using CNCO.Unify.Security;
+using CNCO.Unify.Storage;
 using System.Text;
 
 namespace UnifyTests.Configuration.Json {

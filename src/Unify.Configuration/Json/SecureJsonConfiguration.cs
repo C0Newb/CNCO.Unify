@@ -1,14 +1,9 @@
-﻿using CNCO.Unify.Configuration.Encryption;
-using CNCO.Unify.Configuration.Storage;
-using CNCO.Unify.Security;
-using System.Runtime.InteropServices;
+﻿using CNCO.Unify.Encryption;
+using CNCO.Unify.Storage;
 using System.Security;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace CNCO.Unify.Configuration.Json {
-
     /// <summary>
     /// Utilizes encryption methods to provide protected properties (secrets).
     /// These properties are encrypted until you use <see cref="DecryptSecret(string)"/> to decrypt them. This provides protection at reset and in memory.
@@ -41,7 +36,7 @@ namespace CNCO.Unify.Configuration.Json {
 
         /// <summary>
         /// Encryption key for secrets stored in the configuration.
-        /// This key is not actually the key, rather it is thrown into <see cref="Encryption.DeriveKey(SecureString, byte[], int, int)"/> and the resulting output is the actual key.
+        /// This key is not actually the key, rather it is thrown into <see cref="Security.Encryption.DeriveKey(SecureString, byte[], int, int)"/> and the resulting output is the actual key.
         /// </summary>
         [JsonIgnore]
         public SecureString SecretsKey {

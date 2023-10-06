@@ -1,12 +1,12 @@
 ﻿using CNCO.Unify.Security;
 using System.Text;
 
-namespace CNCO.Unify.Configuration.Encryption {
+namespace CNCO.Unify.Encryption {
     /// <summary>
     /// Basic file encryption using a <see cref="IEncryptionKeyProvider"/> and <see cref="Security.Encryption"/>.
     /// </summary>
     public class GenericFileEncryption : IFileEncryption {
-        private readonly IEncryptionKeyProvider? _encryptionKeyProvider;
+        private readonly IEncryptionKeyProvider _encryptionKeyProvider;
 
         public GenericFileEncryption(IEncryptionKeyProvider encryptionKeyProvider) {
             _encryptionKeyProvider = encryptionKeyProvider;

@@ -1,4 +1,4 @@
-﻿namespace CNCO.Unify.Configuration.Storage {
+﻿namespace CNCO.Unify.Storage {
     /// <summary>
     /// Saves/loads file from the local filesystem.
     /// </summary>
@@ -26,7 +26,13 @@
                 _directory = directory;
         }
 
-        private string GetPath(string name) => Path.Combine(_directory, name);
+        private string GetPath(string name) {
+            try {
+                if (!System.IO.Directory.Exists(Directory))
+                    System.IO.Directory.CreateDirectory(Directory);
+            } catch { }
+            return Path.Combine(_directory, name);
+        }
 
 
         public bool Delete(string name) {
@@ -46,7 +52,6 @@
             } catch {
                 return null;
             }
-
         }
 
         public byte[]? ReadBytes(string name) {
@@ -69,6 +74,30 @@
         public bool WriteBytes(byte[] contents, string name) {
             try {
                 File.WriteAllBytes(GetPath(name), contents);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        public bool Append(string contents, string name) {
+            try {
+                File.AppendAllText(GetPath(name), contents);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        public bool AppendBytes(byte[] contents, string name) {
+            try {
+                byte[] current = ReadBytes(name) ?? Array.Empty<byte>();
+                byte[] newBytes = new byte[current.Length + contents.Length];
+
+                Buffer.BlockCopy(current, 0, newBytes, 0, current.Length);
+                Buffer.BlockCopy(contents, 0, newBytes, current.Length, contents.Length);
+
+                WriteBytes(newBytes, name);
                 return true;
             } catch {
                 return false;
