@@ -24,6 +24,7 @@ namespace CNCO.Unify.Security {
 
 
         #region ChaCha20Poly1305
+        #if !IOS
         /// <summary>
         /// Encrypts a string using ChaCha20Poly1305.
         /// Generates a string that includes the associated data, cipher (encrypted) text, tag and none separated by a dollar sign ($).
@@ -95,7 +96,7 @@ namespace CNCO.Unify.Security {
                 throw new ArgumentException(nameof(encryptedData) + " must have 6 parts separated by dollar signs ($).");
 
             // {associated data}${cipher text}${none}${tag}
-            string versionString = encryptedDataParts[0];
+            //string versionString = encryptedDataParts[0];
             string usedCipher = encryptedDataParts[1];
             if (!string.Equals(usedCipher, "chacha20-poly1305", StringComparison.OrdinalIgnoreCase)) {
                 throw new ArgumentOutOfRangeException("Data encrypted using \"" + usedCipher + "\" not ChaCha20-Poly1305.");
@@ -118,6 +119,7 @@ namespace CNCO.Unify.Security {
 
             return Encoding.UTF8.GetString(plainText);
         }
+        #endif
         #endregion
 
 
@@ -383,7 +385,7 @@ namespace CNCO.Unify.Security {
             byte[] key = new byte[size];
             try {
                 string plainTextPassword = Marshal.PtrToStringBSTR(bstr);
-                using (var deriveBytes = new Rfc2898DeriveBytes(plainTextPassword, salt, iterations)) {
+                using (var deriveBytes = new Rfc2898DeriveBytes(plainTextPassword, salt, iterations, HashAlgorithmName.SHA512)) {
                     key = deriveBytes.GetBytes(size);
                 }
                 return key;
@@ -402,7 +404,7 @@ namespace CNCO.Unify.Security {
         /// <returns>Key derived from the user's password</returns>
         public static byte[] DeriveKey(byte[] password, byte[] salt, int size = 32, int iterations = 100000) {
             byte[] key = new byte[size];
-            using (var deriveBytes = new Rfc2898DeriveBytes(password, salt, iterations)) {
+            using (var deriveBytes = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA512)) {
                 key = deriveBytes.GetBytes(size);
             }
             return key;
@@ -439,13 +441,15 @@ namespace CNCO.Unify.Security {
                 else
                     cipherText = EncryptAES128_CBC(cipherText, actualKey, iv);
             }
-
+            
+            #if !IOS
             if (protectionsToUse.HasFlag(Protections.ChaCha20Poly1305) && ChaCha20Poly1305.IsSupported) {
                 if (nonce == null || nonce.Length != 12)
                     throw new ArgumentException("Nonce must be 12 bytes (96 bit)", nameof(nonce));
 
                 cipherText = EncryptChaCha20Poly1305(cipherText, actualKey, nonce, associationData ?? Array.Empty<byte>());
             }
+            #endif
 
             //actualKey = GenerateRandomBytes(32);
 
@@ -483,9 +487,11 @@ namespace CNCO.Unify.Security {
                 }
 
                 switch (parts[1]) {
+                    #if !IOS
                     case "chacha20-poly1305":
                         cipherText = DecryptChaCha20Poly1305(cipherText, actualKey);
                         break;
+                    #endif
 
                     case "aes256.CBC":
                     case "aes128.CBC":
