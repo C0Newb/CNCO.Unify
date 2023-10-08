@@ -1,4 +1,4 @@
-﻿using CNCO.Unify.Encryption;
+﻿using CNCO.Unify.Security.FileEncryption;
 using CNCO.Unify.Storage;
 using System.Reflection;
 using System.Text.Json;
@@ -49,10 +49,13 @@ namespace CNCO.Unify.Configuration.Json {
         /// </param>
         public JsonConfiguration(string name, IFileStorage fileStorage, IFileEncryption? fileEncryption = null) {
             _filePath = name;
+            if (!_filePath.ToLower().EndsWith(".json"))
+                _filePath += ".json";
+
             _fileStorage = fileStorage;
             _fileEncryption = fileEncryption ?? new NoopEncryption();
 
-            if (File.Exists(name)) {
+            if (fileStorage.Exists(_filePath)) {
                 Load();
             }
         }

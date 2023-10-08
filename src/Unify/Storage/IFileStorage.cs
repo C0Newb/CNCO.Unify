@@ -4,6 +4,14 @@
     /// </summary>
     public interface IFileStorage {
         /// <summary>
+        /// Returns the path to a particular file.
+        /// </summary>
+        /// <param name="filename">Filename or relative path to file.</param>
+        /// <returns>Full path to the given filename.</returns>
+        public string GetPath(string filename);
+
+
+        /// <summary>
         /// Writes <paramref name="contents"/> to a file in storage.
         /// </summary>
         /// <param name="contents">Contents to be written.</param>

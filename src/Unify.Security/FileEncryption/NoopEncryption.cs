@@ -1,4 +1,4 @@
-﻿namespace CNCO.Unify.Encryption {
+﻿namespace CNCO.Unify.Security.FileEncryption {
     /// <summary>
     /// Used to provide no file encryption when a <see cref="IFileEncryption"/> object is required.
     /// </summary>

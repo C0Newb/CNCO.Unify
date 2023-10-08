@@ -12,7 +12,7 @@
         public bool Delete(string name) => true;
 
         public bool Exists(string name) => false;
-
+        public string GetPath(string filename) => filename;
         public string? Read(string name) => null;
 
         public byte[]? ReadBytes(string name) => null;

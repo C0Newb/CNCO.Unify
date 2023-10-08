@@ -1,7 +1,6 @@
-﻿using CNCO.Unify.Security;
-using System.Text;
+﻿using System.Text;
 
-namespace CNCO.Unify.Encryption {
+namespace CNCO.Unify.Security.FileEncryption {
     /// <summary>
     /// Basic file encryption using a <see cref="IEncryptionKeyProvider"/> and <see cref="Security.Encryption"/>.
     /// </summary>

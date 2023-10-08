@@ -1,4 +1,4 @@
-﻿namespace CNCO.Unify.Encryption {
+﻿namespace CNCO.Unify.Security.FileEncryption {
     /// <summary>
     /// Used to process the encryption methods to a configuration item.
     /// </summary>

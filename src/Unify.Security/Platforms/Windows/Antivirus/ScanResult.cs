@@ -1,4 +1,4 @@
-﻿namespace CNCO.Unify.Security.Antivirus {
+﻿namespace CNCO.Unify.Security.Platforms.Windows.Antivirus {
     public class ScanResult {
         /// <summary>
         /// Date and time when scan was started

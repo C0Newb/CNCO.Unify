@@ -1,7 +1,7 @@
-﻿using CNCO.Unify.Security.Antivirus.Internals;
+﻿using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
 using System.ComponentModel;
 
-namespace CNCO.Unify.Security.Antivirus {
+namespace CNCO.Unify.Security.Platforms.Windows.Antivirus {
     public class AmsiContext {
         private readonly AmsiContextSafeHandle _context;
 

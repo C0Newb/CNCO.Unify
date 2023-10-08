@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace CNCO.Unify.Security.Antivirus.Internals {
+namespace CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals {
     internal static class Amsi {
         internal const string AmsiDllName = "Amsi.dll";
 

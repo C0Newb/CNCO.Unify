@@ -1,5 +1,5 @@
-﻿using CNCO.Unify.Encryption;
-using CNCO.Unify.Security;
+﻿using CNCO.Unify.Security;
+using CNCO.Unify.Security.FileEncryption;
 using CNCO.Unify.Storage;
 using System.Text.Json;
 using System.Text.Json.Nodes;

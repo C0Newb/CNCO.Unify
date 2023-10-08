@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.DataProtection;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,7 +11,7 @@ namespace CNCO.Unify.Security {
         [Flags]
         public enum Protections {
             None = 0x0,
-            AspNetCoreDataProtection = 0x1,
+            DataProtection = 0x1,
             ChaCha20Poly1305 = 0x2,
             AES128_CBC = 0x4,
             AES256_CBC = 0x8,
@@ -20,11 +19,15 @@ namespace CNCO.Unify.Security {
             AES256_GCM = 0x20,
         }
 
+        private static DataProtector DataProtector {
+            get => new DataProtector($"Unify:DataProtector:");
+        }
+
         #region Encryption
 
 
         #region ChaCha20Poly1305
-        #if !IOS
+#if !IOS
         /// <summary>
         /// Encrypts a string using ChaCha20Poly1305.
         /// Generates a string that includes the associated data, cipher (encrypted) text, tag and none separated by a dollar sign ($).
@@ -119,7 +122,7 @@ namespace CNCO.Unify.Security {
 
             return Encoding.UTF8.GetString(plainText);
         }
-        #endif
+#endif
         #endregion
 
 
@@ -150,7 +153,7 @@ namespace CNCO.Unify.Security {
             byte[] cipherText;
 
             using (Aes aesAlg = Aes.Create()) {
-                aesAlg.KeySize = 128;
+                aesAlg.KeySize = keySize;
                 aesAlg.Mode = cipherMode;
 
                 aesAlg.Key = key;
@@ -172,13 +175,32 @@ namespace CNCO.Unify.Security {
             encryptedData += "$" + Convert.ToHexString(iv);
             return encryptedData;
         }
+        /// <inheritdoc cref="EncryptAES(string, byte[], byte[], int, CipherMode)"/>
+        /// <remarks>
+        /// This first converts <paramref name="plainText"/> to base64, encrypts, then converts the encrypted string to bytes via <see cref="Encoding.UTF8"/>
+        /// </remarks>
+        public static byte[] EncryptAES(byte[] plainText, byte[] key, byte[]? iv, int keySize = 256, CipherMode cipherMode = CipherMode.CBC) {
+            var str = Convert.ToBase64String(plainText);
+            var encryptedStr = EncryptAES(str, key, iv, keySize, cipherMode);
+            return Encoding.UTF8.GetBytes(encryptedStr);
+        }
 
-        /// <inheritdoc cref="EncryptAES"/>
+        /// <inheritdoc cref="EncryptAES(string, byte[], byte[], int, CipherMode)"/>
         /// <returns>Encrypted data string: <c>{version}$aes256.CBC${cipher text}${iv}</c></returns>
-        public static string EncryptAES256_CBC(string plainText, byte[] key, byte[]? iv) => EncryptAES(plainText, key, iv, 256, CipherMode.CBC);
-        /// <inheritdoc cref="EncryptAES"/>
+        public static string EncryptAES256_CBC(string plainText, byte[] key, byte[]? iv = null) => EncryptAES(plainText, key, iv, 256, CipherMode.CBC);
+        
+        /// <inheritdoc cref="EncryptAES256_CBC(string, byte[], byte[])" />
+        public static byte[] EncryptAES256_CBC(byte[] plainText, byte[] key, byte[]? iv = null) => EncryptAES(plainText, key, iv, 256, CipherMode.CBC);
+
+
+        /// <inheritdoc cref="EncryptAES(string, byte[], byte[], int, CipherMode)"/>
         /// <returns>Encrypted data string: <c>{version}$aes128.CBC${cipher text}${iv}</c></returns>
         public static string EncryptAES128_CBC(string plainText, byte[] key, byte[]? iv) => EncryptAES(plainText, key, iv, 128, CipherMode.CBC);
+        /// <inheritdoc cref="EncryptAES128_CBC(string, byte[], byte[])" />
+        public static byte[] EncryptAES128_CBC(byte[] plainText, byte[] key, byte[]? iv = null) => EncryptAES(plainText, key, iv, 128, CipherMode.CBC);
+
+
+
 
         /// <summary>
         /// Decrypts a encrypted data string string and returns the decrypted data.
@@ -235,37 +257,63 @@ namespace CNCO.Unify.Security {
 
             return plainText;
         }
+
+        /// <inheritdoc cref="DecryptAES(string, byte[])"/>
+        /// <remarks>
+        /// This first uses <see cref="Encoding.UTF8"/> to get a string from <paramref name="encryptedData"/>, decrypts, then converts the encrypted string to bytes from base64.
+        /// </remarks>
+        public static byte[] DecryptAES(byte[] encryptedData, byte[] key) {
+            var utf8 = new UTF8Encoding(false, true);
+            var encryptedStr = utf8.GetString(encryptedData);
+            var str = DecryptAES(encryptedStr, key);
+            return Convert.FromBase64String(str);
+        }
         #endregion
 
 
         #region ASP.Net Data Protector
         /// <summary>
-        /// Uses the ASP.Net Core data protector to encrypt data (<c>{version}$aspnet${encrypted data}</c>).
+        /// Uses <see cref="IDataProtector"/> to encrypt data (<c>{version}$unifydp${encrypted data}</c>).
         /// </summary>
-        /// <param name="plainText">Data to encrypt</param>
-        /// <returns>Encrypt data string in the form of <c>{version}$aspnet${encrypted data}</c></returns>
-        public static string EncryptAspNetCoreDataProtector(string plainText) {
-            DataProtector dataProtector = GetAspNetCoreDataProtector();
-            return "1$aspnet$" + dataProtector.Protect(plainText); // dead simple :p
-        }
+        /// <param name="plainText">Data to encrypt.</param>
+        /// <returns>Encrypt data string in the form of <c>{version}$unifydp${encrypted data}</c></returns>
+        public static string EncryptDataProtector(string plainText) => EncryptDataProtector(DataProtector, plainText);
+
+        /// <inheritdoc cref="EncryptDataProtector(string)"/>
+        /// <param name="dataProtectorPurpose">The purpose provided to <see cref="Security.DataProtector(string)"/></param>
+        public static string EncryptDataProtector(string dataProtectorPurpose, string plainText) => EncryptDataProtector(new DataProtector(dataProtectorPurpose), plainText);
+
+        /// <inheritdoc cref="EncryptDataProtector(string)"/>
+        /// <param name="dataProtector">The <see cref="IDataProtector"/> to use for data protection.</param>
+        public static string EncryptDataProtector(IDataProtector dataProtector, string plainText) => $"1$unifydp${dataProtector.Protect(plainText)}";
+
 
         /// <summary>
-        /// Uses the ASP.Net Core data protector to decrypt data (<c>{version}$aspnet${encrypted data}</c>)
+        /// Uses <see cref="IDataProtector"/> to decrypt data (<c>{version}$unifydp${encrypted data}</c>)
         /// </summary>
-        /// <param name="encryptedData">Data to decrypt (<c>{version}$aspnet${encrypted data}</c>)</param>
+        /// <param name="protectedText">Data to decrypt (<c>{version}$unifydp${encrypted data}</c>)</param>
         /// <returns>Decrypted data string</returns>
-        public static string DecryptAspNetCoreDataProtector(string encryptedData) {
-            string[] encryptedDataParts = encryptedData.Split('$');
+        public static string DecryptDataProtector(string protectedText) => DecryptDataProtector(DataProtector, protectedText);
+
+
+        /// <inheritdoc cref="DecryptDataProtector(string)"/>
+        /// <param name="dataProtectorPurpose">The purpose provided to <see cref="Security.DataProtector(string)"/></param>
+        public static string DecryptDataProtector(string dataProtectorPurpose, string protectedText) => DecryptDataProtector(new DataProtector(dataProtectorPurpose), protectedText);
+
+
+        /// <inheritdoc cref="DecryptDataProtector(string)"/>
+        /// <param name="dataProtector">The <see cref="IDataProtector"/> to use for data protection.</param>
+        public static string DecryptDataProtector(IDataProtector dataProtector, string protectedText) {
+            string[] encryptedDataParts = protectedText.Split('$');
             if (encryptedDataParts.Length != 3)
-                throw new ArgumentException(nameof(encryptedData) + " must have 3 parts separated by dollar signs ($).");
+                throw new ArgumentException(nameof(protectedText) + " must have 3 parts separated by dollar signs ($).");
 
             //string versionString = encryptedDataParts[0];
             string cipher = encryptedDataParts[1];
-            if (!string.Equals(cipher, "aspnet", StringComparison.OrdinalIgnoreCase))
-                throw new ArgumentOutOfRangeException("Data encrypted using \"" + cipher + "\" not the ASP.Net Core Data Protector.");
+            if (!string.Equals(cipher, "unifydp", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentOutOfRangeException("Data encrypted using \"" + cipher + "\" not the Unify Data Protector.");
 
             string cipherText = encryptedDataParts[2];
-            DataProtector dataProtector = GetAspNetCoreDataProtector();
             return dataProtector.Unprotect(cipherText);
         }
         #endregion
@@ -360,18 +408,6 @@ namespace CNCO.Unify.Security {
 
 
         /// <summary>
-        /// Returns an instance of the ASP.Net Core data protector.
-        /// </summary>
-        /// <returns></returns>
-        public static DataProtector GetAspNetCoreDataProtector() {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddDataProtection();
-            var services = serviceCollection.BuildServiceProvider();
-
-            return ActivatorUtilities.CreateInstance<DataProtector>(services);
-        }
-
-        /// <summary>
         /// Uses <see cref="Rfc2898DeriveBytes"/> to derive an encryption key given the password and salt.
         /// </summary>
         /// <param name="password">User's encryption password</param>
@@ -413,10 +449,10 @@ namespace CNCO.Unify.Security {
 
 
         /// <summary>
-        /// Encrypts a string using one or more <see cref="Protections"/>. If multiple protections are selected, the encrypted data is passed from one into the next in a layered fasion.
+        /// Encrypts a string using one or more <see cref="Protections"/>. If multiple protections are selected, the encrypted data is passed from one into the next in a layered fashion.
         /// </summary>
         /// <remarks>
-        /// The protections are layered like so: <see cref="Protections.ChaCha20Poly1305"/> -> <see cref="Protections.AES256_CBC"/> -> <see cref="Protections.AspNetCoreDataProtection"/>.
+        /// The protections are layered like so: <see cref="Protections.ChaCha20Poly1305"/> -> <see cref="Protections.AES256_CBC"/> -> <see cref="Protections.DataProtection"/>.
         /// </remarks>
         /// <param name="plainText">Data to encrypt.</param>
         /// <param name="key">Encryption key. A key will be derived if your key is not the correct length (32).</param>
@@ -441,20 +477,20 @@ namespace CNCO.Unify.Security {
                 else
                     cipherText = EncryptAES128_CBC(cipherText, actualKey, iv);
             }
-            
-            #if !IOS
+
+#if !IOS
             if (protectionsToUse.HasFlag(Protections.ChaCha20Poly1305) && ChaCha20Poly1305.IsSupported) {
                 if (nonce == null || nonce.Length != 12)
                     throw new ArgumentException("Nonce must be 12 bytes (96 bit)", nameof(nonce));
 
                 cipherText = EncryptChaCha20Poly1305(cipherText, actualKey, nonce, associationData ?? Array.Empty<byte>());
             }
-            #endif
+#endif
 
             //actualKey = GenerateRandomBytes(32);
 
-            if (protectionsToUse.HasFlag(Protections.AspNetCoreDataProtection))
-                cipherText = EncryptAspNetCoreDataProtector(cipherText);
+            if (protectionsToUse.HasFlag(Protections.DataProtection))
+                cipherText = EncryptDataProtector(cipherText);
 
             return cipherText;
         }
@@ -487,11 +523,11 @@ namespace CNCO.Unify.Security {
                 }
 
                 switch (parts[1]) {
-                    #if !IOS
+#if !IOS
                     case "chacha20-poly1305":
                         cipherText = DecryptChaCha20Poly1305(cipherText, actualKey);
                         break;
-                    #endif
+#endif
 
                     case "aes256.CBC":
                     case "aes128.CBC":
@@ -502,8 +538,8 @@ namespace CNCO.Unify.Security {
                     case "aes128.GCM":
                         throw new NotImplementedException();
 
-                    case "aspnet":
-                        cipherText = DecryptAspNetCoreDataProtector(cipherText);
+                    case "unifydp":
+                        cipherText = DecryptDataProtector(cipherText);
                         break;
 
                     default:
@@ -514,53 +550,4 @@ namespace CNCO.Unify.Security {
             return cipherText;
         }
     }
-
-
-
-    #region DPAPI (like) helpers
-    public class DataProtector {
-        private readonly IDataProtectionProvider _dataProtectionProvider;
-        private IDataProtector _dataProtector;
-
-        public DataProtector(IDataProtectionProvider dataProtectionProvider) {
-            _dataProtectionProvider = dataProtectionProvider;
-            _dataProtector = _dataProtectionProvider.CreateProtector("SteamAuthenticator.Core.Providers");
-        }
-
-        /// <summary>
-        /// Allows you to set the subPurpose for the <see cref="IDataProtector"/>.
-        /// </summary>
-        /// <param name="purpose">Optional sub purpose passed to <see cref="IDataProtectionProvider.CreateProtector"/>.</param>
-        public void CreateProtector(string? purpose) {
-            if (purpose is null)
-                _dataProtector = _dataProtectionProvider.CreateProtector("SteamAuthenticator.Core.Providers");
-            else
-                _dataProtector = _dataProtectionProvider.CreateProtector("SteamAuthenticator.Core.Providers", new string[] { purpose });
-        }
-
-        /// <summary>
-        /// Protects and encrypts a string.
-        /// </summary>
-        /// <param name="data">String to encrypt</param>
-        /// <returns>Encrypted string.</returns>
-        public string Protect(string data) {
-            if (data is null)
-                return "";
-
-            return _dataProtector.Protect(data);
-        }
-
-        /// <summary>
-        /// Decrypts a protected string.
-        /// </summary>
-        /// <param name="data">String to decrypt</param>
-        /// <returns>Decrypted string.</returns>
-        public string Unprotect(string data) {
-            if (data is null)
-                return "";
-
-            return _dataProtector.Unprotect(data);
-        }
-    }
-    #endregion
 }

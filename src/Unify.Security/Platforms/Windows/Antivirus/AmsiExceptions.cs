@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Security.Antivirus.Internals;
+﻿using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
 
-namespace CNCO.Unify.Security.Antivirus {
+namespace CNCO.Unify.Security.Platforms.Windows.Antivirus {
     public class AmsiException : Exception {
         public AmsiException() { }
         public AmsiException(string message) : base(message) { }

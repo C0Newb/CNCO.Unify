@@ -20,13 +20,22 @@
         /// Defaults to current working directory.
         /// </param>
         public LocalFileStorage(string? directory = null) {
-            if (string.IsNullOrEmpty(directory))
-                _directory = System.IO.Directory.GetCurrentDirectory();
-            else
-                _directory = directory;
+            if (string.IsNullOrEmpty(directory) || !Path.IsPathRooted(directory)) {
+                // make it rooted
+                string root = string.Empty;
+                if (Platform.IsApple())
+                    root = "./Library/";
+                else if (Platform.IsAndroid())
+                    root = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments); // -> /data/users/*/<package>/files/
+                else
+                    root = System.IO.Directory.GetCurrentDirectory();
+
+                directory = Path.Combine(root, directory ?? string.Empty);
+            }
+            _directory = directory;
         }
 
-        private string GetPath(string name) {
+        public string GetPath(string name) {
             try {
                 if (!System.IO.Directory.Exists(Directory))
                     System.IO.Directory.CreateDirectory(Directory);

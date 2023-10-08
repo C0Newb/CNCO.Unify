@@ -1,5 +1,5 @@
-﻿using CNCO.Unify.Encryption;
-using CNCO.Unify.Security;
+﻿using CNCO.Unify.Security;
+using CNCO.Unify.Security.FileEncryption;
 using CNCO.Unify.Storage;
 using System.Text;
 
@@ -27,7 +27,7 @@ namespace UnifyTests.Configuration.Json {
     }
 
     internal class MyEncryptionKeyProvider : IEncryptionKeyProvider {
-        public Encryption.Protections Protections = Encryption.Protections.AspNetCoreDataProtection | Encryption.Protections.AES256_CBC;
+        public Encryption.Protections Protections = Encryption.Protections.DataProtection | Encryption.Protections.AES256_CBC;
 
         private readonly byte[] _encryptionKey;
 

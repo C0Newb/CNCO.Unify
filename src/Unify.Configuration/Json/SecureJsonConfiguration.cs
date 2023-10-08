@@ -1,4 +1,4 @@
-﻿using CNCO.Unify.Encryption;
+﻿using CNCO.Unify.Security.FileEncryption;
 using CNCO.Unify.Storage;
 using System.Security;
 using System.Text.Json.Serialization;
@@ -14,7 +14,7 @@ namespace CNCO.Unify.Configuration.Json {
         // SecretsKeyEncrypted -> (decrypted) SecretsKey -> (update/regenerate) SecretsEncryptionKey
 
         /// <summary>
-        /// Encrypted version of <see cref="SecretsKey"/>. Encrypted via the AspNetCore DataProtector (similar to DPAPI), cannot be transferred between machines!
+        /// Encrypted version of <see cref="SecretsKey"/>. Encrypted via the DataProtector, cannot be transferred between machines!
         /// </summary>
         [JsonPropertyName("secrets_key")]
         public string SecretsKeyEncrypted {
@@ -23,7 +23,7 @@ namespace CNCO.Unify.Configuration.Json {
                 _secretsKeyEncrypted = value;
                 SecretsKey.Clear();
                 if (!string.IsNullOrEmpty(value)) {
-                    var key = Security.Encryption.DecryptAspNetCoreDataProtector(value);
+                    var key = Security.Encryption.DecryptDataProtector(GetFilePath() + "_secretsKey", value);
                     var newSecretsKey = new SecureString();
                     foreach (char c in key)
                         newSecretsKey.AppendChar(c);
@@ -43,7 +43,7 @@ namespace CNCO.Unify.Configuration.Json {
             get => _secretsKey;
             set {
                 _secretsKey = value;
-                SecretsEncryptionKey = Security.Encryption.DeriveKey(SecretsKey, _secretsSalt);
+                SecretsEncryptionKey = Security.Encryption.DeriveKey(value, _secretsSalt);
             }
         }
         private SecureString _secretsKey = new SecureString();
@@ -82,7 +82,7 @@ namespace CNCO.Unify.Configuration.Json {
             if (string.IsNullOrEmpty(_secretsKeyEncrypted)) {
                 string newKey = Security.Encryption.GenerateRandomString(32);
                 _secretsSalt = Security.Encryption.GenerateRandomBytes(32);
-                SecretsKeyEncrypted = Security.Encryption.EncryptAspNetCoreDataProtector(newKey);
+                SecretsKeyEncrypted = Security.Encryption.EncryptDataProtector(GetFilePath() + "_secureKeyEncrypted", newKey);
             }
         }
 

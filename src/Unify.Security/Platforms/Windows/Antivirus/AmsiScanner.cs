@@ -1,7 +1,8 @@
-﻿using System.ComponentModel;
+﻿using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
+using System.ComponentModel;
 using System.Diagnostics;
 
-namespace CNCO.Unify.Security.Antivirus {
+namespace CNCO.Unify.Security.Platforms.Windows.Antivirus {
     // This needs work.
     public class AmsiScanner : IDisposable {
         private readonly AmsiContext amsiContext;
@@ -36,23 +37,23 @@ namespace CNCO.Unify.Security.Antivirus {
 
             var result = amsiSession.Scan(data, contentName ?? string.Empty);
 
-            ScanResult scanResult = new ScanResult() {
-                IsSafe = result == Internals.AmsiResult.AMSI_RESULT_CLEAN || result == Internals.AmsiResult.AMSI_RESULT_NOT_DETECTED,
+            var scanResult = new ScanResult() {
+                IsSafe = result == AmsiResult.AMSI_RESULT_CLEAN || result == AmsiResult.AMSI_RESULT_NOT_DETECTED,
                 TimeStamp = startTime,
             };
             switch (result) {
-                case Internals.AmsiResult.AMSI_RESULT_CLEAN:
+                case AmsiResult.AMSI_RESULT_CLEAN:
                     scanResult.Result = DetectionResult.Clean;
                     break;
-                case Internals.AmsiResult.AMSI_RESULT_NOT_DETECTED:
+                case AmsiResult.AMSI_RESULT_NOT_DETECTED:
                     scanResult.Result = DetectionResult.NotDetected;
                     break;
-                case Internals.AmsiResult.AMSI_RESULT_BLOCKED_BY_ADMIN_START:
-                case Internals.AmsiResult.AMSI_RESULT_BLOCKED_BY_ADMIN_END:
+                case AmsiResult.AMSI_RESULT_BLOCKED_BY_ADMIN_START:
+                case AmsiResult.AMSI_RESULT_BLOCKED_BY_ADMIN_END:
                     scanResult.Result = DetectionResult.BlockedByAdministrator;
                     break;
 
-                case Internals.AmsiResult.AMSI_RESULT_DETECTED:
+                case AmsiResult.AMSI_RESULT_DETECTED:
                     scanResult.Result = DetectionResult.IdentifiedAsMalware;
                     break;
             }
