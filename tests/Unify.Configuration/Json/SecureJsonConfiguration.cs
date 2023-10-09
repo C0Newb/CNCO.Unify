@@ -1,5 +1,4 @@
 ﻿using CNCO.Unify.Security;
-using CNCO.Unify.Security.FileEncryption;
 using CNCO.Unify.Storage;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -8,14 +7,14 @@ namespace UnifyTests.Configuration.Json {
     public class SecureJsonConfiguration {
         private const string TestFileName = "jsonConfigurationTest.json";
         private MyEncryptionKeyProvider myEncryptionKeyProvider;
-        private GenericFileEncryption myFileEncryption;
+        private FileEncryption myFileEncryption;
         private LocalFileStorage myFileStorage;
 
 
         [SetUp]
         public void Setup() {
             myEncryptionKeyProvider = new MyEncryptionKeyProvider();
-            myFileEncryption = new GenericFileEncryption(myEncryptionKeyProvider);
+            myFileEncryption = new FileEncryption(myEncryptionKeyProvider);
             myFileStorage = new LocalFileStorage();
         }
 
@@ -82,7 +81,7 @@ namespace UnifyTests.Configuration.Json {
             string superSecretString = "This is a super secret string: " + Encryption.GenerateRandomString(16);
 
             var myJsonConfig = new MySecureJsonConfig(TestFileName, myFileStorage, myFileEncryption);
-            myJsonConfig.StringValue = myJsonConfig.EncryptSecret(superSecretString);
+            myJsonConfig.StringValue = myJsonConfig.EncryptSecret(superSecretString) ?? string.Empty;
             myJsonConfig.Save();
 
             string protectedStringValue = myJsonConfig.StringValue;

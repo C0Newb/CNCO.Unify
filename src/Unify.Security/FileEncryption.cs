@@ -1,13 +1,13 @@
 ﻿using System.Text;
 
-namespace CNCO.Unify.Security.FileEncryption {
+namespace CNCO.Unify.Security {
     /// <summary>
-    /// Basic file encryption using a <see cref="IEncryptionKeyProvider"/> and <see cref="Security.Encryption"/>.
+    /// Basic file encryption using a <see cref="IEncryptionKeyProvider"/> and <see cref="Encryption"/>.
     /// </summary>
-    public class GenericFileEncryption : IFileEncryption {
+    public class FileEncryption : IFileEncryption {
         private readonly IEncryptionKeyProvider _encryptionKeyProvider;
 
-        public GenericFileEncryption(IEncryptionKeyProvider encryptionKeyProvider) {
+        public FileEncryption(IEncryptionKeyProvider encryptionKeyProvider) {
             _encryptionKeyProvider = encryptionKeyProvider;
         }
 
@@ -16,7 +16,7 @@ namespace CNCO.Unify.Security.FileEncryption {
             if (_encryptionKeyProvider == null)
                 return data;
 
-            return Security.Encryption.Encrypt(data,
+            return Encryption.Encrypt(data,
                 _encryptionKeyProvider.GetEncryptionKey(),
                 _encryptionKeyProvider.GetProtections(),
                 _encryptionKeyProvider.GetNonce());
@@ -25,7 +25,7 @@ namespace CNCO.Unify.Security.FileEncryption {
             if (_encryptionKeyProvider == null)
                 return data;
 
-            return Security.Encryption.Decrypt(data, _encryptionKeyProvider.GetEncryptionKey());
+            return Encryption.Decrypt(data, _encryptionKeyProvider.GetEncryptionKey());
         }
 
 
@@ -34,7 +34,7 @@ namespace CNCO.Unify.Security.FileEncryption {
                 return data;
 
             string dataString = Encoding.UTF8.GetString(data);
-            string encryptedData = Security.Encryption.Encrypt(dataString,
+            string encryptedData = Encryption.Encrypt(dataString,
                 _encryptionKeyProvider.GetEncryptionKey(),
                 _encryptionKeyProvider.GetProtections(),
                 _encryptionKeyProvider.GetNonce());
@@ -46,7 +46,7 @@ namespace CNCO.Unify.Security.FileEncryption {
                 return data;
 
             string dataString = Encoding.UTF8.GetString(data);
-            string encryptedData = Security.Encryption.Decrypt(dataString, _encryptionKeyProvider.GetEncryptionKey());
+            string encryptedData = Encryption.Decrypt(dataString, _encryptionKeyProvider.GetEncryptionKey());
 
             return Encoding.UTF8.GetBytes(encryptedData);
         }

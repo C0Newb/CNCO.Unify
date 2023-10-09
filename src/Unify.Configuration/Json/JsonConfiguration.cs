@@ -1,4 +1,4 @@
-﻿using CNCO.Unify.Security.FileEncryption;
+﻿using CNCO.Unify.Security;
 using CNCO.Unify.Storage;
 using System.Reflection;
 using System.Text.Json;
@@ -31,7 +31,7 @@ namespace CNCO.Unify.Configuration.Json {
 
         public JsonConfiguration() {
             _fileStorage = new NoopFileStorage();
-            _fileEncryption = new NoopEncryption();
+            _fileEncryption = new NoopFileEncryption();
         }
 
         /// <summary>
@@ -39,13 +39,13 @@ namespace CNCO.Unify.Configuration.Json {
         /// </summary>
         /// <remarks>
         /// If the encryption strategy <paramref name="fileEncryption"/> is null or empty,
-        /// the <see cref="NoopEncryption"/> will be used (no encryption).
+        /// the <see cref="NoopFileEncryption"/> will be used (no encryption).
         /// </remarks>
         /// <param name="name">Name of the configuration file.</param>
         /// <param name="fileStorage">Storage strategy to use when reading/writing the configuration.</param>
         /// <param name="fileEncryption">
         /// File encryption strategy to use when reading/writing the configuration.
-        /// If <see langword="null"/>, the <see cref="NoopEncryption"/> (no encryption) will be used.
+        /// If <see langword="null"/>, the <see cref="NoopFileEncryption"/> (no encryption) will be used.
         /// </param>
         public JsonConfiguration(string name, IFileStorage fileStorage, IFileEncryption? fileEncryption = null) {
             _filePath = name;
@@ -53,7 +53,7 @@ namespace CNCO.Unify.Configuration.Json {
                 _filePath += ".json";
 
             _fileStorage = fileStorage;
-            _fileEncryption = fileEncryption ?? new NoopEncryption();
+            _fileEncryption = fileEncryption ?? new NoopFileEncryption();
 
             if (fileStorage.Exists(_filePath)) {
                 Load();
@@ -90,7 +90,7 @@ namespace CNCO.Unify.Configuration.Json {
             jsonString = ModifyBeforeWrite(jsonString);
 
             jsonString = _fileEncryption.EncryptString(jsonString);
-            _fileStorage.Write(jsonString, _filePath);
+            _fileStorage.Write(_filePath, jsonString);
         }
 
 
@@ -128,15 +128,26 @@ namespace CNCO.Unify.Configuration.Json {
                 else
                     throw new ConfigurationReadException($"Unable to read configuration {_filePath}");
             }
-            jsonString = _fileEncryption.DecryptString(jsonString);
 
-            jsonString = ModifyAfterRead(jsonString);
-
+            JsonNode jsonNode;
             JsonNodeOptions nodeOptions = new JsonNodeOptions {
                 PropertyNameCaseInsensitive = true,
             };
             JsonDocumentOptions documentOptions = new JsonDocumentOptions { };
-            JsonNode jsonNode = JsonNode.Parse(jsonString, nodeOptions, documentOptions) ?? new JsonObject();
+
+            try {
+                jsonString = _fileEncryption.DecryptString(jsonString);
+                jsonString = ModifyAfterRead(jsonString);                
+                jsonNode = JsonNode.Parse(jsonString, nodeOptions, documentOptions) ?? new JsonObject();
+            } catch (Exception ex) {
+                Runtime.ApplicationLog.Error($"Failed to parse {_filePath} failed, renaming file to *.broken and regenerating.");
+                Runtime.ApplicationLog.Error(ex.Message);
+                Runtime.ApplicationLog.Error(ex.StackTrace ?? "No stack trace.");
+                _fileStorage.Rename(_filePath, _filePath + ".broken");
+                jsonString = ModifyAfterRead("{}");
+                jsonNode = JsonNode.Parse(jsonString, nodeOptions, documentOptions) ?? new JsonObject();
+            }
+
             Deserialize(jsonNode);
         }
 

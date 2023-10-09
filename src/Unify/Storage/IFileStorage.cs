@@ -17,9 +17,9 @@
         /// <param name="contents">Contents to be written.</param>
         /// <param name="name">Name of the file to write to.</param>
         /// <returns>Whether the file was saved or not.</returns>
-        public bool Write(string contents, string name);
+        public bool Write(string name, string contents);
         /// <inheritdoc cref="Write"/>
-        public bool WriteBytes(byte[] contents, string name);
+        public bool WriteBytes(string name, byte[] contents);
 
 
         /// <summary>
@@ -28,10 +28,10 @@
         /// <param name="contents">Contents to be written (appended).</param>
         /// <param name="name">Name of the file to append to.</param>
         /// <returns>Whether the file was appended to or not.</returns>
-        public bool Append(string contents, string name);
+        public bool Append(string name, string contents);
 
         /// <inheritdoc cref="Append"/>
-        public bool AppendBytes(byte[] contents, string name);
+        public bool AppendBytes(string name, byte[] contents);
 
 
         /// <summary>
@@ -60,5 +60,14 @@
         /// <param name="name">Name of the file to delete.</param>
         /// <returns>Successfully deleted.</returns>
         public bool Delete(string name);
+
+
+        /// <summary>
+        /// Renames (moves) a file.
+        /// </summary>
+        /// <param name="name">Current file name.</param>
+        /// <param name="newName">New file name.</param>
+        /// <returns>Successfully renamed.</returns>
+        public bool Rename(string name, string newName);
     }
 }

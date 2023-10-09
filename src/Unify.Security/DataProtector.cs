@@ -48,20 +48,16 @@ namespace CNCO.Unify.Security {
         /// <param name="name">The "key" to grab. This should be <see cref="_purpose"/>_key or _salt.</param>
         /// <returns>Either the stored key or stored salt.</returns>
         private static byte[] GetProtectionItem(string name) {
-            /*
-            var task = SecureStorage.GetAsync(name);
-            task.Wait();
-            if (task.Result != null)
-                return Convert.FromBase64String(task.Result);
+            var value = SecurityRuntime.Current.CredentialManager.Get(name);
+            if (value != null)
+                return Convert.FromBase64String(value);
 
             // generate and save item
             var protectionItem = Encryption.GenerateRandomBytes(32);
             string keyInBase64 = Convert.ToBase64String(protectionItem);
-            SecureStorage.SetAsync(name, keyInBase64).Wait();
+            SecurityRuntime.Current.CredentialManager.Set(name, keyInBase64);
 
             return protectionItem;
-            */
-            return Encoding.UTF8.GetBytes("pineapple :)"); // secure, decided by random toss
         }
         #endregion
 
@@ -76,17 +72,33 @@ namespace CNCO.Unify.Security {
         public virtual byte[] Protect(byte[] plaintext) => Encryption.EncryptAES256_CBC(plaintext, Key);
 
         public virtual string Protect(string plaintext) {
-            string protectedString = Encryption.EncryptAES256_CBC(plaintext, Key);
-            byte[] protectedBytes = Encoding.UTF8.GetBytes(protectedString);
-            return Convert.ToBase64String(protectedBytes);
+            string tag = $"{GetType().Name}::{nameof(Protect)}-{_purpose}";
+            try {
+                string protectedString = Encryption.EncryptAES256_CBC(plaintext, Key);
+                byte[] protectedBytes = Encoding.UTF8.GetBytes(protectedString);
+                return Convert.ToBase64String(protectedBytes);
+            } catch (Exception ex) {
+                SecurityRuntime.Current.Log.Error(tag, $"Failed to protect data!");
+                SecurityRuntime.Current.Log.Error(tag, ex.Message);
+                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace.");
+                throw;
+            }
         }
 
 
         public virtual byte[] Unprotect(byte[] protectedData) => Encryption.DecryptAES(protectedData, Key);
         public virtual string Unprotect(string protectedData) {
-            byte[] protectedBytes = Convert.FromBase64String(protectedData);
-            string protectedString = Encoding.UTF8.GetString(protectedBytes);
-            return Encryption.DecryptAES(protectedString, Key);
+            string tag = $"{GetType().Name}::{nameof(Unprotect)}-{_purpose}";
+            try {
+                byte[] protectedBytes = Convert.FromBase64String(protectedData);
+                string protectedString = Encoding.UTF8.GetString(protectedBytes);
+                return Encryption.DecryptAES(protectedString, Key);
+            } catch (Exception ex) {
+                SecurityRuntime.Current.Log.Error(tag, $"Failed to unprotect data (invalid key?)!");
+                SecurityRuntime.Current.Log.Error(tag, ex.Message);
+                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace.");
+                throw;
+            }
         }
     }
 }

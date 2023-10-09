@@ -10,20 +10,22 @@ namespace CNCO.Unify {
     /// <summary>
     /// The main entry point and setup class for Unify. Similar to <c>Program.cs</c>.
     /// </summary>
-    public class Runtime {
+    public class Runtime : IRuntime {
         private static Runtime? _instance;
-        
         private readonly List<RuntimeHook> _hooks = new List<RuntimeHook>(0);
-        private MultiLogger? applicationLog;
-        internal ProxyLogger? unifyLog;
+        private MultiLogger? _applicationLog;
+        internal ProxyLogger? _unifyLog;
+        private readonly List<RuntimeLink> _runtimeLinks = new List<RuntimeLink>(3);
 
         #region Properties
         internal ProxyLogger UnifyLog {
             get {
-                unifyLog ??= new ProxyLogger(ApplicationLog, "Unify");
-                return unifyLog;
+                _unifyLog ??= new ProxyLogger(Runtime.ApplicationLog, "Unify");
+                return _unifyLog;
             }
         }
+
+        public string ApplicationId;
 
         /// <summary>
         /// Current <see cref="RuntimeConfiguration"/>.
@@ -40,7 +42,7 @@ namespace CNCO.Unify {
         /// </summary>
         public static Runtime Current {
             get {
-                _instance ??= new Runtime();
+                _instance ??= new Runtime("Unify-Application");
                 return _instance;
             }
         }
@@ -49,10 +51,10 @@ namespace CNCO.Unify {
         /// <summary>
         /// Application log
         /// </summary>
-        public MultiLogger ApplicationLog {
+        public static MultiLogger ApplicationLog {
             get {
-                if (Current.applicationLog == null) {
-                    Current.applicationLog = new MultiLogger();
+                if (Current._applicationLog == null) {
+                    Current._applicationLog = new MultiLogger();
                     
                     // Add storage logger
                     IFileStorage? logFileStorage = Current.Configuration.ApplicationLogFileStorage;
@@ -62,23 +64,25 @@ namespace CNCO.Unify {
                     if (logFileStorage != null) {
                         logFileStorage.Delete(Current.Configuration.ApplicationLogName); // remove previous
                         var fileLogger = new FileLogger(logFileStorage, Current.Configuration.ApplicationLogName);
-                        Current.applicationLog.AddLogger(fileLogger);
+                        Current._applicationLog.AddLogger(fileLogger);
                     }
 
-                    Current.applicationLog.AddLogger(new DiagnosticsLogger());
+                    Current._applicationLog.AddLogger(new DiagnosticsLogger());
 
-                    Current.applicationLog.Log("Unify", "Bonjour!"); // startup message
+                    Current._applicationLog.Log("Unify", "Bonjour!"); // startup message
                 }
-                return Current.applicationLog;
+                return Current._applicationLog;
             }
         }
         #endregion
 
-        public Runtime() {
+        public Runtime(string applicationId) {
+            ApplicationId = applicationId;
             _instance = this;
         }
 
-        public Runtime(RuntimeConfiguration configuration) {
+        public Runtime(string applicationId, RuntimeConfiguration configuration) {
+            ApplicationId = applicationId;
             Configuration = configuration;
             _instance = this;
         }
@@ -89,15 +93,15 @@ namespace CNCO.Unify {
         /// </summary>
         /// <param name="hook">Runtime hook to be added.</param>
         public static void AddHook(RuntimeHook hook) {
-            if (!Current.Initialized)
+            if (!Current.Initialized && !Current._hooks.Contains(hook))
                 Current._hooks.Add(hook);
         }
 
-
+        // Runs a hook.
         private bool RunHook(RuntimeHook hook) {
             try {
-                string nameTruncated = hook.Name.Substring(0, Math.Min(hook.Name.Length, 75));
-                string? descriptionTruncated = hook.Description?.Substring(0, Math.Min(hook.Name.Length, 250));
+                string nameTruncated = hook.Name[..Math.Min(hook.Name.Length, 75)];
+                string? descriptionTruncated = hook.Description?[..Math.Min(hook.Name.Length, 250)];
 
                 Current.UnifyLog.Debug($"Calling hook {nameTruncated}");
                 if (!string.IsNullOrEmpty(hook.Description))
@@ -142,6 +146,41 @@ namespace CNCO.Unify {
             else
                 Current.UnifyLog.Warning($"All hooks called, {failedHooks} failed.");
         }
+
+
+        // Check if x matches link
+        private static bool RuntimeLinkPredicate(RuntimeLink x, RuntimeLink link) {
+            return x.GetType().Name.Equals(link.GetType().Name)
+                || x.Instance.Equals(link.Instance);
+        }
+
+        /// <summary>
+        /// Checks whether a <see cref="RuntimeLink"/> has been added.
+        /// </summary>
+        /// <param name="link">Link to search for.</param>
+        /// <returns>Whether <paramref name="link"/> has been added to the list of runtime links.</returns>
+        public static bool ContainsRuntimeLink(RuntimeLink link) {
+            return Current._runtimeLinks.Where(x => RuntimeLinkPredicate(x, link)).Any();
+        }
+
+
+        /// <summary>
+        /// Adds a <see cref="RuntimeLink"/>, such as Unify.SecurityRuntime
+        /// </summary>
+        /// <param name="link">The unique Runtime to remove.</param>
+        public static void AddRuntimeLink(RuntimeLink link) {
+            if (ContainsRuntimeLink(link))
+                Current._runtimeLinks.Add(link);
+        }
+
+        /// <summary>
+        /// Removes a <see cref="RuntimeLink"/> from the list of links.
+        /// </summary>
+        /// <param name="link">The unique Runtime to remove.</param>
+        public static void RemoveRuntimeLink(RuntimeLink link) {
+            if (ContainsRuntimeLink(link))
+                Current._runtimeLinks.RemoveAll(x => RuntimeLinkPredicate(x, link));
+        }
     }
 
     /// <summary>
@@ -178,11 +217,11 @@ namespace CNCO.Unify {
     /// </summary>
     public class RuntimeConfiguration {
         /// <summary>
-        /// The name of the application log file saved to <see cref="ApplicationLogFileStorage"/>
+        /// Name of the directory <see cref="ApplicationLogName"/> is saved to.
         /// </summary>
         public string ApplicationLogDirectory { get; set; } = string.Empty;
         /// <summary>
-        /// If <see cref="ApplicationLogFileStorage"/> is <see langword="null"/>, the directory log files are saved to on disk.
+        /// The name of the application log file saved to <see cref="ApplicationLogFileStorage"/>.
         /// </summary>
         public string ApplicationLogName { get; set; } = string.Empty;
 
@@ -196,6 +235,19 @@ namespace CNCO.Unify {
         /// Disables creating a new <see cref="LocalFileStorage"/> instance to write the application log to.
         /// </summary>
         public bool ApplicationLogNoFileStorage { get; set; } = false;
+
+
+        /// <summary>
+        /// Location of the credentials file.
+        /// This file will be encrypted with a key protected by the platform credential manager.
+        /// All application credentials, however, will live in this file.
+        /// </summary>
+        public string CredentialFileName { get; set; } = "unify-credentials";
+
+        /// <summary>
+        /// Name of the directory <see cref="CredentialFileName"/> is saved to.
+        /// </summary>
+        public string CredentialFileParentDirectoryName { get; set; } = string.Empty;
 
 
 

@@ -5,7 +5,7 @@ namespace CNCO.Unify.Security.Credentials {
     /// <see cref="ICredentialManager"/> for Android.
     /// </summary>
     [SupportedOSPlatform("android")]
-    public class AndroidCredentialManager : ICredentialManager {
+    public class AndroidCredentialManager : ICredentialManager, ICredentialManagerEndpoint {
         public bool Exists(string credentialName) => throw new NotImplementedException();
         public string Get(string credentialName) => throw new NotImplementedException();
         public bool Remove(string credentialName) => throw new NotImplementedException();

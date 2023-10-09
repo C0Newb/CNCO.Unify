@@ -9,13 +9,13 @@ namespace CNCO.Unify.Security.Credentials {
     /// Gets the current <see cref="ICredentialManager"/> for the current platform
     /// </summary>
     public class CredentialManagerFactory {
-        public static ICredentialManager GetPlatformCredentialManager() {
+        public static ICredentialManagerEndpoint GetPlatformCredentialManager() {
 #pragma warning disable CA1416 // Validate platform compatibility
             if (Platform.IsWindows())
                 return new WindowsCredentialManager();
 
             if (Platform.IsAndroid())
-                return new AndroidCredentialManager();
+                return new FileBasedCredentialManager();
 
             //if (Platform.IsLinux())
             //    return new LinuxCredentialManager();

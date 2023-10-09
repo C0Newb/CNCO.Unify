@@ -34,7 +34,7 @@ namespace CNCO.Unify.Logging {
 
         public override void Log(LogLevel logLevel, string section, string message) {
             message = FormatMessage(message, logLevel, section) + Environment.NewLine;
-            _fileStorage.Append(message, _fileName);
+            _fileStorage.Append(_fileName, message);
         }
     }
 }

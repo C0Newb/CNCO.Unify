@@ -27,6 +27,14 @@ namespace CNCO.Unify.Security {
 
 
         #region ChaCha20Poly1305
+        public static bool SupportsChaCha20Poly1305() {
+#if IOS
+            return false;
+#else
+            return ChaCha20Poly1305.IsSupported;
+#endif
+        }
+
 #if !IOS
         /// <summary>
         /// Encrypts a string using ChaCha20Poly1305.
@@ -123,7 +131,7 @@ namespace CNCO.Unify.Security {
             return Encoding.UTF8.GetString(plainText);
         }
 #endif
-        #endregion
+#endregion
 
 
         #region AES
@@ -154,6 +162,7 @@ namespace CNCO.Unify.Security {
 
             using (Aes aesAlg = Aes.Create()) {
                 aesAlg.KeySize = keySize;
+                aesAlg.Padding = PaddingMode.PKCS7;
                 aesAlg.Mode = cipherMode;
 
                 aesAlg.Key = key;
@@ -244,6 +253,7 @@ namespace CNCO.Unify.Security {
             string plainText = "";
             using (Aes aesAlg = Aes.Create()) {
                 aesAlg.KeySize = keySize;
+                aesAlg.Padding = PaddingMode.PKCS7;
                 aesAlg.Mode = mode;
 
                 aesAlg.Key = key;
@@ -319,7 +329,7 @@ namespace CNCO.Unify.Security {
         #endregion
 
 
-        #endregion
+#endregion
 
 
 
@@ -471,12 +481,11 @@ namespace CNCO.Unify.Security {
                 Array.Copy(key, actualKey, 32);
             }
 
-            if (protectionsToUse.HasFlag(Protections.AES256_CBC) || protectionsToUse.HasFlag(Protections.AES128_CBC)) {
-                if (protectionsToUse.HasFlag(Protections.AES256_CBC))
-                    cipherText = EncryptAES256_CBC(cipherText, actualKey, iv);
-                else
-                    cipherText = EncryptAES128_CBC(cipherText, actualKey, iv);
-            }
+            
+            if (protectionsToUse.HasFlag(Protections.AES256_CBC))
+                cipherText = EncryptAES256_CBC(cipherText, actualKey, iv);
+            else
+                cipherText = EncryptAES128_CBC(cipherText, actualKey, iv);
 
 #if !IOS
             if (protectionsToUse.HasFlag(Protections.ChaCha20Poly1305) && ChaCha20Poly1305.IsSupported) {

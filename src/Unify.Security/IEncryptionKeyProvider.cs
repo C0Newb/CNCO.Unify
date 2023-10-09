@@ -10,9 +10,9 @@
         public Encryption.Protections GetProtections();
 
         /// <summary>
-        /// Provides 
+        /// Returns the encryption key to be used.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Encryption key.</returns>
         public byte[] GetEncryptionKey();
 
         /// <summary>

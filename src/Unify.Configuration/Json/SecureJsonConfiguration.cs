@@ -1,4 +1,4 @@
-﻿using CNCO.Unify.Security.FileEncryption;
+﻿using CNCO.Unify.Security;
 using CNCO.Unify.Storage;
 using System.Security;
 using System.Text.Json.Serialization;
@@ -23,11 +23,27 @@ namespace CNCO.Unify.Configuration.Json {
                 _secretsKeyEncrypted = value;
                 SecretsKey.Clear();
                 if (!string.IsNullOrEmpty(value)) {
-                    var key = Security.Encryption.DecryptDataProtector(GetFilePath() + "_secretsKey", value);
-                    var newSecretsKey = new SecureString();
-                    foreach (char c in key)
-                        newSecretsKey.AppendChar(c);
-                    SecretsKey = newSecretsKey;
+                    try {
+                        var key = Encryption.DecryptDataProtector(Runtime.Current.ApplicationId, value);
+                        var newSecretsKey = new SecureString();
+                        foreach (char c in key)
+                            newSecretsKey.AppendChar(c);
+                        SecretsKey = newSecretsKey;
+                    } catch (Exception ex) {
+                        string tag = $"{GetType().Name}::{nameof(SecretsKeyEncrypted)}-{GetFilePath()}";
+                        Runtime.ApplicationLog.Error(tag, "Failed to decrypt secrets_key, secrets potentially lost for good!");
+                        Runtime.ApplicationLog.Error(tag, ex.Message);
+                        Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "Not stack trace.");
+
+                        string newKey = Encryption.GenerateRandomString(32);
+                        var newSecretsKey = new SecureString();
+                        foreach (char c in newKey)
+                            newSecretsKey.AppendChar(c);
+                        SecretsKey = newSecretsKey;
+
+                        _secretsSalt = Encryption.GenerateRandomBytes(32);
+                        _secretsKeyEncrypted = Encryption.EncryptDataProtector(Runtime.Current.ApplicationId, newKey);
+                    }
                 }
             }
         }
@@ -43,7 +59,7 @@ namespace CNCO.Unify.Configuration.Json {
             get => _secretsKey;
             set {
                 _secretsKey = value;
-                SecretsEncryptionKey = Security.Encryption.DeriveKey(value, _secretsSalt);
+                SecretsEncryptionKey = Encryption.DeriveKey(value, _secretsSalt);
             }
         }
         private SecureString _secretsKey = new SecureString();
@@ -56,11 +72,11 @@ namespace CNCO.Unify.Configuration.Json {
             get => Convert.ToBase64String(_secretsSalt);
             set {
                 _secretsSalt = Convert.FromBase64String(value);
-                SecretsEncryptionKey = Security.Encryption.DeriveKey(SecretsKey, _secretsSalt);
+                SecretsEncryptionKey = Encryption.DeriveKey(SecretsKey, _secretsSalt);
             }
         }
         [JsonIgnore]
-        private byte[] _secretsSalt = Security.Encryption.GenerateRandomBytes(32);
+        private byte[] _secretsSalt = Encryption.GenerateRandomBytes(32);
 
         /// <summary>
         /// Encryption methods (protections) applied to secrets.
@@ -73,6 +89,24 @@ namespace CNCO.Unify.Configuration.Json {
         /// </summary>
         [JsonIgnore]
         private byte[] SecretsEncryptionKey = Array.Empty<byte>();
+
+        /// <summary>
+        /// An encrypted version of <see cref="ProtectedKeys"/>.
+        /// </summary>
+        [JsonPropertyName("secrets_protected_keys")]
+        private string _protectedKeysJson {
+            get {
+                string keys = string.Join("\x1E", _secretsSalt); // x1E -> RS -> record separator
+                return Encryption.Encrypt(keys, SecretsEncryptionKey, SecretsProtections);
+            }
+            set {
+                string keysUnprotected = Encryption.Decrypt(value, SecretsEncryptionKey);
+                string[] keys = keysUnprotected.Split("\x1E", StringSplitOptions.RemoveEmptyEntries);
+                ProtectedKeys.Clear();
+                ProtectedKeys.AddRange(keys);
+            }
+        }
+        private List<string> ProtectedKeys { get; set; } = new List<string>();
         #endregion
 
         public SecureJsonConfiguration() : base() { }
@@ -80,28 +114,43 @@ namespace CNCO.Unify.Configuration.Json {
         public SecureJsonConfiguration(string filePath, IFileStorage fileStorage, IFileEncryption fileEncryption) : base(filePath, fileStorage, fileEncryption) {
             // Generates a new secrets encryption key if one is not already there.
             if (string.IsNullOrEmpty(_secretsKeyEncrypted)) {
-                string newKey = Security.Encryption.GenerateRandomString(32);
-                _secretsSalt = Security.Encryption.GenerateRandomBytes(32);
-                SecretsKeyEncrypted = Security.Encryption.EncryptDataProtector(GetFilePath() + "_secureKeyEncrypted", newKey);
+                string newKey = Encryption.GenerateRandomString(32);
+                _secretsSalt = Encryption.GenerateRandomBytes(32);
+                SecretsKeyEncrypted = Encryption.EncryptDataProtector(Runtime.Current.ApplicationId, newKey);
             }
         }
-
 
         /// <summary>
         /// Decrypts a secret using the configuration's secret key.
         /// </summary>
         /// <param name="value">Data to decrypt.</param>
         /// <returns>Decrypted secret.</returns>
-        public string DecryptSecret(string value) {
-            return Security.Encryption.Decrypt(value, SecretsEncryptionKey);
+        public string? DecryptSecret(string value) {
+            try {
+                return Encryption.Decrypt(value, SecretsEncryptionKey);
+            } catch (Exception ex) {
+                string tag = $"{GetType().Name}::{nameof(DecryptSecret)}-{GetFilePath()}";
+                Runtime.ApplicationLog.Error(tag, "Failed to decrypt secret, invalid key?");
+                Runtime.ApplicationLog.Error(tag, ex.Message);
+                Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "Not stack trace.");
+            }
+            return null;
         }
         /// <summary>
         /// Encrypts a string using the configuration's secret key.
         /// </summary>
         /// <param name="value">Data to encrypt.</param>
         /// <returns>Encrypted secret.</returns>
-        public string EncryptSecret(string value) {
-            return Security.Encryption.Encrypt(value, SecretsEncryptionKey, SecretsProtections);
+        public string? EncryptSecret(string value) {
+            try {
+                return Encryption.Encrypt(value, SecretsEncryptionKey, SecretsProtections);
+            } catch (Exception ex) {
+                string tag = $"{GetType().Name}::{nameof(EncryptSecret)}-{GetFilePath()}";
+                Runtime.ApplicationLog.Error(tag, "Failed to encrypt secret?");
+                Runtime.ApplicationLog.Error(tag, ex.Message);
+                Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "Not stack trace.");
+            }
+            return null;
         }
     }
 }

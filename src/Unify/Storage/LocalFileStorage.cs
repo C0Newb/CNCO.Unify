@@ -22,7 +22,7 @@
         public LocalFileStorage(string? directory = null) {
             if (string.IsNullOrEmpty(directory) || !Path.IsPathRooted(directory)) {
                 // make it rooted
-                string root = string.Empty;
+                string root;
                 if (Platform.IsApple())
                     root = "./Library/";
                 else if (Platform.IsAndroid())
@@ -47,7 +47,7 @@
         public bool Delete(string name) {
             try {
                 File.Delete(GetPath(name));
-                return false;
+                return true;
             } catch {
                 return false;
             }
@@ -71,16 +71,16 @@
             }
         }
 
-        public bool Write(string contents, string name) {
+        public bool Write(string name, string contents) {
             try {
                 File.WriteAllText(GetPath(name), contents);
-                return false;
+                return true;
             } catch {
                 return false;
             }
         }
 
-        public bool WriteBytes(byte[] contents, string name) {
+        public bool WriteBytes(string name, byte[] contents) {
             try {
                 File.WriteAllBytes(GetPath(name), contents);
                 return true;
@@ -89,7 +89,7 @@
             }
         }
 
-        public bool Append(string contents, string name) {
+        public bool Append(string name, string contents) {
             try {
                 File.AppendAllText(GetPath(name), contents);
                 return true;
@@ -98,7 +98,7 @@
             }
         }
 
-        public bool AppendBytes(byte[] contents, string name) {
+        public bool AppendBytes(string name, byte[] contents) {
             try {
                 byte[] current = ReadBytes(name) ?? Array.Empty<byte>();
                 byte[] newBytes = new byte[current.Length + contents.Length];
@@ -106,7 +106,16 @@
                 Buffer.BlockCopy(current, 0, newBytes, 0, current.Length);
                 Buffer.BlockCopy(contents, 0, newBytes, current.Length, contents.Length);
 
-                WriteBytes(newBytes, name);
+                WriteBytes(name, newBytes);
+                return true;
+            } catch {
+                return false;
+            }
+        }
+
+        public bool Rename(string name, string newName) {
+            try {
+                File.Move(GetPath(name), GetPath(newName));
                 return true;
             } catch {
                 return false;

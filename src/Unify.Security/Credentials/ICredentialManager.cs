@@ -1,5 +1,10 @@
 ﻿namespace CNCO.Unify.Security.Credentials {
     /// <summary>
+    /// Used to distinguish platform specific <see cref="ICredentialManager"/>.
+    /// </summary>
+    public interface ICredentialManagerEndpoint : ICredentialManager { }
+
+    /// <summary>
     /// Interface to interact with a credential manager, such as Windows Credential Manager, Apple's KeyChain, KeyStore, etc.
     /// </summary>
     public interface ICredentialManager {
