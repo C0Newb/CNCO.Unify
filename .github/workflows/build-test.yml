@@ -4,12 +4,12 @@
 name: .NET - Build and Test
 
 on:
-  push:
-    paths:
-      - src/**
-      - tests/**
-  pull_request:
-    branches: [ "master" ]
+  # push:
+  #   paths:
+  #     - src/**
+  #     - tests/**
+  # pull_request:
+  #   branches: [ "master" ]
   workflow_dispatch:
 
 jobs:
