@@ -82,7 +82,7 @@ namespace CNCO.Unify.Configuration.Json {
         /// Encryption methods (protections) applied to secrets.
         /// </summary>
         [JsonPropertyName("secrets_protections")]
-        public Security.Encryption.Protections SecretsProtections { get; set; } = Security.Encryption.Protections.AES128_CBC;
+        public Encryption.Protections SecretsProtections { get; set; } = Encryption.Protections.AES128_CBC;
 
         /// <summary>
         /// Actual encryption key used to decrypt configuration secrets.
@@ -94,7 +94,7 @@ namespace CNCO.Unify.Configuration.Json {
         /// An encrypted version of <see cref="ProtectedKeys"/>.
         /// </summary>
         [JsonPropertyName("secrets_protected_keys")]
-        private string _protectedKeysJson {
+        private string ProtectedKeysJson {
             get {
                 string keys = string.Join("\x1E", _secretsSalt); // x1E -> RS -> record separator
                 return Encryption.Encrypt(keys, SecretsEncryptionKey, SecretsProtections);

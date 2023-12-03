@@ -14,7 +14,7 @@ namespace CNCO.Unify.Security {
 
 
         // What in ?
-        private ICredentialManagerEndpoint _platformCredentialManager = CredentialManagerFactory.GetPlatformCredentialManager();
+        private readonly ICredentialManagerEndpoint _platformCredentialManager = CredentialManagerFactory.GetPlatformCredentialManager();
         private IEncryptionKeyProvider? _credentialManagerKeyProvider;
         private FileEncryption? _credentialManagerFileEncryption;
         private IFileStorage? _credentialFileStorage;
@@ -22,7 +22,7 @@ namespace CNCO.Unify.Security {
 
         internal ProxyLogger Log {
             get {
-                _log = new ProxyLogger(Runtime.ApplicationLog, "Unify-Security");
+                _log ??= new ProxyLogger(Runtime.ApplicationLog, "Unify-Security");
                 return _log;
             }
         }

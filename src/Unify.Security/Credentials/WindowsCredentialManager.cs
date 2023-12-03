@@ -119,7 +119,7 @@ namespace CNCO.Unify.Security.Credentials {
                     uint lastError = (uint)Marshal.GetLastWin32Error();
                     SecurityRuntime.Current.Log.Error(tag, $"Failed to set credential, error: {lastError:X}");
                 } finally {
-                    Marshal.ZeroFreeBSTR(credentialNamePtr); // Release ptrs
+                    Marshal.ZeroFreeBSTR(credentialNamePtr); // Release pointers
                     Marshal.ZeroFreeBSTR(valuePtr);
                     Marshal.ZeroFreeBSTR(commentPtr);
                 }
