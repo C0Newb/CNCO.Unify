@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CNCO.Unify.Logging {
+﻿namespace CNCO.Unify.Logging {
     /// <summary>
     /// Allows you to layer the "section" tag on <see cref="ILogger"/>s.
     /// </summary>

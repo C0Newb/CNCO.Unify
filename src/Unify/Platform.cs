@@ -1,7 +1,7 @@
 ﻿namespace CNCO.Unify {
     public class Platform {
         public static bool IsBrowser() => OperatingSystem.IsBrowser();
-        
+
         public static bool IsAndroid() => OperatingSystem.IsAndroid();
         public static bool IsLinux() => OperatingSystem.IsLinux();
         public static bool IsFreeBSD() => OperatingSystem.IsFreeBSD();

@@ -137,7 +137,7 @@ namespace CNCO.Unify.Configuration.Json {
 
             try {
                 jsonString = _fileEncryption.DecryptString(jsonString);
-                jsonString = ModifyAfterRead(jsonString);                
+                jsonString = ModifyAfterRead(jsonString);
                 jsonNode = JsonNode.Parse(jsonString, nodeOptions, documentOptions) ?? new JsonObject();
             } catch (Exception ex) {
                 Runtime.ApplicationLog.Error($"Failed to parse {_filePath} failed, renaming file to *.broken and regenerating.");

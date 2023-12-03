@@ -1,11 +1,6 @@
 ﻿using CNCO.Unify.Events;
 using CNCO.Unify.Logging;
 using CNCO.Unify.Storage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CNCO.Unify {
     /// <summary>
@@ -65,7 +60,7 @@ namespace CNCO.Unify {
             get {
                 if (Current._applicationLog == null) {
                     Current._applicationLog = new MultiLogger();
-                    
+
                     // Add storage logger
                     IFileStorage? logFileStorage = Current.Configuration.ApplicationLogFileStorage;
                     if (logFileStorage == null && !Current.Configuration.ApplicationLogNoFileStorage) {

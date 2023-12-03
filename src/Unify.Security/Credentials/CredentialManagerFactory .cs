@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CNCO.Unify.Security.Credentials {
+﻿namespace CNCO.Unify.Security.Credentials {
     /// <summary>
     /// Gets the current <see cref="ICredentialManager"/> for the current platform
     /// </summary>

@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
-using System.Security.Cryptography;
 
 namespace CNCO.Unify.Security.Credentials {
     /// <summary>
@@ -30,14 +29,13 @@ namespace CNCO.Unify.Security.Credentials {
                         string? comment = null;
                         if (credential.Comment != IntPtr.Zero)
                             comment = Marshal.PtrToStringUni(credential.Comment);
-                        
+
                         if (credential.CredentialBlob != IntPtr.Zero)
                             secret = Marshal.PtrToStringUni(credential.CredentialBlob, (int)credential.CredentialBlobSize / 2);
 
                         // tampered?
                         if (!string.IsNullOrEmpty(secret)
-                            &&  (string.IsNullOrEmpty(comment) || Hashing.Sha1(secret ?? string.Empty) != comment))
-                        {
+                            && (string.IsNullOrEmpty(comment) || Hashing.Sha1(secret ?? string.Empty) != comment)) {
                             //Remove(credentialName); // tampered, get it outta here!
                             return null;
                         }
@@ -89,7 +87,7 @@ namespace CNCO.Unify.Security.Credentials {
                 // we'll use the comment as a checksum, this prevents user tampering via Control Panel.
                 string comment = Hashing.Sha1(credentialValue);
                 // sha1 as this doesn't have to be anything crazy.
-                
+
                 var secretLength = credentialValue.Length * UnicodeEncoding.CharSize;
                 int maxLength = 2560;
                 if (Environment.OSVersion.Version < new Version(6, 1)) // <Win7
@@ -234,7 +232,7 @@ namespace CNCO.Unify.Security.Credentials {
             /// The credential will be stored securely but has no other significant characteristics.
             /// </summary>
             Generic = 1,
-            
+
             /// <summary>
             /// The credential is a password credential and is specific to Microsoft's authentication packages.
             /// The NTLM, Kerberos, and Negotiate authentication packages will automatically use this credential when connecting to the named target.

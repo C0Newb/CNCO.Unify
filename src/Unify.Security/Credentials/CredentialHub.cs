@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
+﻿using System.Text.Json;
 
 namespace CNCO.Unify.Security.Credentials {
     /// <summary>
@@ -44,7 +38,7 @@ namespace CNCO.Unify.Security.Credentials {
                 string credentials = JsonSerializer.Serialize(_credentials);
                 if (!_credentialManager.Set(_credentialsName, credentials))
                     throw new InvalidOperationException($"Failed to set credentials in {_credentialManager.GetType().Name}.");
-            } catch (Exception ex ) {
+            } catch (Exception ex) {
                 SecurityRuntime.Current.Log.Error(
                     $"{GetType().Name}::{nameof(PullCredentials)}",
                     $"Failed to push JSON credentials for {_credentialsName}."

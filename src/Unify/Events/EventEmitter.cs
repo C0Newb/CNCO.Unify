@@ -50,7 +50,7 @@
                 _oneTimeListener = oneTimeListener;
             }
 
-            
+
             public void Activate(params object?[]? parameters) {
                 if (_oneTimeListener)
                     _eventEmitter.RemoveListener(_event, _callback);
@@ -101,7 +101,7 @@
 
         // Interface
 
-        
+
         public void Emit(string @event, params object?[]? parameters) {
             if (_listeners.TryGetValue(@event, out List<IEventEmitterListener>? value)) {
                 var eventEmitterList = value;

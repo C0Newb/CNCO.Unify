@@ -81,7 +81,7 @@ namespace CNCO.Unify.Communications.HTTP {
             if (requestPathParts.Length != originalPathParts.Length)
                 return parameters; // Return empty dictionary if lengths don't match
 
-            for (int i = 0; i<originalPathParts.Length; i++) {
+            for (int i = 0; i < originalPathParts.Length; i++) {
                 var part = originalPathParts[i];
                 if (!part.StartsWith(":") || !part.EndsWith(":"))
                     continue;

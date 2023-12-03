@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace CNCO.Unify.Events {
+﻿namespace CNCO.Unify.Events {
     // Too many event listeners (callbacks) subscribed to an event
     public class TooManyEventListenersException : Exception {
         public string HelpMessage = "Try removing excess listeners with .RemoveListener(Event, Callback) or .RemoveAllListeners(Event).";

@@ -1,5 +1,5 @@
-﻿using System.Text;
-using CNCO.Unify.Security.Credentials;
+﻿using CNCO.Unify.Security.Credentials;
+using System.Text;
 
 namespace CNCO.Unify.Security {
     /// <summary>

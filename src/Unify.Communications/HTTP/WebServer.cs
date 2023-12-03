@@ -6,7 +6,7 @@ namespace CNCO.Unify.Communications.HTTP {
         private readonly Thread ListenerThread;
         private int ListenerThreadRestart = 0;
         private bool RunListenerThread = true;
-        
+
         private IRouter Router;
 
 
@@ -77,7 +77,7 @@ namespace CNCO.Unify.Communications.HTTP {
             }
             if (!endpoint.EndsWith("/"))
                 endpoint += "/";
-            
+
             HttpListener.Prefixes.Add(endpoint);
         }
 

@@ -131,7 +131,7 @@ namespace CNCO.Unify.Security {
             return Encoding.UTF8.GetString(plainText);
         }
 #endif
-#endregion
+        #endregion
 
 
         #region AES
@@ -197,7 +197,7 @@ namespace CNCO.Unify.Security {
         /// <inheritdoc cref="EncryptAES(string, byte[], byte[], int, CipherMode)"/>
         /// <returns>Encrypted data string: <c>{version}$aes256.CBC${cipher text}${iv}</c></returns>
         public static string EncryptAES256_CBC(string plainText, byte[] key, byte[]? iv = null) => EncryptAES(plainText, key, iv, 256, CipherMode.CBC);
-        
+
         /// <inheritdoc cref="EncryptAES256_CBC(string, byte[], byte[])" />
         public static byte[] EncryptAES256_CBC(byte[] plainText, byte[] key, byte[]? iv = null) => EncryptAES(plainText, key, iv, 256, CipherMode.CBC);
 
@@ -329,7 +329,7 @@ namespace CNCO.Unify.Security {
         #endregion
 
 
-#endregion
+        #endregion
 
 
 
@@ -481,7 +481,7 @@ namespace CNCO.Unify.Security {
                 Array.Copy(key, actualKey, 32);
             }
 
-            
+
             if (protectionsToUse.HasFlag(Protections.AES256_CBC))
                 cipherText = EncryptAES256_CBC(cipherText, actualKey, iv);
             else
