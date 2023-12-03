@@ -1,4 +1,5 @@
-﻿using CNCO.Unify.Logging;
+﻿using CNCO.Unify.Events;
+using CNCO.Unify.Logging;
 using CNCO.Unify.Storage;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace CNCO.Unify {
     public class Runtime : IRuntime {
         private static Runtime? _instance;
         private readonly List<RuntimeHook> _hooks = new List<RuntimeHook>(0);
+        private EventEmitter? _eventEmitter;
         private MultiLogger? _applicationLog;
         internal ProxyLogger? _unifyLog;
         private readonly List<RuntimeLink> _runtimeLinks = new List<RuntimeLink>(3);
@@ -44,6 +46,14 @@ namespace CNCO.Unify {
             get {
                 _instance ??= new Runtime("Unify-Application");
                 return _instance;
+            }
+        }
+
+
+        public static EventEmitter EventEmitter {
+            get {
+                Current._eventEmitter ??= new EventEmitter();
+                return Current._eventEmitter;
             }
         }
 
