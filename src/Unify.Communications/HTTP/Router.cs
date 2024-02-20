@@ -1,7 +1,7 @@
 ﻿using System.Collections.Specialized;
 using System.Text.RegularExpressions;
 
-namespace CNCO.Unify.Communications.HTTP {
+namespace CNCO.Unify.Communications.Http {
     /// <summary>
     /// Routes incoming requests.
     /// </summary>

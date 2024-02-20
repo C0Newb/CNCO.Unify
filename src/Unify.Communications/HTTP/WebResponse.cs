@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace CNCO.Unify.Communications.HTTP {
+namespace CNCO.Unify.Communications.Http {
     public class WebResponse {
         private readonly HttpListenerResponse _response;
 
@@ -112,6 +112,9 @@ namespace CNCO.Unify.Communications.HTTP {
         /// <param name="path"></param>
         /// <exception cref="NotImplementedException"></exception>
         public void SendFile(string path, IFileStorage storage) {
+            if (!storage.Exists(path))
+                throw new FileNotFoundException(path);
+
             byte[] bytes = storage.ReadBytes(path) ?? Array.Empty<byte>();
             OutputStream.Write(bytes);
             _response.Close();
@@ -123,8 +126,16 @@ namespace CNCO.Unify.Communications.HTTP {
         /// <param name="path">Path to the file to download.</param>
         /// <param name="attachmentOptions">Options related to the file being downloaded.</param>
         /// <exception cref="NotImplementedException">Not implemented.</exception>
-        public void SendAttachment(string path, AttachmentOptions? attachmentOptions) {
-            throw new NotImplementedException();
+        public void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null) {
+            if (!storage.Exists(path))
+                throw new FileNotFoundException(path);
+
+            var name = attachmentOptions?.AttachmentName ?? Path.GetFileName(path);
+
+            MimeMapping.TryGetMimeType(path, out string? actualMimeType);
+            var mimeType = attachmentOptions?.MimeType ?? actualMimeType ?? "text/plain;charset=UTF-8";
+            Attachment(name, mimeType);
+            SendFile(path, storage);
         }
     }
 
@@ -136,6 +147,11 @@ namespace CNCO.Unify.Communications.HTTP {
         /// This is not the name of the file, but becomes the file name when the user downloads it.
         /// </remarks>
         public string? AttachmentName;
+
+        /// <summary>
+        /// File type.
+        /// </summary>
+        public string? MimeType;
 
         public AttachmentOptions() { }
     }

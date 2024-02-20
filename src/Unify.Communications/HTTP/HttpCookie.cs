@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace CNCO.Unify.Communications.HTTP {
+namespace CNCO.Unify.Communications.Http {
     /// <summary>
     /// Represents an HTTP cookie.
     /// </summary>

@@ -1,4 +1,4 @@
-﻿namespace CNCO.Unify.Communications.HTTP {
+﻿namespace CNCO.Unify.Communications.Http {
     public enum HttpVerb {
         All,
         Get,

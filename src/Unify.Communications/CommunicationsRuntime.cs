@@ -1,4 +1,5 @@
-﻿using CNCO.Unify.Logging;
+﻿using CNCO.Unify.Communications.Http;
+using CNCO.Unify.Logging;
 
 namespace CNCO.Unify.Communications {
     public class CommunicationsRuntime : IRuntime {
@@ -10,6 +11,14 @@ namespace CNCO.Unify.Communications {
             get {
                 _log ??= new ProxyLogger(Runtime.ApplicationLog, "Unify-Communications");
                 return _log;
+            }
+        }
+
+        private static IWebClient? _webClient;
+        public static IWebClient WebClient {
+            get {
+                _webClient ??= new WebClient();
+                return _webClient;
             }
         }
 

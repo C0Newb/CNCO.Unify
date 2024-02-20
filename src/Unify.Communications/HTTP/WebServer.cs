@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace CNCO.Unify.Communications.HTTP {
+namespace CNCO.Unify.Communications.Http {
     public class WebServer : IWebServer {
         private readonly HttpListener HttpListener;
         private readonly Thread ListenerThread;

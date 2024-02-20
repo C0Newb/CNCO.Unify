@@ -2,7 +2,7 @@
 using System.Net;
 using System.Web;
 
-namespace CNCO.Unify.Communications.HTTP {
+namespace CNCO.Unify.Communications.Http {
     /// <summary>
     /// Represents the HTTP request.
     /// Contains the request query string, parameters, HTTP headers, cookies, and more.
