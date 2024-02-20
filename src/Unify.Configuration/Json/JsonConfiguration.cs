@@ -155,6 +155,16 @@ namespace CNCO.Unify.Configuration.Json {
             return _filePath ?? string.Empty;
         }
 
+        /// <summary>
+        /// Deletes the configuration file.
+        /// </summary>
+        public void Delete() {
+            if (!string.IsNullOrEmpty(_filePath) && _fileStorage.Exists(_filePath)) {
+                Runtime.ApplicationLog.Debug($"Deleting {_filePath}");
+                _fileStorage.Delete(_filePath);
+            }
+        }
+
 
         /// <summary>
         /// Called right before saving the serialized Json file the disk.
