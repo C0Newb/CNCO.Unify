@@ -1,13 +1,8 @@
-﻿using CNCO.Unify.Communications.HTTP;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
+﻿using CNCO.Unify.Communications.Http;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Sockets;
 
-namespace UnifyTests.Communications.HTTP {
+namespace UnifyTests.Communications.Http {
     [TestFixture]
     public class WebServerTests {
         private static int GetRandomOpenPort() {
@@ -39,7 +34,7 @@ namespace UnifyTests.Communications.HTTP {
 
             var webServer = new WebServer(options);
             webServer.Listen("https://*:8800");
-            
+
             var endpoints = webServer.GetEndpoints();
             Assert.That(endpoints, Has.Length.EqualTo(4), "WebServer is listening to 4 addresses");
             Assert.That(endpoints,

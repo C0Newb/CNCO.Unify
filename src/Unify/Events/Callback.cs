@@ -4,6 +4,8 @@
     /// </summary>
     public class Callback : ICallback {
         private readonly Action<object?[]?>? callback;
+
+        public Callback() => callback = (_) => { };
         public Callback(Action<object?[]?> callback) => this.callback = callback ?? throw new ArgumentNullException(nameof(callback));
         public void Main(params object?[]? parameters) => callback?.Invoke(parameters);
     }

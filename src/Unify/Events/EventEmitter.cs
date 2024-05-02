@@ -1,8 +1,10 @@
-﻿namespace CNCO.Unify.Events {
+﻿using System.Text.RegularExpressions;
+
+namespace CNCO.Unify.Events {
     /// <summary>
     /// Event emitter class, similar to the event emitter in JS.
     /// </summary>
-    public class EventEmitter : IEventEmitter {
+    public partial class EventEmitter : IEventEmitter {
         /// <summary>
         /// Number of maximum events for this event emitter. This is to try and manage the max possible event listeners (MAX_EVENTS * MAX_EVENT_LISTENERS).
         /// </summary>
@@ -12,54 +14,12 @@
         /// </summary>
         public static readonly int MAX_EVENT_LISTENERS = 5;
 
-
         /// <summary>
-        /// Event emitter listener, this is the object that holds the callback class and allows for one-time listening.
-        /// (This is what listens for an event).
+        /// Regex representing a valid event name.
         /// </summary>
-        public class EventEmitterListener : IEventEmitterListener {
-            private readonly EventEmitter _eventEmitter;
-            private readonly string _event;
-            private readonly ICallback _callback;
-            private readonly bool _oneTimeListener;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="EventEmitterListener"/> class.
-            /// </summary>
-            /// <param name="eventEmitter">The parent event emitter.</param>
-            /// <param name="event">The event name.</param>
-            /// <param name="callback">The callback method.</param>
-            public EventEmitterListener(EventEmitter eventEmitter, string @event, ICallback callback) {
-                _eventEmitter = eventEmitter;
-                _event = @event;
-                _callback = callback;
-                _oneTimeListener = false;
-            }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="EventEmitterListener"/> class with the option for one-time listening.
-            /// </summary>
-            /// <param name="eventEmitter">The parent event emitter.</param>
-            /// <param name="event">The event name.</param>
-            /// <param name="callback">The callback method.</param>
-            /// <param name="oneTimeListener">If set to <c>true</c>, the listener will be removed after the first activation.</param>
-            public EventEmitterListener(EventEmitter eventEmitter, string @event, ICallback callback, bool oneTimeListener) {
-                _eventEmitter = eventEmitter;
-                _event = @event;
-                _callback = callback;
-                _oneTimeListener = oneTimeListener;
-            }
-
-
-            public void Activate(params object?[]? parameters) {
-                if (_oneTimeListener)
-                    _eventEmitter.RemoveListener(_event, _callback);
-                _callback.Main(parameters);
-            }
-            public string GetEvent() => _event;
-            public ICallback GetCallback() => _callback;
-            public bool GetOneTimeListener() => _oneTimeListener;
-        }
+        /// <returns>Regex for valid event names.</returns>
+        [GeneratedRegex("^.{1,128}$")]
+        private static partial Regex ValidEventNameRegex();
 
         /// <summary>
         /// Map of events -> list of callbacks.
@@ -72,45 +32,50 @@
         public EventEmitter() { }
 
         // Private stuff
+        #region Private stuff
+        private void AddEventListener(string eventName, ICallback callback, bool oneTimeListener = false, bool prependListener = false) {
+            eventName = NormalizeEventName(eventName);
+            if (!ValidEventNameRegex().IsMatch(eventName))
+                throw new InvalidEventNameException(eventName);
 
-        private void AddEventListener(string @event, EventEmitterListener eventEmitterListener, bool prependListener) {
-            if (!_listeners.TryGetValue(@event, out List<IEventEmitterListener>? value)) {
+            var eventEmitterListener = new EventEmitterListener(this, eventName, callback, oneTimeListener);
+            if (!_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value)) {
                 if (_listeners.Count >= MAX_EVENTS)
                     throw new TooManyEventsException();
                 value = new List<IEventEmitterListener>();
-                _listeners[@event] = value;
+                _listeners[eventName] = value;
             }
 
             var eventEmitterListeners = value;
             eventEmitterListeners ??= new List<IEventEmitterListener>();
 
             if (eventEmitterListeners.Count >= MAX_EVENT_LISTENERS)
-                throw new TooManyEventListenersException(@event);
+                throw new TooManyEventListenersException(eventName);
 
             if (prependListener)
                 eventEmitterListeners.Insert(0, eventEmitterListener);
             else
                 eventEmitterListeners.Add(eventEmitterListener);
 
-            _listeners[@event] = eventEmitterListeners;
+            _listeners[eventName] = eventEmitterListeners;
         }
 
-        private void AddEventListener(string @event, EventEmitterListener eventEmitterListener) {
-            AddEventListener(@event, eventEmitterListener, false);
-        }
+        private static string NormalizeEventName(string eventName) => eventName.ToLower();
+        #endregion
+
 
         // Interface
 
-
-        public void Emit(string @event, params object?[]? parameters) {
-            if (_listeners.TryGetValue(@event, out List<IEventEmitterListener>? value)) {
+        public void Emit(string eventName, params object?[]? parameters) {
+            eventName = NormalizeEventName(eventName);
+            if (_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value)) {
                 var eventEmitterList = value;
                 if (eventEmitterList == null || eventEmitterList.Count == 0) {
-                    _listeners.Remove(@event);
+                    _listeners.Remove(eventName);
                     return;
                 }
 
-                Runtime.Current.UnifyLog.Debug("EventEmitter", $"Event \"{@event}\" has been fired.");
+                Runtime.Current.UnifyLog.Debug("EventEmitter", $"Event \"{eventName}\" has been fired.");
 
                 foreach (var eventEmitterListener in eventEmitterList) {
                     eventEmitterListener.Activate(parameters);
@@ -127,11 +92,12 @@
         public string[] Events() => _listeners.Keys.ToArray();
         public int EventsCount() => _listeners.Count;
 
-        public IEventEmitterListener[] Listeners(string @event) {
-            if (_listeners.TryGetValue(@event, out List<IEventEmitterListener>? value)) {
+        public IEventEmitterListener[] Listeners(string eventName) {
+            eventName = NormalizeEventName(eventName);
+            if (_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value)) {
                 var listeners = value;
                 if (listeners == null || listeners.Count == 0) {
-                    _listeners.Remove(@event);
+                    _listeners.Remove(eventName);
                     return Array.Empty<IEventEmitterListener>();
                 }
 
@@ -141,11 +107,12 @@
             }
         }
 
-        public int ListenersCount(string @event) {
-            if (_listeners.TryGetValue(@event, out List<IEventEmitterListener>? value)) {
+        public int ListenersCount(string eventName) {
+            eventName = NormalizeEventName(eventName);
+            if (_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value)) {
                 var listeners = value;
                 if (listeners == null || listeners.Count == 0) {
-                    _listeners.Remove(@event);
+                    _listeners.Remove(eventName);
                     return 0;
                 }
 
@@ -155,11 +122,12 @@
             }
         }
 
-        public int ListenersCount(string @event, ICallback callback) {
-            if (_listeners.TryGetValue(@event, out List<IEventEmitterListener>? value)) {
+        public int ListenersCount(string eventName, ICallback callback) {
+            eventName = NormalizeEventName(eventName);
+            if (_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value)) {
                 var listeners = value;
                 if (listeners == null || listeners.Count == 0) {
-                    _listeners.Remove(@event);
+                    _listeners.Remove(eventName);
                     return 0;
                 }
 
@@ -175,58 +143,47 @@
         }
 
         // Adding
+        public void AddListener(string eventName, ICallback callback) => AddEventListener(eventName, callback);
 
-        public void AddListener(string @event, ICallback callback) {
-            var eventEmitterListener = new EventEmitterListener(this, @event, callback);
-            AddEventListener(@event, eventEmitterListener);
-        }
+        public void On(string eventName, ICallback callback) => AddEventListener(eventName, callback);
 
-        public void On(string @event, ICallback callback) {
-            AddListener(@event, callback);
-        }
+        public void Once(string eventName, ICallback callback) => AddEventListener(eventName, callback, true);
 
-        public void Once(string @event, ICallback callback) {
-            var eventEmitterListener = new EventEmitterListener(this, @event, callback, true);
-            AddEventListener(@event, eventEmitterListener);
-        }
+        public void PrependListener(string eventName, ICallback callback) => AddEventListener(eventName, callback, false, true);
 
-        public void PrependListener(string @event, ICallback callback) {
-            var eventEmitterListener = new EventEmitterListener(this, @event, callback);
-            AddEventListener(@event, eventEmitterListener, true);
-        }
-
-        public void PrependOnceListener(string @event, ICallback callback) {
-            var eventEmitterListener = new EventEmitterListener(this, @event, callback, true);
-            AddEventListener(@event, eventEmitterListener, true);
-        }
+        public void PrependOnceListener(string eventName, ICallback callback) => AddEventListener(eventName, callback, true, true);
 
         // Remove
 
-        public void Off(string @event, ICallback callback) => RemoveListener(@event, callback);
+        public void Off(string eventName, ICallback callback) => RemoveListener(eventName, callback);
 
-        public void RemoveListener(string @event, ICallback callback) {
-            if (_listeners.TryGetValue(@event, out List<IEventEmitterListener>? value)) {
+        public void RemoveListener(string eventName, ICallback callback) {
+            eventName = NormalizeEventName(eventName);
+            if (_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value)) {
                 var eventEmitterListeners = value;
                 if (eventEmitterListeners == null || eventEmitterListeners.Count == 0) {
-                    _listeners.Remove(@event);
+                    _listeners.Remove(eventName);
                     return;
                 }
 
                 var newEventEmitterListeners = new List<IEventEmitterListener>(eventEmitterListeners.Count - 1);
 
                 foreach (var eventEmitterListener in eventEmitterListeners) {
-                    if (eventEmitterListener.GetCallback() != callback) {
-                        newEventEmitterListeners.Add(eventEmitterListener);
-                    }
+                    if (eventEmitterListener.GetCallback() != callback) newEventEmitterListeners.Add(eventEmitterListener);
                 }
 
-                _listeners.Remove(@event);
+                _listeners.Remove(eventName);
                 if (eventEmitterListeners.Count >= 1)
-                    _listeners[@event] = newEventEmitterListeners;
+                    _listeners[eventName] = newEventEmitterListeners;
             }
         }
 
-        public void RemoveAllListeners(string @event) => _listeners.Remove(@event);
+        public void RemoveAllListeners(string eventName) => _listeners.Remove(NormalizeEventName(eventName));
         public void RemoveAllEvents() => _listeners.Clear();
+
+        public void Dispose() {
+            RemoveAllEvents();
+            GC.SuppressFinalize(this);
+        }
     }
 }
