@@ -3,6 +3,8 @@
     /// Saves/loads file from the local filesystem.
     /// </summary>
     public class LocalFileStorage : IFileStorage {
+        private readonly bool _throwErrors = Runtime.Current.Configuration.SuppressFileStorageExceptions;
+
         private readonly string _directory = string.Empty;
 
         /// <summary>
@@ -49,6 +51,8 @@
                 File.Delete(GetPath(name));
                 return true;
             } catch {
+                if (_throwErrors)
+                    throw;
                 return false;
             }
         }
@@ -59,6 +63,8 @@
             try {
                 return File.ReadAllText(GetPath(name));
             } catch {
+                if (_throwErrors)
+                    throw;
                 return null;
             }
         }
@@ -67,6 +73,8 @@
             try {
                 return File.ReadAllBytes(GetPath(name));
             } catch {
+                if (_throwErrors)
+                    throw;
                 return null;
             }
         }
@@ -76,6 +84,8 @@
                 File.WriteAllText(GetPath(name), contents);
                 return true;
             } catch {
+                if (_throwErrors)
+                    throw;
                 return false;
             }
         }
@@ -85,6 +95,8 @@
                 File.WriteAllBytes(GetPath(name), contents);
                 return true;
             } catch {
+                if (_throwErrors)
+                    throw;
                 return false;
             }
         }
@@ -94,6 +106,8 @@
                 File.AppendAllText(GetPath(name), contents);
                 return true;
             } catch {
+                if (_throwErrors)
+                    throw;
                 return false;
             }
         }
@@ -109,6 +123,8 @@
                 WriteBytes(name, newBytes);
                 return true;
             } catch {
+                if (_throwErrors)
+                    throw;
                 return false;
             }
         }
@@ -118,6 +134,8 @@
                 File.Move(GetPath(name), GetPath(newName));
                 return true;
             } catch {
+                if (_throwErrors)
+                    throw;
                 return false;
             }
         }

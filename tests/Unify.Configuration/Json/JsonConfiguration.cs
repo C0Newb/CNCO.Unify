@@ -6,17 +6,17 @@ namespace UnifyTests.Configuration.Json {
     public class JsonConfiguration {
 
         private const string TestFileName = "jsonConfigurationTest.json";
-        private LocalFileStorage myFileStorage;
+        private InMemoryFileStorage myFileStorage;
 
 
         [SetUp]
         public void Setup() {
-            myFileStorage = new LocalFileStorage();
+            myFileStorage = new InMemoryFileStorage();
         }
 
         [TearDown]
         public void TearDown() {
-            _ = myFileStorage.Delete(TestFileName);
+            myFileStorage.Dispose();
         }
 
         [Test]
@@ -29,7 +29,7 @@ namespace UnifyTests.Configuration.Json {
             int intValue = myJsonConfig.IntValue;
             bool booleanValue = myJsonConfig.BoolValue;
 
-            var fileText = File.ReadAllText(TestFileName);
+            string fileText = myFileStorage.Read(TestFileName) ?? string.Empty;
             var jsonObject = JsonSerializer.Deserialize<MyJsonConfig>(fileText);
 
             Assert.That(jsonObject, Is.Not.Null);
@@ -56,7 +56,7 @@ namespace UnifyTests.Configuration.Json {
             };
 
 
-            File.WriteAllText(TestFileName, JsonSerializer.Serialize(sampleJson));
+            myFileStorage.Write(TestFileName, JsonSerializer.Serialize(sampleJson));
             var jsonObject = new MyJsonConfig(TestFileName, myFileStorage);
 
             Assert.That(jsonObject, Is.Not.Null);

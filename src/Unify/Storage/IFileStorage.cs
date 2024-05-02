@@ -6,9 +6,9 @@
         /// <summary>
         /// Returns the path to a particular file.
         /// </summary>
-        /// <param name="filename">Filename or relative path to file.</param>
+        /// <param name="name">Filename or relative path to file.</param>
         /// <returns>Full path to the given filename.</returns>
-        public string GetPath(string filename);
+        public string GetPath(string name);
 
 
         /// <summary>

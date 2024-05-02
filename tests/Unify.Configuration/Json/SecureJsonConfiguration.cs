@@ -8,19 +8,19 @@ namespace UnifyTests.Configuration.Json {
         private const string TestFileName = "jsonConfigurationTest.json";
         private MyEncryptionKeyProvider myEncryptionKeyProvider;
         private FileEncryption myFileEncryption;
-        private LocalFileStorage myFileStorage;
+        private InMemoryFileStorage myFileStorage;
 
 
         [SetUp]
         public void Setup() {
             myEncryptionKeyProvider = new MyEncryptionKeyProvider();
             myFileEncryption = new FileEncryption(myEncryptionKeyProvider);
-            myFileStorage = new LocalFileStorage();
+            myFileStorage = new InMemoryFileStorage();
         }
 
         [TearDown]
         public void TearDown() {
-            myFileStorage.Delete(TestFileName);
+            myFileStorage.Dispose();
         }
 
         [Test]
@@ -33,7 +33,7 @@ namespace UnifyTests.Configuration.Json {
             int intValue = myJsonConfig.IntValue;
             bool booleanValue = myJsonConfig.BoolValue;
 
-            string jsonString = File.ReadAllText(TestFileName);
+            string jsonString = myFileStorage.Read(TestFileName) ?? string.Empty;
             Assert.That(jsonString, Does.StartWith("1$"));
             jsonString = Encryption.Decrypt(jsonString, myEncryptionKeyProvider.GetEncryptionKey());
 
@@ -64,7 +64,7 @@ namespace UnifyTests.Configuration.Json {
             string jsonString = JsonSerializer.Serialize(sampleJson);
             jsonString = Encryption.Encrypt(jsonString, myEncryptionKeyProvider.GetEncryptionKey(), myEncryptionKeyProvider.GetProtections(),
                 myEncryptionKeyProvider.GetNonce(), myEncryptionKeyProvider.GetAssociationData(), myEncryptionKeyProvider.GetIV());
-            File.WriteAllText(TestFileName, jsonString);
+            myFileStorage.Write(TestFileName, jsonString);
 
             var jsonObject = new MySecureJsonConfig(TestFileName, myFileStorage, myFileEncryption);
             Assert.That(jsonObject, Is.Not.Null);

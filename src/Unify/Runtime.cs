@@ -260,5 +260,11 @@ namespace CNCO.Unify {
         /// Hooks that will run with <see cref="Runtime.Initialize"/>.
         /// </summary>
         public RuntimeHook[] Hooks { get; set; } = Array.Empty<RuntimeHook>();
+
+
+        /// <summary>
+        /// Whether Unify suppresses file system exceptions for Unify <see cref="IFileStorage"/> classes.
+        /// </summary>
+        public bool SuppressFileStorageExceptions { get; set; } = false;
     }
 }
