@@ -4,7 +4,9 @@ namespace CNCO.Unify.Security.Credentials {
     /// <summary>
     /// Stores a collection of credentials in a JSON format as a single credential in a <see cref="ICredentialManagerEndpoint"/>.
     /// </summary>
-    internal class CredentialHub : ICredentialManager {
+    public class CredentialHub : ICredentialManager {
+        private readonly object _lock = new object();
+
         private readonly ICredentialManager _credentialManager;
         private readonly string _credentialsName;
         private Dictionary<string, string> _credentials = new Dictionary<string, string>();
@@ -31,13 +33,15 @@ namespace CNCO.Unify.Security.Credentials {
 
                 SecurityRuntime.Current.Log.Error(ex.Message);
                 SecurityRuntime.Current.Log.Error(ex.StackTrace ?? "No stack trace available.");
+
+                throw;
             }
         }
         private void PushCredentials() {
             try {
                 string credentials = JsonSerializer.Serialize(_credentials);
-                if (!_credentialManager.Set(_credentialsName, credentials))
-                    throw new InvalidOperationException($"Failed to set credentials in {_credentialManager.GetType().Name}.");
+                _credentialManager.Set(_credentialsName, credentials);
+                //throw new InvalidOperationException($"Failed to set credentials in {_credentialManager.GetType().Name}.");
             } catch (Exception ex) {
                 SecurityRuntime.Current.Log.Error(
                     $"{GetType().Name}::{nameof(PullCredentials)}",
@@ -46,31 +50,41 @@ namespace CNCO.Unify.Security.Credentials {
 
                 SecurityRuntime.Current.Log.Error(ex.Message);
                 SecurityRuntime.Current.Log.Error(ex.StackTrace ?? "No stack trace available.");
+
+                throw;
             }
         }
 
         public bool Exists(string credentialName) {
-            PullCredentials();
-            return _credentials.ContainsKey(credentialName);
+            lock (_lock) {
+                PullCredentials();
+                return _credentials.ContainsKey(credentialName);
+            }
         }
 
         public string? Get(string credentialName) {
-            PullCredentials();
-            _credentials.TryGetValue(credentialName, out string? value);
-            return value;
+            lock (_lock) {
+                PullCredentials();
+                if (!_credentials.TryGetValue(credentialName, out string? value))
+                    return null;
+                return CredentialHelpers.GetAndVerifyCredential(value);
+            }
         }
 
-        public bool Remove(string credentialName) {
-            bool removed = _credentials.Remove(credentialName);
-            PushCredentials();
-            return removed;
+        public void Remove(string credentialName) {
+            lock (_lock) {
+                PullCredentials();
+                _credentials.Remove(credentialName);
+                PushCredentials();
+            }
         }
 
-        public bool Set(string credentialName, string value) {
-            PullCredentials();
-            _credentials[credentialName] = value;
-            PushCredentials();
-            return true;
+        public void Set(string credentialName, string value) {
+            lock (_lock) {
+                PullCredentials();
+                _credentials[credentialName] = CredentialHelpers.ApplyTamperHash(value);
+                PushCredentials();
+            }
         }
     }
 }

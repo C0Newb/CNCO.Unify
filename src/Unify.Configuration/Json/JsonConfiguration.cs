@@ -12,7 +12,10 @@ namespace CNCO.Unify.Configuration.Json {
     /// Please note, your properties must have <code>{ get; set; }</code> otherwise they will not be saved.
     /// Also, make sure you include the base constructor (no parameters)!
     /// </summary>
-    public class JsonConfiguration {
+    public class JsonConfiguration : IJsonConfiguration {
+        private readonly object _lock = new object();
+
+
         /// <summary>
         /// Full path, including the name, to the configuration file.
         /// </summary>
@@ -27,6 +30,9 @@ namespace CNCO.Unify.Configuration.Json {
         /// Encryption strategy to use when reading/writing this configuration.
         /// </summary>
         private readonly IFileEncryption _fileEncryption;
+
+
+        protected JsonSerializerOptions JsonSerializerOptions { get; set; } = JsonHelpers.Options;
 
 
         public JsonConfiguration() {
@@ -60,17 +66,10 @@ namespace CNCO.Unify.Configuration.Json {
             }
         }
 
-        /// <summary>
-        /// Serializes this class into a <see cref="JsonNode"/>, such as a <see cref="JsonObject"/> or <see cref="JsonArray"/>.
-        /// </summary>
-        /// <returns>This class's property values in the Json form.</returns>
         public JsonNode Serialize<T>() where T : JsonConfiguration {
-            return JsonSerializer.SerializeToNode(this as T) ?? new JsonObject();
+            return JsonSerializer.SerializeToNode(this as T, typeof(T), JsonSerializerOptions) ?? new JsonObject();
         }
 
-        /// <summary>
-        /// Saves the contents of a <see cref="JsonNode"/> to disk
-        /// </summary>
         public void Save() {
             if (_filePath == null) return;
 
@@ -84,21 +83,19 @@ namespace CNCO.Unify.Configuration.Json {
                 Directory.CreateDirectory(directory);
 
 
-            JsonSerializerOptions options = JsonHelpers.Options;
-            string jsonString = JsonSerializer.Serialize(this, GetType(), options);
+            string jsonString = ToString();
 
             jsonString = ModifyBeforeWrite(jsonString);
 
             jsonString = _fileEncryption.EncryptString(jsonString);
-            _fileStorage.Write(_filePath, jsonString);
+
+            lock (_lock) {
+                _fileStorage.Write(_filePath, jsonString);
+            }
         }
 
-
-        /// <summary>
-        /// Sets the class properties to the values stored in the <paramref name="jsonNode"/>.
-        /// </summary>
         public void Deserialize(JsonNode jsonNode) {
-            var newObj = jsonNode.Deserialize(GetType(), JsonHelpers.Options);
+            var newObj = jsonNode.Deserialize(GetType(), JsonSerializerOptions);
 
             foreach (var property in GetType().GetProperties()) {
                 if (property.GetCustomAttribute<JsonIgnoreAttribute>() != null)
@@ -109,19 +106,16 @@ namespace CNCO.Unify.Configuration.Json {
             }
         }
 
-        /// <summary>
-        /// Loads the configuration from disk and calls <see cref="Deserialize(JsonNode)"/> to set this class's properties.
-        /// </summary>
-        /// <param name="allowEmpty">Allows load to continue regardless if the configuration file exists or not.</param>
-        /// <exception cref="ConfigurationNotFoundException"></exception>
         public void Load(bool allowEmpty = false) {
             if (string.IsNullOrEmpty(_filePath)) return;
 
             if (!_fileStorage.Exists(_filePath) && !allowEmpty)
                 throw new ConfigurationNotFoundException($"Configuration {_filePath} was not found.");
 
-
-            string? jsonString = _fileStorage.Read(_filePath);
+            string? jsonString;
+            lock (_lock) {
+                jsonString = _fileStorage.Read(_filePath);
+            }
             if (jsonString == null) {
                 if (allowEmpty)
                     jsonString = "{}";
@@ -155,9 +149,6 @@ namespace CNCO.Unify.Configuration.Json {
             return _filePath ?? string.Empty;
         }
 
-        /// <summary>
-        /// Deletes the configuration file.
-        /// </summary>
         public void Delete() {
             if (!string.IsNullOrEmpty(_filePath) && _fileStorage.Exists(_filePath)) {
                 Runtime.ApplicationLog.Debug($"Deleting {_filePath}");
@@ -165,24 +156,16 @@ namespace CNCO.Unify.Configuration.Json {
             }
         }
 
-
-        /// <summary>
-        /// Called right before saving the serialized Json file the disk.
-        /// </summary>
-        /// <param name="jsonString">Serialized Json string.</param>
-        /// <returns>Modified serialized Json string.</returns>
         public virtual string ModifyBeforeWrite(string jsonString) {
             return jsonString;
         }
 
-
-        /// <summary>
-        /// Called right after loading the serialized Json file from the disk and before being deserialize.
-        /// </summary>
-        /// <param name="jsonString">Serialized Json string.</param>
-        /// <returns>Modified serialized Json string.</returns>
         public virtual string ModifyAfterRead(string jsonString) {
             return jsonString;
+        }
+
+        public override string ToString() {
+            return JsonSerializer.Serialize(this, GetType(), JsonSerializerOptions);
         }
     }
 }

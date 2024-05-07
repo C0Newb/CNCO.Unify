@@ -16,6 +16,9 @@ namespace CNCO.Unify.Security {
         private IFileStorage? _credentialFileStorage;
         private FileBasedCredentialManager? _credentialManager;
 
+        /// <summary>
+        /// Security runtime application log.
+        /// </summary>
         internal ProxyLogger Log {
             get {
                 _log ??= new ProxyLogger(Runtime.ApplicationLog, "Unify-Security");
@@ -39,6 +42,11 @@ namespace CNCO.Unify.Security {
         /// <summary>
         /// The current credential manager for this platform.
         /// </summary>
+        /// <remarks>
+        /// Credential manager here is an instance of <see cref="FileBasedCredentialManager"/>, and all credentials are stored to a credentials JSON file.
+        /// The encryption key to protect the credentials JSON file is 256 characters long, converted to bytes, encoded as a base64 string and then stored using the current platforms <see cref="ICredentialManagerEndpoint"/>.
+        /// This is done as some <see cref="ICredentialManagerEndpoint"/>'s may have a limit on the length of stored data.
+        /// </remarks>
         public ICredentialManager CredentialManager {
             get {
                 _credentialManagerKeyProvider ??= new EncryptionKeyProvider(GetEncryptionKey(), Encryption.Protections.AES256_CBC);

@@ -9,6 +9,8 @@ namespace CNCO.Unify.Security.Credentials {
     /// </summary>
     [SupportedOSPlatform("windows")]
     public class WindowsCredentialManager : ICredentialManager, ICredentialManagerEndpoint {
+        private readonly object _lock = new object();
+
         public bool Exists(string credentialName) {
             try {
                 return !string.IsNullOrEmpty(Get(credentialName));
@@ -19,90 +21,100 @@ namespace CNCO.Unify.Security.Credentials {
 
         public string? Get(string credentialName) {
             // credentialName -> appName
+            string tag = $"{GetType().Name}::{nameof(Get)}";
             try {
-                bool read = CredRead(credentialName, CredentialType.Generic, 0, out nint credentialPointer);
-                if (read) {
+                lock (_lock) {
+                    bool read = CredRead(credentialName, CredentialType.Generic, 0, out nint credentialPointer);
+                    if (!read)
+                        return null;
+
                     using (CriticalCredentialHandle credentialHandle = new CriticalCredentialHandle(credentialPointer)) {
                         var credential = credentialHandle.GetCredential();
+                        credentialHandle.Release();
+
+                        /*
+                        string? hash = null;
+                        if (credential.UserName != IntPtr.Zero)
+                            hash = Marshal.PtrToStringUni(credential.UserName);
+                        */
+
                         string? secret = null;
-
-                        string? comment = null;
-                        if (credential.Comment != IntPtr.Zero)
-                            comment = Marshal.PtrToStringUni(credential.Comment);
-
                         if (credential.CredentialBlob != IntPtr.Zero)
                             secret = Marshal.PtrToStringUni(credential.CredentialBlob, (int)credential.CredentialBlobSize / 2);
 
-                        // tampered?
-                        if (!string.IsNullOrEmpty(secret)
-                            && (string.IsNullOrEmpty(comment) || Hashing.Sha1(secret ?? string.Empty) != comment)) {
-                            //Remove(credentialName); // tampered, get it outta here!
+                        if (secret == null)
                             return null;
-                        }
 
-                        credentialHandle.Release();
+                        // tampered?
+                        return CredentialHelpers.GetAndVerifyCredential(secret);
+                        
+                        /*
+                        bool hashNull = string.IsNullOrEmpty(hash);
+                        bool hashMatches = Hashing.Sha512(secret ?? string.Empty) == hash;
+                        if (!string.IsNullOrEmpty(secret) && (hashNull || !hashMatches)) { // Credential exists, hash invalid
+                            SecurityRuntime.Current.Log.Verbose(tag, $"actualHash null? {hashNull}. Hash ok? {hashMatches}");
+                            SecurityRuntime.Current.Log.Error(tag, $"Credential \"{credentialName}\"'s contents have been modified!");
+                            throw new CredentialTamperException("Credential has been tampered with and is invalid.");
+                        }
                         return secret;
+                        */
                     }
                 }
             } catch (Exception ex) {
-                string tag = $"{GetType().Name}::{nameof(Get)}";
-
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to get {credentialName}.");
+                SecurityRuntime.Current.Log.Error(tag, $"Failed to get {credentialName}");
                 SecurityRuntime.Current.Log.Error(tag, ex.Message);
                 SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
-            }
 
-            return null;
+                throw;
+            }
         }
 
-        public bool Remove(string credentialName) {
+        public void Remove(string credentialName) {
             string tag = $"{GetType().Name}::{nameof(Remove)}";
 
             try {
                 if (!Exists(credentialName))
-                    return true;
-                bool success = CredDelete(credentialName, CredentialType.Generic, 0);
-                if (success)
-                    return true;
+                    return;
 
-                uint lastError = (uint)Marshal.GetLastWin32Error();
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to remove credential, error: {lastError:X}");
+                lock (_lock) {
+                    if (CredDelete(credentialName, CredentialType.Generic, 0))
+                        return;
+
+                    uint lastError = (uint)Marshal.GetLastWin32Error();
+                    throw new InvalidOperationException($"Failed to remove credential, error: {lastError:X}");
+                }
             } catch (Exception ex) {
                 SecurityRuntime.Current.Log.Error(tag, $"Failed to remove {credentialName}.");
                 SecurityRuntime.Current.Log.Error(tag, ex.Message);
                 SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+
+                throw;
             }
-            return false;
         }
 
-        public bool Set(string credentialName, string credentialValue) {
+        public void Set(string credentialName, string value) {
             string tag = $"{GetType().Name}::{nameof(Set)}";
 
             if (string.IsNullOrEmpty(credentialName))
                 throw new ArgumentNullException(nameof(credentialName));
-            if (string.IsNullOrEmpty(credentialValue))
-                throw new ArgumentNullException(nameof(credentialValue));
+            if (string.IsNullOrEmpty(value))
+                throw new ArgumentNullException(nameof(value));
 
             try {
-                // we'll use the comment as a checksum, this prevents user tampering via Control Panel.
-                string comment = Hashing.Sha1(credentialValue);
-                // sha1 as this doesn't have to be anything crazy.
-
-                var secretLength = credentialValue.Length * UnicodeEncoding.CharSize;
+                value = CredentialHelpers.ApplyTamperHash(value);
+                var secretLength = value.Length * UnicodeEncoding.CharSize;
                 int maxLength = 2560;
                 if (Environment.OSVersion.Version < new Version(6, 1)) // <Win7
                     maxLength = 512;
                 if (secretLength > maxLength)
-                    throw new ArgumentOutOfRangeException(nameof(credentialValue), $"The credential has exceeded {maxLength} bytes.");
+                    throw new ArgumentOutOfRangeException(nameof(value), $"The credential has exceeded {maxLength} bytes.");
 
 
                 var credentialNamePtr = Marshal.StringToBSTR(credentialName);
-                var valuePtr = Marshal.StringToBSTR(credentialValue);
-                var commentPtr = Marshal.StringToBSTR(comment);
+                var valuePtr = Marshal.StringToBSTR(value);
                 try {
                     var credential = new CREDENTIAL {
                         AttributeCount = 0u,
-                        Comment = commentPtr,
                         TargetAlias = default,
                         Type = CredentialType.Generic,
                         Persist = (uint)CredentialPersistence.Enterprise,
@@ -110,23 +122,23 @@ namespace CNCO.Unify.Security.Credentials {
                         TargetName = credentialNamePtr,
                         CredentialBlob = valuePtr,
                     };
-
-                    if (CredWrite(ref credential, 0))
-                        return true;
-
-                    uint lastError = (uint)Marshal.GetLastWin32Error();
-                    SecurityRuntime.Current.Log.Error(tag, $"Failed to set credential, error: {lastError:X}");
+                    lock (_lock) {
+                        if (CredWrite(ref credential, 0))
+                            return;
+                        uint lastError = (uint)Marshal.GetLastWin32Error();
+                        throw new InvalidOperationException($"Failed to set credential, error: {lastError:X}");
+                    }
                 } finally {
                     Marshal.ZeroFreeBSTR(credentialNamePtr); // Release pointers
                     Marshal.ZeroFreeBSTR(valuePtr);
-                    Marshal.ZeroFreeBSTR(commentPtr);
                 }
             } catch (Exception ex) {
                 SecurityRuntime.Current.Log.Error(tag, $"Failed to set {credentialName}.");
                 SecurityRuntime.Current.Log.Error(tag, ex.Message);
                 SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+
+                throw;
             }
-            return false;
         }
 
 

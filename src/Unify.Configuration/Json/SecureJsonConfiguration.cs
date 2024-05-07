@@ -1,12 +1,13 @@
 ﻿using CNCO.Unify.Security;
 using CNCO.Unify.Storage;
 using System.Security;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace CNCO.Unify.Configuration.Json {
     /// <summary>
     /// Utilizes encryption methods to provide protected properties (secrets).
-    /// These properties are encrypted until you use <see cref="DecryptSecret(string)"/> to decrypt them. This provides protection at reset and in memory.
     /// </summary>
     public class SecureJsonConfiguration : JsonConfiguration {
         #region Secrets key data
@@ -33,7 +34,7 @@ namespace CNCO.Unify.Configuration.Json {
                         string tag = $"{GetType().Name}::{nameof(SecretsKeyEncrypted)}-{GetFilePath()}";
                         Runtime.ApplicationLog.Error(tag, "Failed to decrypt secrets_key, secrets potentially lost for good!");
                         Runtime.ApplicationLog.Error(tag, ex.Message);
-                        Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "Not stack trace.");
+                        Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
 
                         string newKey = Encryption.GenerateRandomString(32);
                         var newSecretsKey = new SecureString();
@@ -51,7 +52,7 @@ namespace CNCO.Unify.Configuration.Json {
 
 
         /// <summary>
-        /// Encryption key for secrets stored in the configuration.
+        /// Encryption key for secrets stored in the configuration. Use this to set a custom secrets key.
         /// This key is not actually the key, rather it is thrown into <see cref="Security.Encryption.DeriveKey(SecureString, byte[], int, int)"/> and the resulting output is the actual key.
         /// </summary>
         [JsonIgnore]
@@ -90,6 +91,8 @@ namespace CNCO.Unify.Configuration.Json {
         [JsonIgnore]
         private byte[] SecretsEncryptionKey = Array.Empty<byte>();
 
+        /*
+         What is this? Removable??
         /// <summary>
         /// An encrypted version of <see cref="ProtectedKeys"/>.
         /// </summary>
@@ -107,9 +110,42 @@ namespace CNCO.Unify.Configuration.Json {
             }
         }
         private List<string> ProtectedKeys { get; set; } = new List<string>();
+        */
         #endregion
 
-        public SecureJsonConfiguration() : base() { }
+
+        #region SecureAttribute stuff
+        // So we don't setup twice.
+        private bool _secureAttributeSetupCompleted = false;
+
+        /// <summary>
+        /// Sets up the <see cref="JsonSerializerOptions"/> and dynamically creates the private properties for properties with the <see cref="SecureAttribute"/>.
+        /// </summary>
+        private void Setup() {
+            try {
+                var encryptionFunction = new Func<string, string?>(EncryptSecret);
+                var decryptionFunction = new Func<string, string?>(DecryptSecret);
+
+                var secureAttributeTypeInfoResolver = new JsonHelpers.SecureJsonTypeInfoModifier(encryptionFunction, decryptionFunction);
+                JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver() {
+                    Modifiers = {
+                        secureAttributeTypeInfoResolver.Modify
+                    }
+                };
+
+                _secureAttributeSetupCompleted = true;
+            } catch (Exception ex) {
+                string tag = $"{GetType().Name}::{nameof(Setup)}-{GetFilePath()}";
+                Runtime.ApplicationLog.Warning(tag, "Failed to set JsonSerializerOptions? Possible this was already done!");
+                Runtime.ApplicationLog.Warning(tag, ex.Message);
+                Runtime.ApplicationLog.Warning(tag, ex.StackTrace ?? "No stack trace.");
+            }
+        }
+        #endregion
+
+        public SecureJsonConfiguration() : base() {
+            Setup();
+        }
 
         public SecureJsonConfiguration(string filePath, IFileStorage fileStorage, IFileEncryption fileEncryption) : base(filePath, fileStorage, fileEncryption) {
             // Generates a new secrets encryption key if one is not already there.
@@ -118,6 +154,8 @@ namespace CNCO.Unify.Configuration.Json {
                 _secretsSalt = Encryption.GenerateRandomBytes(32);
                 SecretsKeyEncrypted = Encryption.EncryptDataProtector(Runtime.Current.ApplicationId, newKey);
             }
+
+            Setup();
         }
 
         /// <summary>
@@ -132,7 +170,7 @@ namespace CNCO.Unify.Configuration.Json {
                 string tag = $"{GetType().Name}::{nameof(DecryptSecret)}-{GetFilePath()}";
                 Runtime.ApplicationLog.Error(tag, "Failed to decrypt secret, invalid key?");
                 Runtime.ApplicationLog.Error(tag, ex.Message);
-                Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "Not stack trace.");
+                Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
             }
             return null;
         }
@@ -148,7 +186,7 @@ namespace CNCO.Unify.Configuration.Json {
                 string tag = $"{GetType().Name}::{nameof(EncryptSecret)}-{GetFilePath()}";
                 Runtime.ApplicationLog.Error(tag, "Failed to encrypt secret?");
                 Runtime.ApplicationLog.Error(tag, ex.Message);
-                Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "Not stack trace.");
+                Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
             }
             return null;
         }

@@ -38,7 +38,7 @@
         /// <param name="uri">The Uri the request is sent to.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
         Task<HttpResponseMessage> GetAsync(string uri);
-        
+
         /// <inheritdoc cref="GetAsync(string)"/>
         Task<HttpResponseMessage> GetAsync(Uri uri);
 
@@ -48,7 +48,7 @@
         /// </summary>
         /// <returns>The server's response as a string.</returns>
         Task<string> GetStringAsync(string uri);
-        
+
         /// <inheritdoc cref="GetStringAsync(string)"/>
         Task<string> GetStringAsync(Uri uri);
 

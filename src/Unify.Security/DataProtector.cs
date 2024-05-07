@@ -5,6 +5,11 @@ namespace CNCO.Unify.Security {
     /// <summary>
     /// Use this to protect (encrypt) secrets. Encrypted via AES256.
     /// </summary>
+    /// <remarks>
+    /// Protection is done via AES256 CBC.
+    /// The encryption key and salt are stored in the <see cref="SecurityRuntime.CredentialManager"/>.
+    /// Salt and key is generated on demand and is 32 characters in length. Each "purpose" gets it's own key and salt.
+    /// </remarks>
     public class DataProtector : DataProtectionProvider, IDataProtector {
         /// <summary>
         /// The "tag" for the key and salt stored using <see cref="ICredentialManager"/>.

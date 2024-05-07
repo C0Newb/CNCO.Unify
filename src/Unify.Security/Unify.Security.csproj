@@ -23,6 +23,13 @@
 		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0-android'">
+		<PackageReference Include="IKVM" Version="8.8.0" />
+		<PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto">
+			<Version>1.0.0.16</Version>
+		</PackageReference>
+	</ItemGroup>
+
 	<ItemGroup>
 		<Folder Include="Platforms\Windows" />
 	</ItemGroup>
@@ -30,5 +37,4 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Unify\Unify.csproj" />
 	</ItemGroup>
-
 </Project>
