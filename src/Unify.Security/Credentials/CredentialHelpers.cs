@@ -29,7 +29,10 @@ namespace CNCO.Unify.Security.Credentials {
             string[] components = value.Split('$');
             if (components.Length != 2) {
                 SecurityRuntime.Current.Log.Warning(tag, $"Expected 2 components, hash and credential value. Got {components.Length} components.");
-                throw new CredentialTamperException("Credential has been tampered with and is in an invalid format.");
+                if (Runtime.Current.Configuration.DisableCredentialManagerHashChecking)
+                    return value;
+                else
+                    throw new CredentialTamperException("Credential has been tampered with and is in an invalid format.");
             }
 
             byte[] credentialBytes = Convert.FromBase64String(components[1]);
@@ -40,7 +43,10 @@ namespace CNCO.Unify.Security.Credentials {
             bool hashMatches = components[0] != actualHash;
             if (hashNull || hashMatches) {
                 SecurityRuntime.Current.Log.Verbose(tag, $"Uh-oh.. actualHash null? {hashNull}. Hash ok? {hashMatches}");
-                throw new CredentialTamperException("Credential has been tampered with and is invalid.");
+                if (Runtime.Current.Configuration.DisableCredentialManagerHashChecking)
+                    return credentialValue;
+                else
+                    throw new CredentialTamperException("Credential has been tampered with and is invalid.");
             }
 
             return credentialValue;

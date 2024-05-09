@@ -110,7 +110,7 @@ namespace CNCO.Unify.Security.Credentials {
 #if ANDROID
             string tag = $"{GetType().Name}::{nameof(Set)}";
             try {
-                value = CredentialHelpers.GetAndVerifyCredential(value);
+                value = CredentialHelpers.ApplyTamperHash(value);
 
                 lock (_lock) {
                     using (ISharedPreferencesEditor? editor = _sharedPreferences.Edit()) {

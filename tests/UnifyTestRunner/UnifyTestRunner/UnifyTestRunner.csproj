@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net8.0-android</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+
+		<AvaloniaBrowserVersion>11.0.6</AvaloniaBrowserVersion>
+	</PropertyGroup>
+
+	<!-- Browser/WSAM support -->
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-browser'">
+		<PackageReference Include="Avalonia" Version="$(AvaloniaBrowserVersion)" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaBrowserVersion)" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaBrowserVersion)" />
+		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaBrowserVersion)" />
+
+		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaBrowserVersion)" />
+	</ItemGroup>
+	<!-- Everything else -->
+	<ItemGroup Condition="'$(TargetFramework)' != 'net8.0-browser'">
+		<PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
+		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="Assets\**" />
+	</ItemGroup>
+	
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0-android'">
+		<PackageReference Include="IKVM" Version="8.8.0" />
+		<PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto">
+			<Version>1.0.0.16</Version>
+		</PackageReference>
+		<PackageReference Include="Xamarin.AndroidX.Core" Version="1.13.0" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="NUnit.Engine" Version="3.17.0" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\..\UnifyTests.Communications\UnifyTests.Communications.csproj" />
+		<ProjectReference Include="..\..\UnifyTests.Configuration\UnifyTests.Configuration.csproj" />
+		<ProjectReference Include="..\..\UnifyTests.Notifications\UnifyTests.Notifications.csproj" />
+		<ProjectReference Include="..\..\UnifyTests.Security\UnifyTests.Security.csproj" />
+		<ProjectReference Include="..\..\UnifyTests\UnifyTests.csproj" />
+	</ItemGroup>
+</Project>

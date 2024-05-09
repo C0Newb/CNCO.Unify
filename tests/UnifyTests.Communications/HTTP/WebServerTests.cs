@@ -29,7 +29,7 @@ namespace UnifyTests.Communications.Http {
         [Test]
         public void WebServer_InitializeWithEndpointsOptions() {
             var options = new WebServerOptions() {
-                Endpoints = new string[3] { "localhost:12354", "https://example.com/", "http://127.0.0.1" },
+                Endpoints = ["localhost:12354", "https://example.com/", "http://127.0.0.1"],
             };
 
             var webServer = new WebServer(options);

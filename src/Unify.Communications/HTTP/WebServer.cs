@@ -16,7 +16,7 @@ namespace CNCO.Unify.Communications.Http {
             HttpListener = new HttpListener();
 
             ListenerThread = new Thread(() => {
-                string tag = $"{GetType().Name}:${nameof(ListenerThread)}";
+                string tag = $"{GetType().Name}::${nameof(ListenerThread)}";
                 while (HttpListener.IsListening && RunListenerThread) {
                     try {
                         // listen
@@ -24,12 +24,15 @@ namespace CNCO.Unify.Communications.Http {
                         Task.Run(() => HandleRequest(context));
 
                     } catch (Exception ex) {
-                        CommunicationsRuntime.Log.Alert(tag, $"HTTP webserver listener thread exception: {ex.Message}");
-                        if (!string.IsNullOrEmpty(ex.StackTrace))
-                            CommunicationsRuntime.Log.Error(tag, ex.StackTrace);
-
-                        if (!RunListenerThread)
+                        if (!RunListenerThread) {
+                            CommunicationsRuntime.Log.Info(tag, "Listener thread stopped.");
                             return;
+                        }
+
+                        CommunicationsRuntime.Log.Alert(tag, 
+                            $"HTTP webserver listener thread exception: {ex.Message}"
+                            + Environment.NewLine + "\t"
+                            + ex.StackTrace ?? "No stack trace available.");                        
 
                         // restart the thread
                         ListenerThreadRestart++;
@@ -43,7 +46,7 @@ namespace CNCO.Unify.Communications.Http {
                     }
                 }
             });
-            ListenerThread.Name = Runtime.Current.ApplicationId + "-WebServer";
+            ListenerThread.Name = Runtime.Current.ApplicationId + "-WebServer#" + GetHashCode();
 
             Router ??= new Router();
         }
@@ -91,6 +94,7 @@ namespace CNCO.Unify.Communications.Http {
         public void Connect(string path, Action<WebRequest, WebResponse> callback) => Router!.Connect(path, callback);
 
         public void Delete(string path, Action<WebRequest, WebResponse> callback) => Router!.Delete(path, callback);
+
         public void Get(string path, Action<WebRequest, WebResponse> callback) => Router!.Get(path, callback);
 
         public void Head(string path, Action<WebRequest, WebResponse> callback) => Router!.Head(path, callback);
@@ -137,11 +141,21 @@ namespace CNCO.Unify.Communications.Http {
             }
         }
 
-        public void Abort() => HttpListener.Abort();
-
+        public void Abort() {
+            RunListenerThread = false;
+            HttpListener.Abort();
+        }
         public void Dispose() {
-            HttpListener.Stop();
-            HttpListener.Close();
+            string tag = $"{GetType().Name}::{nameof(Dispose)}";
+            try {
+                RunListenerThread = false;
+                HttpListener.Stop();
+                HttpListener.Close();
+            } catch (Exception e) {
+                CommunicationsRuntime.Log.Error(tag, $"Error while disposing! {e.Message}");
+                if (!string.IsNullOrEmpty(e.StackTrace))
+                    CommunicationsRuntime.Log.Error(tag, e.StackTrace);
+            }
             GC.SuppressFinalize(this);
         }
 

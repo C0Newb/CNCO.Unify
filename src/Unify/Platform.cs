@@ -22,5 +22,15 @@
 
         public static bool IsMobile() => IsIOS() || IsAndroid() || IsMacCatalyst();
         public static bool IsDesktop() => IsLinux() || IsFreeBSD() || IsWindows();
+
+
+        public static string GetApplicationRootDirectory() {
+            if (IsApple())
+                return "./Library/";
+            else if (IsAndroid())
+                return Path.GetFullPath("..", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)); // -> /data/users/*/<package>/files/
+            else
+                return Directory.GetCurrentDirectory();
+        }
     }
 }

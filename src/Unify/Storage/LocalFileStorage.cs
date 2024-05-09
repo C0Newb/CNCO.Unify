@@ -24,13 +24,7 @@
         public LocalFileStorage(string? directory = null) {
             if (string.IsNullOrEmpty(directory) || !Path.IsPathRooted(directory)) {
                 // make it rooted
-                string root;
-                if (Platform.IsApple())
-                    root = "./Library/";
-                else if (Platform.IsAndroid())
-                    root = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments); // -> /data/users/*/<package>/files/
-                else
-                    root = System.IO.Directory.GetCurrentDirectory();
+                string root = Platform.GetApplicationRootDirectory();
 
                 directory = Path.Combine(root, directory ?? string.Empty);
             }

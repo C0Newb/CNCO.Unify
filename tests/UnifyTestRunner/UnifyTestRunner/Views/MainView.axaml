@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:UnifyTestRunner.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UnifyTestRunner.Views.MainView"
+             x:DataType="vm:MainViewModel">
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainViewModel />
+    </Design.DataContext>
+
+    <DockPanel LastChildFill="true">
+        <ScrollViewer Name="mainScroller"
+                      DockPanel.Dock="Top"
+                      HorizontalContentAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      HorizontalScrollBarVisibility="Disabled">
+			<Grid HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch">
+				<!-- Content goes here :D -->
+				<Label x:Name="lblTest">Unify Test Runner</Label>
+				<Label x:Name="lblStatus" Margin="10,25,0,0">0 tests loaded. 0 Passed, 0 Failed, 0 Skipped.</Label>
+				<Button Content="Rescan tests..." VerticalAlignment="Top" Margin="10,65,0,0" Click="BtnSearch_Click"/>
+				<Button Content="Run tests" VerticalAlignment="Top" Margin="10,110,0,0" Click="BtnRun_Click"/>
+				
+				<TextBox x:Name="txtResutls" Margin="10,150,10,10" Text="..test results xml goes here.." IsEnabled="False" />
+			</Grid>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

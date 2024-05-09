@@ -41,8 +41,5 @@
         public NoEncryptionKeyProvidedException() { }
         public NoEncryptionKeyProvidedException(string message) : base(message) { }
         public NoEncryptionKeyProvidedException(string message, Exception inner) : base(message, inner) { }
-        protected NoEncryptionKeyProvidedException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
     }
 }

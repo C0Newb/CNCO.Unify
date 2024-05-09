@@ -66,6 +66,9 @@ namespace CNCO.Unify {
                     if (logFileStorage == null && !Current.Configuration.ApplicationLogNoFileStorage) {
                         logFileStorage = new LocalFileStorage(Current.Configuration.ApplicationLogDirectory);
                     }
+                    if (string.IsNullOrEmpty(Current.Configuration.ApplicationLogName)) {
+                        Current.Configuration.ApplicationLogName = $"{Current.ApplicationId}.RuntimeLog.txt";
+                    }
                     if (logFileStorage != null) {
                         logFileStorage.Delete(Current.Configuration.ApplicationLogName); // remove previous
                         var fileLogger = new FileLogger(logFileStorage, Current.Configuration.ApplicationLogName);
@@ -266,5 +269,11 @@ namespace CNCO.Unify {
         /// Whether Unify suppresses file system exceptions for Unify <see cref="IFileStorage"/> classes.
         /// </summary>
         public bool SuppressFileStorageExceptions { get; set; } = false;
+
+        /// <summary>
+        /// Disables checking the hash of credentials when pulling them from the credential manager.
+        /// Used by Unify.Security.
+        /// </summary>
+        public bool DisableCredentialManagerHashChecking { get; set; } = false;
     }
 }

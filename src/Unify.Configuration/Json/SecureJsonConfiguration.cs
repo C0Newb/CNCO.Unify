@@ -122,6 +122,9 @@ namespace CNCO.Unify.Configuration.Json {
         /// Sets up the <see cref="JsonSerializerOptions"/> and dynamically creates the private properties for properties with the <see cref="SecureAttribute"/>.
         /// </summary>
         private void Setup() {
+            if (_secureAttributeSetupCompleted || string.IsNullOrEmpty(GetFilePath()))
+                return;
+
             try {
                 var encryptionFunction = new Func<string, string?>(EncryptSecret);
                 var decryptionFunction = new Func<string, string?>(DecryptSecret);
@@ -134,11 +137,15 @@ namespace CNCO.Unify.Configuration.Json {
                 };
 
                 _secureAttributeSetupCompleted = true;
-            } catch (Exception ex) {
+            } catch {
                 string tag = $"{GetType().Name}::{nameof(Setup)}-{GetFilePath()}";
-                Runtime.ApplicationLog.Warning(tag, "Failed to set JsonSerializerOptions? Possible this was already done!");
-                Runtime.ApplicationLog.Warning(tag, ex.Message);
-                Runtime.ApplicationLog.Warning(tag, ex.StackTrace ?? "No stack trace.");
+                /*Runtime.ApplicationLog.Debug(tag, 
+                    $"Failed to set JsonSerializerOptions? Possible this was already done! _secureAttributeSetupCompleted? {_secureAttributeSetupCompleted}"
+                    + Environment.NewLine
+                    + ex.Message
+                    + Environment.NewLine
+                    + ex.StackTrace ?? "No stack trace."
+                );*/
             }
         }
         #endregion
