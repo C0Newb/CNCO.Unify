@@ -6,6 +6,8 @@
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 
 		<AvaloniaBrowserVersion>11.0.6</AvaloniaBrowserVersion>
+
+		<Platforms>AnyCPU;ARM64</Platforms>
 	</PropertyGroup>
 
 	<!-- Browser/WSAM support -->
@@ -14,6 +16,7 @@
 		<PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaBrowserVersion)" />
 		<PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaBrowserVersion)" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaBrowserVersion)" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="$(AvaloniaBrowserVersion)" />
 
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaBrowserVersion)" />
@@ -24,6 +27,7 @@
 		<PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.Fonts.Inter" Version="$(AvaloniaVersion)" />
 		<PackageReference Include="Avalonia.ReactiveUI" Version="$(AvaloniaVersion)" />
+		<PackageReference Include="Avalonia.Controls.DataGrid" Version="$(AvaloniaVersion)" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="$(AvaloniaVersion)" />
 	</ItemGroup>
@@ -41,6 +45,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+		<PackageReference Include="DialogHost.Avalonia" Version="0.7.7" />
 		<PackageReference Include="NUnit.Engine" Version="3.17.0" />
 	</ItemGroup>
 	
@@ -50,5 +55,14 @@
 		<ProjectReference Include="..\..\UnifyTests.Notifications\UnifyTests.Notifications.csproj" />
 		<ProjectReference Include="..\..\UnifyTests.Security\UnifyTests.Security.csproj" />
 		<ProjectReference Include="..\..\UnifyTests\UnifyTests.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Compile Update="Views\MainWindowView.axaml.cs">
+	    <DependentUpon>MainWindowView.axaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\MainView.axaml.cs">
+	    <DependentUpon>MainView.axaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 </Project>

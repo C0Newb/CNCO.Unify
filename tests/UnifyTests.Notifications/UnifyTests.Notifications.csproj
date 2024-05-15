@@ -14,6 +14,7 @@
 	<Nullable>enable</Nullable>
 	<IsPackable>false</IsPackable>
 	<IsTestProject>true</IsTestProject>
+	<Platforms>AnyCPU;ARM64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
@@ -28,4 +29,7 @@
     <Using Include="NUnit.Framework" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+    <Exec Command="if NOT EXIST $(ProjectDir)$(OutDir)android-x64 md $(ProjectDir)$(OutDir)android-x64&#xD;&#xA;xcopy $(ProjectDir)$(OutDir) $(ProjectDir)$(OutDir)android-x64 /y" />
+  </Target>
 </Project>

@@ -47,7 +47,7 @@ namespace CNCO.Unify.Security.Credentials {
 
                         // tampered?
                         return CredentialHelpers.GetAndVerifyCredential(secret);
-                        
+
                         /*
                         bool hashNull = string.IsNullOrEmpty(hash);
                         bool hashMatches = Hashing.Sha512(secret ?? string.Empty) == hash;

@@ -29,10 +29,10 @@ namespace CNCO.Unify.Communications.Http {
                             return;
                         }
 
-                        CommunicationsRuntime.Log.Alert(tag, 
+                        CommunicationsRuntime.Log.Alert(tag,
                             $"HTTP webserver listener thread exception: {ex.Message}"
                             + Environment.NewLine + "\t"
-                            + ex.StackTrace ?? "No stack trace available.");                        
+                            + ex.StackTrace ?? "No stack trace available.");
 
                         // restart the thread
                         ListenerThreadRestart++;

@@ -3,10 +3,25 @@
         xmlns:vm="using:UnifyTestRunner.ViewModels"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
         xmlns:views="clr-namespace:UnifyTestRunner.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="UnifyTestRunner.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
+		x:DataType="vm:MainWindowModel"
         Title="Unify Test Runner (Windows)">
-        <views:MainView />
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:MainWindowModel />
+	</Design.DataContext>
+	
+	<dialogHost:DialogHost CloseOnClickAway="True">
+		<dialogHost:DialogHost.DialogContent>
+		</dialogHost:DialogHost.DialogContent>
+		<Grid>
+			<views:MainView x:Name="viewMain" />
+			<views:TestDetailsView x:Name="viewTestDetails" IsVisible="False"/>
+		</Grid>
+	</dialogHost:DialogHost>
 </Window>

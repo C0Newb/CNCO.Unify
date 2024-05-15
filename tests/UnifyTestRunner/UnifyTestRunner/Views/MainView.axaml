@@ -6,28 +6,55 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="UnifyTestRunner.Views.MainView"
              x:DataType="vm:MainViewModel">
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
          to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainViewModel />
-    </Design.DataContext>
+		<vm:MainViewModel />
+	</Design.DataContext>
 
-    <DockPanel LastChildFill="true">
-        <ScrollViewer Name="mainScroller"
+	<DockPanel LastChildFill="true">
+		<!--<ScrollViewer Name="mainScroller"
                       DockPanel.Dock="Top"
                       HorizontalContentAlignment="Stretch"
                       HorizontalAlignment="Stretch"
-                      HorizontalScrollBarVisibility="Disabled">
-			<Grid HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch">
-				<!-- Content goes here :D -->
-				<Label x:Name="lblTest">Unify Test Runner</Label>
-				<Label x:Name="lblStatus" Margin="10,25,0,0">0 tests loaded. 0 Passed, 0 Failed, 0 Skipped.</Label>
-				<Button Content="Rescan tests..." VerticalAlignment="Top" Margin="10,65,0,0" Click="BtnSearch_Click"/>
-				<Button Content="Run tests" VerticalAlignment="Top" Margin="10,110,0,0" Click="BtnRun_Click"/>
-				
-				<TextBox x:Name="txtResutls" Margin="10,150,10,10" Text="..test results xml goes here.." IsEnabled="False" />
-			</Grid>
-        </ScrollViewer>
-    </DockPanel>
+                      HorizontalScrollBarVisibility="Disabled">-->
+		<Grid HorizontalAlignment="Stretch"
+				VerticalAlignment="Stretch">
+			<!-- Content goes here :D -->
+			<Label x:Name="lblTest">Unify Test Runner</Label>
+			<Label x:Name="lblStatus" Margin="10,25,0,0">0 tests loaded. 0 Passed, 0 Failed, 0 Skipped.</Label>
+			<StackPanel Margin="10,65,0,0" x:Name="stackControlButtons" Spacing="10" Orientation="Horizontal" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+				<Button Content="Rescan tests..." VerticalAlignment="Top" Click="BtnSearch_Click"/>
+				<Button Content="Run tests" VerticalAlignment="Top" Click="BtnRun_Click"/>
+				<Button Content="Load results" VerticalAlignment="Top" Click="BtnLoad_Click"/>
+				<Button Content="Save results" VerticalAlignment="Top" Click="BtnSave_Click"/>
+			</StackPanel>
+			<TextBox x:Name="txtResults" Text="..test results xml goes here.." Margin="10,120,10,10" IsEnabled="False" IsVisible="False" />
+			<DataGrid x:Name="ResultsGrid" ItemsSource="{Binding Results}" Margin="10,120,10,10"
+					  GridLinesVisibility="All" IsReadOnly="True"
+					  BorderBrush="Green" BorderThickness="1">
+				<DataGrid.Columns>
+					<DataGridTemplateColumn>
+						<DataGridTemplateColumn.CellTemplate>
+							<DataTemplate>
+								<Button
+							HorizontalAlignment="Center"
+							HorizontalContentAlignment="Center"
+							Background="#232323"
+							Command="{Binding ShowMoreDetails}"
+							Content="View"
+							Foreground="White" />
+							</DataTemplate>
+						</DataGridTemplateColumn.CellTemplate>
+					</DataGridTemplateColumn>
+
+					<DataGridTextColumn Header="Name" Binding="{Binding Name}" MaxWidth="500" />
+					<DataGridTextColumn Header="Result" Binding="{Binding Result}" />
+					<DataGridTextColumn Header="Duration" Binding="{Binding Duration}" />
+					<DataGridTextColumn Header="Error message" Binding="{Binding ErrorMessage}" Width="*" />
+				</DataGrid.Columns>
+			</DataGrid>
+		</Grid>
+		<!--</ScrollViewer>-->
+	</DockPanel>
 </UserControl>

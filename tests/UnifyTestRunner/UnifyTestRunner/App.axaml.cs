@@ -6,18 +6,22 @@ using UnifyTestRunner.Views;
 
 namespace UnifyTestRunner {
     public partial class App : Application {
+        public static MainWindowModel? MainModel { get; set; }
+
         public override void Initialize() {
             AvaloniaXamlLoader.Load(this);
         }
 
         public override void OnFrameworkInitializationCompleted() {
+            MainModel ??= new MainWindowModel();
+
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
                 desktop.MainWindow = new MainWindow {
-                    DataContext = new MainViewModel()
+                    DataContext = MainModel
                 };
             } else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform) {
-                singleViewPlatform.MainView = new MainView {
-                    DataContext = new MainViewModel()
+                singleViewPlatform.MainView = new MainWindowView {
+                    DataContext = MainModel
                 };
             }
 

@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:vm="clr-namespace:UnifyTestRunner.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UnifyTestRunner.Views.TestDetailsView"
+			 x:DataType="vm:TestDetailsViewModel">
+
+	<Design.DataContext>
+		<!-- This only sets the DataContext for the previewer in an IDE,
+         to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+		<vm:TestDetailsViewModel />
+	</Design.DataContext>
+
+	<DockPanel LastChildFill="true">
+		<ScrollViewer Name="mainScroller"
+                      DockPanel.Dock="Top"
+                      HorizontalContentAlignment="Stretch"
+                      HorizontalAlignment="Stretch"
+                      HorizontalScrollBarVisibility="Disabled">
+			<StackPanel Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+				<Button Content="&lt;- Back" Click="BackButton_Click"/>
+				
+				<!-- Content goes here :D -->
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblId" Content="Id:" />
+					<TextBox x:Name="txtId" IsReadOnly="True" HorizontalAlignment="Stretch" />
+				</StackPanel>
+
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblResult" Content="Results:" />
+					<TextBox x:Name="txtResult" IsReadOnly="True" />
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblClassName" Content="Class name:" />
+					<TextBox x:Name="txtClassName" IsReadOnly="True" />
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblMethodName" Content="Method name:" />
+					<TextBox x:Name="txtMethodName" IsReadOnly="True" />
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblName" Content="Name:" />
+					<TextBox x:Name="txtName" IsReadOnly="True" />
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblDuration" Content="Duration:" />
+					<TextBox x:Name="txtDuration" IsReadOnly="True" />
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblRunState" Content="Run state:" />
+					<TextBox x:Name="txtRunState" IsReadOnly="True" />
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblAsserts" Content="Asserts:" />
+					<TextBox x:Name="txtAsserts" IsReadOnly="True" />
+				</StackPanel>
+
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblErrorMessage" Content="Error message:" />
+					<TextBox x:Name="txtErrorMessage" IsReadOnly="True" />
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<Label x:Name="lblStackTrace" Content="Stack trace:" />
+					<TextBox x:Name="txtStackTrace" IsReadOnly="True" MinHeight="250"/>
+				</StackPanel>
+			</StackPanel>
+		</ScrollViewer>
+	</DockPanel>
+</UserControl>
