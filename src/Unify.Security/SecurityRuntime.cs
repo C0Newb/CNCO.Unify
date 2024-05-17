@@ -12,7 +12,7 @@ namespace CNCO.Unify.Security {
         // What in ?
         private readonly ICredentialManagerEndpoint _platformCredentialManager = CredentialManagerFactory.GetPlatformCredentialManager();
         private IEncryptionKeyProvider? _credentialManagerKeyProvider;
-        private FileEncryption? _credentialManagerFileEncryption;
+        private EncryptionProvider? _credentialManagerFileEncryption;
         private IFileStorage? _credentialFileStorage;
         private FileBasedCredentialManager? _credentialManager;
 
@@ -50,7 +50,7 @@ namespace CNCO.Unify.Security {
         public ICredentialManager CredentialManager {
             get {
                 _credentialManagerKeyProvider ??= new EncryptionKeyProvider(GetEncryptionKey(), Encryption.Protections.AES256_CBC);
-                _credentialManagerFileEncryption ??= new FileEncryption(_credentialManagerKeyProvider);
+                _credentialManagerFileEncryption ??= new EncryptionProvider(_credentialManagerKeyProvider);
                 _credentialFileStorage ??= new LocalFileStorage(Runtime.Current.Configuration.CredentialFileParentDirectoryName);
                 _credentialManager ??= new FileBasedCredentialManager(_credentialFileStorage, Runtime.Current.Configuration.CredentialFileName, _credentialManagerFileEncryption);
                 return _credentialManager;

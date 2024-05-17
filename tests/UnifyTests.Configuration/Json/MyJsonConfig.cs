@@ -13,7 +13,7 @@ namespace UnifyTests.Configuration.Json {
         public MyJsonConfig() { }
 
         public MyJsonConfig(string FilePath, IFileStorage fileStorage) : base(FilePath, fileStorage) { }
-        public MyJsonConfig(string FilePath, IFileStorage fileStorage, IFileEncryption fileEncryption) : base(FilePath, fileStorage, fileEncryption) { }
+        public MyJsonConfig(string FilePath, IFileStorage fileStorage, IEncryptionProvider fileEncryption) : base(FilePath, fileStorage, fileEncryption) { }
     }
 
     public class MySecureJsonConfig : CNCO.Unify.Configuration.Json.SecureJsonConfiguration {
@@ -26,7 +26,7 @@ namespace UnifyTests.Configuration.Json {
 
         public MySecureJsonConfig() { }
 
-        public MySecureJsonConfig(string FilePath, IFileStorage fileStorage, IFileEncryption fileEncryption) : base(FilePath, fileStorage, fileEncryption) { }
+        public MySecureJsonConfig(string FilePath, IFileStorage fileStorage, IEncryptionProvider fileEncryption) : base(FilePath, fileStorage, fileEncryption) { }
     }
 
     internal class MyEncryptionKeyProvider : IEncryptionKeyProvider {

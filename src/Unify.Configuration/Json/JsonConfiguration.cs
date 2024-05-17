@@ -29,7 +29,7 @@ namespace CNCO.Unify.Configuration.Json {
         /// <summary>
         /// Encryption strategy to use when reading/writing this configuration.
         /// </summary>
-        private readonly IFileEncryption _fileEncryption;
+        private readonly IEncryptionProvider _fileEncryption;
 
 
         protected JsonSerializerOptions JsonSerializerOptions { get; set; } = JsonHelpers.Options;
@@ -53,7 +53,7 @@ namespace CNCO.Unify.Configuration.Json {
         /// File encryption strategy to use when reading/writing the configuration.
         /// If <see langword="null"/>, the <see cref="NoopFileEncryption"/> (no encryption) will be used.
         /// </param>
-        public JsonConfiguration(string name, IFileStorage fileStorage, IFileEncryption? fileEncryption = null) {
+        public JsonConfiguration(string name, IFileStorage fileStorage, IEncryptionProvider? fileEncryption = null) {
             _filePath = name;
             if (!_filePath.ToLower().EndsWith(".json"))
                 _filePath += ".json";

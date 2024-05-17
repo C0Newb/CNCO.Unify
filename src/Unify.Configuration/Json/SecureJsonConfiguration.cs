@@ -154,7 +154,7 @@ namespace CNCO.Unify.Configuration.Json {
             Setup();
         }
 
-        public SecureJsonConfiguration(string filePath, IFileStorage fileStorage, IFileEncryption fileEncryption) : base(filePath, fileStorage, fileEncryption) {
+        public SecureJsonConfiguration(string filePath, IFileStorage fileStorage, IEncryptionProvider fileEncryption) : base(filePath, fileStorage, fileEncryption) {
             // Generates a new secrets encryption key if one is not already there.
             if (string.IsNullOrEmpty(_secretsKeyEncrypted)) {
                 string newKey = Encryption.GenerateRandomString(32);

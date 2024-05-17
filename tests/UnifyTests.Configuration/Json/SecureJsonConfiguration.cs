@@ -7,14 +7,14 @@ namespace UnifyTests.Configuration.Json {
     public class SecureJsonConfiguration {
         private const string TestFileName = "jsonConfigurationTest.json";
         private MyEncryptionKeyProvider myEncryptionKeyProvider;
-        private FileEncryption myFileEncryption;
+        private IEncryptionProvider myFileEncryption;
         private InMemoryFileStorage myFileStorage;
 
 
         [SetUp]
         public void Setup() {
             myEncryptionKeyProvider = new MyEncryptionKeyProvider();
-            myFileEncryption = new FileEncryption(myEncryptionKeyProvider);
+            myFileEncryption = new EncryptionProvider(myEncryptionKeyProvider);
             myFileStorage = new InMemoryFileStorage();
         }
 

@@ -10,14 +10,14 @@ namespace CNCO.Unify.Security.Credentials {
         private readonly object _lock = new object();
 
         private readonly IFileStorage _fileStorage;
-        private IFileEncryption? _fileEncryption;
+        private IEncryptionProvider? _fileEncryption;
         private readonly string _fileName = "Unify.Credentials.json";
         private Dictionary<string, string> _credentials = new Dictionary<string, string>();
 
 
         /// <summary>
         /// Initializes a new instance of <see cref="FileBasedCredentialManager"/>.
-        /// NOTE!! This will default to NO encryption. Please provide a <see cref="IFileEncryption"/> via a different constructor!
+        /// NOTE!! This will default to NO encryption. Please provide a <see cref="IEncryptionProvider"/> via a different constructor!
         /// </summary>
         public FileBasedCredentialManager() {
             _fileStorage = new LocalFileStorage();
@@ -25,16 +25,16 @@ namespace CNCO.Unify.Security.Credentials {
 
         /// <summary>
         /// Initializes a new instance of <see cref="FileBasedCredentialManager"/>.
-        /// NOTE!! This will default to NO encryption. Please provide a <see cref="IFileEncryption"/> via a different constructor!
+        /// NOTE!! This will default to NO encryption. Please provide a <see cref="IEncryptionProvider"/> via a different constructor!
         /// </summary>
         /// <param name="fileEncryption">File encryption scheme used when writing the credentials to the local storage.</param>
-        public FileBasedCredentialManager(IFileEncryption fileEncryption) : this() {
+        public FileBasedCredentialManager(IEncryptionProvider fileEncryption) : this() {
             _fileEncryption = fileEncryption;
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="FileBasedCredentialManager"/>.
-        /// NOTE!! This will default to NO encryption. Please provide a <see cref="IFileEncryption"/> via a different constructor!
+        /// NOTE!! This will default to NO encryption. Please provide a <see cref="IEncryptionProvider"/> via a different constructor!
         /// </summary>
         /// <param name="fileStorage">File storage backing the credentials will be written to.</param>
         /// <param name="fileName">Name of the file the credentials will be written to.</param>
@@ -49,7 +49,7 @@ namespace CNCO.Unify.Security.Credentials {
         /// <param name="fileStorage">File storage backing the credentials will be written to.</param>
         /// <param name="fileName">Name of the file the credentials will be written to.</param>
         /// <param name="fileEncryption">File encryption scheme used when writing the credentials to <paramref name="fileStorage"/>.</param>
-        public FileBasedCredentialManager(IFileStorage fileStorage, string fileName, IFileEncryption fileEncryption) {
+        public FileBasedCredentialManager(IFileStorage fileStorage, string fileName, IEncryptionProvider fileEncryption) {
             _fileStorage = fileStorage;
             _fileName = fileName;
             _fileEncryption = fileEncryption;
@@ -134,7 +134,7 @@ namespace CNCO.Unify.Security.Credentials {
         }
 
 
-        public void SetFileEncryption(IFileEncryption newFileEncryption) {
+        public void SetFileEncryption(IEncryptionProvider newFileEncryption) {
             lock (_lock) {
                 PullCredentials();
                 _fileEncryption = newFileEncryption;
