@@ -4,7 +4,7 @@ namespace CNCO.Unify.Logging {
     /// <summary>
     /// Logger that outputs to a <see cref="IFileStorage"/>
     /// </summary>
-    public class FileLogger : Logger {
+    public sealed class FileLogger : Logger {
         private readonly string _fileName;
         private readonly IFileStorage _fileStorage;
 
@@ -27,6 +27,13 @@ namespace CNCO.Unify.Logging {
         /// <param name="fileStorage">The <see cref="IFileStorage"/> to log to.</param>
         /// <param name="sectionName">Name of the section.</param>
         public FileLogger(IFileStorage fileStorage, string logFileName, string sectionName) : base(sectionName) {
+            _fileStorage = fileStorage;
+            _fileName = logFileName;
+        }
+
+        /// <inheritdoc cref="FileLogger(IFileStorage, string)"/>
+        /// <inheritdoc cref="Logger(ILogFormatter)"/>
+        public FileLogger(IFileStorage fileStorage, string logFileName, ILogFormatter formatter) : base(formatter) {
             _fileStorage = fileStorage;
             _fileName = logFileName;
         }

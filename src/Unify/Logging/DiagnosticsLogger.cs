@@ -3,10 +3,19 @@
     /// Logs to the <see cref="System.Diagnostics"/> namespace.
     /// If on Android, logs to LogCat.
     /// </summary>
-    public class DiagnosticsLogger : Logger {
-
+    public sealed class DiagnosticsLogger : Logger {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DiagnosticsLogger"/> class.
+        /// </summary>
         public DiagnosticsLogger() : base() { }
-        public DiagnosticsLogger(string section) : base(section) { }
+
+        /// <inheritdoc cref="DiagnosticsLogger()"/>
+        /// <inheritdoc cref="Logger(string)"/>
+        public DiagnosticsLogger(string sectionName) : base(sectionName) { }
+
+        /// <inheritdoc cref="DiagnosticsLogger()"/>
+        /// <inheritdoc cref="Logger(ILogFormatter)"/>
+        public DiagnosticsLogger(ILogFormatter formatter) : base(formatter) { }
 
 
         public override void Log(LogLevel logLevel, string section, string message) {

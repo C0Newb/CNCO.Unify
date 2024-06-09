@@ -4,20 +4,32 @@ namespace CNCO.Unify.Logging {
     /// <summary>
     /// Logger skeleton
     /// </summary>
-    public class Logger : ILogger {
-        private readonly string _sectionName = string.Empty;
+    public abstract class Logger : ILogger {
+        private readonly ILogFormatter _formatter;
+
         public string SectionName {
-            get => _sectionName;
+            get => _formatter.SectionName;
         }
 
-        public Logger() { }
+        public ILogFormatter LogFormatter {
+            get => _formatter;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Logger"/> class.
         /// </summary>
+        public Logger() : this(string.Empty) { }
+
+        /// <inheritdoc cref="Logger()"/>
         /// <param name="sectionName">Name of the current section being logged.</param>
-        public Logger(string sectionName) {
-            _sectionName = sectionName;
+        public Logger(string? sectionName) {
+            _formatter = new LogFormatter(sectionName);
+        }
+
+        /// <inheritdoc cref="Logger()"/>
+        /// <param name="formatter">Message formatter to use.</param>
+        public Logger(ILogFormatter formatter) {
+            _formatter = formatter;
         }
 
 
@@ -56,7 +68,7 @@ namespace CNCO.Unify.Logging {
         /// <param name="logLevel">The event level of the message.</param>
         /// <param name="message">What to log.</param>
         /// <param name="section">Temporary override of <see cref="SectionName"/>.</param>
-        public virtual void Log(LogLevel logLevel, string section, string message) { }
+        public abstract void Log(LogLevel logLevel, string section, string message);
 
 
         /// <summary>
@@ -69,23 +81,18 @@ namespace CNCO.Unify.Logging {
         /// <param name="message">Message to log.</param>
         /// <param name="logLevel">Event level of this message.</param>
         /// <returns>Formatted message.</returns>
-        protected string FormatMessage(string message, LogLevel? logLevel = null, string? section = null) {
-            section ??= SectionName;
+        protected string FormatMessage(string message, LogLevel? logLevel = null, string? section = null)
+            => _formatter.FormatMessage(message, logLevel, section);
 
-            message = message.Replace("%datetime%", DateTime.Now.ToString("o", CultureInfo.InvariantCulture));
-            message = message.Replace("%dateTimeUTC%", DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture));
-            message = message.Replace("%section%", _sectionName ?? string.Empty);
-
-            string prefix = $"[{DateTime.Now.ToString("s", CultureInfo.InvariantCulture) + "Z"}]";
-            if (logLevel != null)
-                prefix += $"[{logLevel}]";
-            if (!string.IsNullOrEmpty(section))
-                prefix += $"[{section}]";
-
-
-            message = prefix + " " + message;
-
-            return message;
-        }
+        /// <summary>
+        /// Creates a new <see cref="SectionLogger"/> that appends a new section name to this <see cref="ILogger"/>.
+        /// </summary>
+        /// <param name="sectionName">New section.</param>
+        /// <param name="appendSectionName">
+        /// Whether the new section name should append <see cref="SectionName"/>, as in come after it.
+        /// </param>
+        /// <returns>New logger that logs the same as this one, but with a section tacked to <see cref="SectionName"/>.</returns>
+        public virtual ILogger NewSection(string sectionName, bool appendSectionName = true)
+            => new SectionLogger(this, sectionName, appendSectionName);
     }
 }
