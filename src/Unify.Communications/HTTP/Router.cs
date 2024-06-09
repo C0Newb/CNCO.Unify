@@ -126,7 +126,7 @@ namespace CNCO.Unify.Communications.Http {
                 response.Status(404);
                 response.End();
                 if (_log)
-                    CommunicationsRuntime.Log.Warning($"404: no listener found for path {request.Path}!");
+                    CommunicationsRuntime.Current.RuntimeLog.Warning($"404: no listener found for path {request.Path}!");
                 return;
             }
 
@@ -144,7 +144,7 @@ namespace CNCO.Unify.Communications.Http {
                 response.Status(404);
                 response.End();
                 if (_log)
-                    CommunicationsRuntime.Log.Warning($"404: no listener found for path {request.Path}!");
+                    CommunicationsRuntime.Current.RuntimeLog.Warning($"404: no listener found for path {request.Path}!");
                 return;
             }
         }

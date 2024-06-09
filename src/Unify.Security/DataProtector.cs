@@ -83,9 +83,9 @@ namespace CNCO.Unify.Security {
                 byte[] protectedBytes = Encoding.UTF8.GetBytes(protectedString);
                 return Convert.ToBase64String(protectedBytes);
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to protect data!");
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to protect data!");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace.");
                 throw;
             }
         }
@@ -99,9 +99,9 @@ namespace CNCO.Unify.Security {
                 string protectedString = Encoding.UTF8.GetString(protectedBytes);
                 return Encryption.DecryptAES(protectedString, Key);
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to unprotect data (invalid key?)!");
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to unprotect data (invalid key?)!");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace.");
                 throw;
             }
         }

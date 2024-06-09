@@ -72,10 +72,10 @@ namespace CNCO.Unify.Security.Credentials {
                 _credentials = JsonSerializer.Deserialize<Dictionary<string, string>>(credentials) ?? new Dictionary<string, string>();
             } catch (Exception ex) {
                 string tag = $"{GetType().Name}::{nameof(PullCredentials)}";
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to pull JSON credentials to disk for {_fileName}.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to pull JSON credentials to disk for {_fileName}.");
 
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
             }
         }
 
@@ -93,10 +93,10 @@ namespace CNCO.Unify.Security.Credentials {
                     throw new InvalidOperationException($"Failed to write credentials to \"{_fileStorage.GetPath(_fileName)}\".");
             } catch (Exception ex) {
                 string tag = $"{GetType().Name}::{nameof(PullCredentials)}";
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to push JSON credentials to disk for {_fileName}.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to push JSON credentials to disk for {_fileName}.");
 
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
             }
         }
 

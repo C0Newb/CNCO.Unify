@@ -8,7 +8,7 @@ namespace UnifyTests.Storage {
 
         [SetUp]
         public void SetUp() {
-            Runtime.Current.Configuration.SuppressFileStorageExceptions = false;
+            UnifyRuntime.Current.Configuration.SuppressFileStorageExceptions = false;
             _fileStorage = new InMemoryFileStorage();
         }
 

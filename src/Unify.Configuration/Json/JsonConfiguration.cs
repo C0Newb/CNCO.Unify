@@ -134,9 +134,9 @@ namespace CNCO.Unify.Configuration.Json {
                 jsonString = ModifyAfterRead(jsonString);
                 jsonNode = JsonNode.Parse(jsonString, nodeOptions, documentOptions) ?? new JsonObject();
             } catch (Exception ex) {
-                Runtime.ApplicationLog.Error($"Failed to parse {_filePath} failed, renaming file to *.broken and regenerating.");
-                Runtime.ApplicationLog.Error(ex.Message);
-                Runtime.ApplicationLog.Error(ex.StackTrace ?? "No stack trace.");
+                UnifyRuntime.ApplicationLog.Error($"Failed to parse {_filePath} failed, renaming file to *.broken and regenerating.");
+                UnifyRuntime.ApplicationLog.Error(ex.Message);
+                UnifyRuntime.ApplicationLog.Error(ex.StackTrace ?? "No stack trace.");
                 _fileStorage.Rename(_filePath, _filePath + ".broken");
                 jsonString = ModifyAfterRead("{}");
                 jsonNode = JsonNode.Parse(jsonString, nodeOptions, documentOptions) ?? new JsonObject();
@@ -151,7 +151,7 @@ namespace CNCO.Unify.Configuration.Json {
 
         public void Delete() {
             if (!string.IsNullOrEmpty(_filePath) && _fileStorage.Exists(_filePath)) {
-                Runtime.ApplicationLog.Debug($"Deleting {_filePath}");
+                UnifyRuntime.ApplicationLog.Debug($"Deleting {_filePath}");
                 _fileStorage.Delete(_filePath);
             }
         }

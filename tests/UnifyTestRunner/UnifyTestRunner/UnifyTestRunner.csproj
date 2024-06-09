@@ -50,6 +50,7 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+		<ProjectReference Include="..\..\..\src\Unify.Security\Unify.Security.csproj" />
 		<ProjectReference Include="..\..\UnifyTests.Communications\UnifyTests.Communications.csproj" />
 		<ProjectReference Include="..\..\UnifyTests.Configuration\UnifyTests.Configuration.csproj" />
 		<ProjectReference Include="..\..\UnifyTests.Notifications\UnifyTests.Notifications.csproj" />

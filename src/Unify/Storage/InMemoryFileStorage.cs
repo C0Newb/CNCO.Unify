@@ -9,7 +9,7 @@ namespace CNCO.Unify.Storage {
     /// The 
     /// </remarks>
     public class InMemoryFileStorage : IFileStorage, IDisposable {
-        private readonly bool _throwErrors = !Runtime.Current.Configuration.SuppressFileStorageExceptions;
+        private readonly bool _throwErrors = !UnifyRuntime.Current.Configuration.SuppressFileStorageExceptions;
         private readonly string _directory = string.Empty;
 
 

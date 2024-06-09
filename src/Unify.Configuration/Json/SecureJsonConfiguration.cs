@@ -25,16 +25,16 @@ namespace CNCO.Unify.Configuration.Json {
                 SecretsKey.Clear();
                 if (!string.IsNullOrEmpty(value)) {
                     try {
-                        var key = Encryption.DecryptDataProtector(Runtime.Current.ApplicationId, value);
+                        var key = Encryption.DecryptDataProtector(UnifyRuntime.Current.ApplicationId, value);
                         var newSecretsKey = new SecureString();
                         foreach (char c in key)
                             newSecretsKey.AppendChar(c);
                         SecretsKey = newSecretsKey;
                     } catch (Exception ex) {
                         string tag = $"{GetType().Name}::{nameof(SecretsKeyEncrypted)}-{GetFilePath()}";
-                        Runtime.ApplicationLog.Error(tag, "Failed to decrypt secrets_key, secrets potentially lost for good!");
-                        Runtime.ApplicationLog.Error(tag, ex.Message);
-                        Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
+                        UnifyRuntime.ApplicationLog.Error(tag, "Failed to decrypt secrets_key, secrets potentially lost for good!");
+                        UnifyRuntime.ApplicationLog.Error(tag, ex.Message);
+                        UnifyRuntime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
 
                         string newKey = Encryption.GenerateRandomString(32);
                         var newSecretsKey = new SecureString();
@@ -43,7 +43,7 @@ namespace CNCO.Unify.Configuration.Json {
                         SecretsKey = newSecretsKey;
 
                         _secretsSalt = Encryption.GenerateRandomBytes(32);
-                        _secretsKeyEncrypted = Encryption.EncryptDataProtector(Runtime.Current.ApplicationId, newKey);
+                        _secretsKeyEncrypted = Encryption.EncryptDataProtector(UnifyRuntime.Current.ApplicationId, newKey);
                     }
                 }
             }
@@ -159,7 +159,7 @@ namespace CNCO.Unify.Configuration.Json {
             if (string.IsNullOrEmpty(_secretsKeyEncrypted)) {
                 string newKey = Encryption.GenerateRandomString(32);
                 _secretsSalt = Encryption.GenerateRandomBytes(32);
-                SecretsKeyEncrypted = Encryption.EncryptDataProtector(Runtime.Current.ApplicationId, newKey);
+                SecretsKeyEncrypted = Encryption.EncryptDataProtector(UnifyRuntime.Current.ApplicationId, newKey);
             }
 
             Setup();
@@ -175,9 +175,9 @@ namespace CNCO.Unify.Configuration.Json {
                 return Encryption.Decrypt(value, SecretsEncryptionKey);
             } catch (Exception ex) {
                 string tag = $"{GetType().Name}::{nameof(DecryptSecret)}-{GetFilePath()}";
-                Runtime.ApplicationLog.Error(tag, "Failed to decrypt secret, invalid key?");
-                Runtime.ApplicationLog.Error(tag, ex.Message);
-                Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
+                UnifyRuntime.ApplicationLog.Error(tag, "Failed to decrypt secret, invalid key?");
+                UnifyRuntime.ApplicationLog.Error(tag, ex.Message);
+                UnifyRuntime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
             }
             return null;
         }
@@ -191,9 +191,9 @@ namespace CNCO.Unify.Configuration.Json {
                 return Encryption.Encrypt(value, SecretsEncryptionKey, SecretsProtections);
             } catch (Exception ex) {
                 string tag = $"{GetType().Name}::{nameof(EncryptSecret)}-{GetFilePath()}";
-                Runtime.ApplicationLog.Error(tag, "Failed to encrypt secret?");
-                Runtime.ApplicationLog.Error(tag, ex.Message);
-                Runtime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
+                UnifyRuntime.ApplicationLog.Error(tag, "Failed to encrypt secret?");
+                UnifyRuntime.ApplicationLog.Error(tag, ex.Message);
+                UnifyRuntime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
             }
             return null;
         }

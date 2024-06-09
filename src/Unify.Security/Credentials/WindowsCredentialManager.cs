@@ -61,9 +61,9 @@ namespace CNCO.Unify.Security.Credentials {
                     }
                 }
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to get {credentialName}");
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to get {credentialName}");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
 
                 throw;
             }
@@ -84,9 +84,9 @@ namespace CNCO.Unify.Security.Credentials {
                     throw new InvalidOperationException($"Failed to remove credential, error: {lastError:X}");
                 }
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to remove {credentialName}.");
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to remove {credentialName}.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
 
                 throw;
             }
@@ -133,9 +133,9 @@ namespace CNCO.Unify.Security.Credentials {
                     Marshal.ZeroFreeBSTR(valuePtr);
                 }
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to set {credentialName}.");
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to set {credentialName}.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
 
                 throw;
             }

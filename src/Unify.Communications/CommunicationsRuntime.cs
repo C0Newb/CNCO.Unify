@@ -1,38 +1,62 @@
 ﻿using CNCO.Unify.Communications.Http;
 using CNCO.Unify.Logging;
+using System;
 
 namespace CNCO.Unify.Communications {
-    public class CommunicationsRuntime : IRuntime {
+    [LinkRuntime(typeof(UnifyRuntime))]
+    public class CommunicationsRuntime : Runtime, IRuntime {
         private static CommunicationsRuntime? _instance;
-        private static ProxyLogger? _log;
 
+        #region Locks
+        // Lock used when initializing this class.
+        private static new readonly object _initializationLock = new object();
+        #endregion
 
-        internal static ProxyLogger Log {
-            get {
-                _log ??= new ProxyLogger(Runtime.ApplicationLog, "Unify-Communications");
-                return _log;
-            }
+        internal new ILogger RuntimeLog {
+            get => base.RuntimeLog;
         }
 
         private static IWebClient? _webClient;
+
+        /// <summary>
+        /// Application wide, shared <see cref="IWebClient"/>.
+        /// </summary>
         public static IWebClient WebClient {
             get {
-                _webClient ??= new WebClient();
+                if (_webClient == null) {
+                    lock (_initializationLock) {
+                        _webClient ??= new WebClient();
+                    }
+                }
                 return _webClient;
             }
         }
 
         public static CommunicationsRuntime Current {
             get {
-                if (_instance == null) {
-                    _instance = new CommunicationsRuntime();
-                    Runtime.AddRuntimeLink(new RuntimeLink(_instance));
+                if (_instance == null) { // Null?
+                    lock (_initializationLock) { // Should only hit one time.
+                        _instance ??= new CommunicationsRuntime();
+                    }
                 }
                 return _instance;
             }
         }
 
-        public CommunicationsRuntime() { }
-        public void Initialize() { }
+        public CommunicationsRuntime() : this(null) {}
+
+        public CommunicationsRuntime(CommunicationsRuntimeConfiguration? runtimeConfiguration) {
+            if (_instance != null)
+                return;
+
+            lock (_initializationLock) {
+                if (_instance != null)
+                    return;
+                _instance = this;
+            }
+        }
+
+        public static CommunicationsRuntime Create(CommunicationsRuntimeConfiguration? runtimeConfiguration)
+            => new CommunicationsRuntime(runtimeConfiguration);
     }
 }

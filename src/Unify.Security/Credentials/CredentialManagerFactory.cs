@@ -20,7 +20,7 @@
             //    return new AppleCredentialManager();
 #pragma warning restore CA1416 // Validate platform compatibility
 
-            SecurityRuntime.Current.Log.Warning(
+            SecurityRuntime.Current.RuntimeLog.Warning(
                 $"{nameof(CredentialManagerFactory)}::{nameof(GetPlatformCredentialManager)}()",
                 "Unknown platform, returning an unsecure FileBasedCredentialManager instance!"
             );

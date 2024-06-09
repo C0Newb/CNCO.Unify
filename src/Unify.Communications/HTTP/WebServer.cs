@@ -25,11 +25,11 @@ namespace CNCO.Unify.Communications.Http {
 
                     } catch (Exception ex) {
                         if (!RunListenerThread) {
-                            CommunicationsRuntime.Log.Info(tag, "Listener thread stopped.");
+                            CommunicationsRuntime.Current.RuntimeLog.Info(tag, "Listener thread stopped.");
                             return;
                         }
 
-                        CommunicationsRuntime.Log.Alert(tag,
+                        CommunicationsRuntime.Current.RuntimeLog.Alert(tag,
                             $"HTTP webserver listener thread exception: {ex.Message}"
                             + Environment.NewLine + "\t"
                             + ex.StackTrace ?? "No stack trace available.");
@@ -37,16 +37,16 @@ namespace CNCO.Unify.Communications.Http {
                         // restart the thread
                         ListenerThreadRestart++;
                         if (ListenerThreadRestart > 5) {
-                            CommunicationsRuntime.Log.Emergency($"Listener thread has restarted too many times ({ListenerThreadRestart}). HTTP listener is disabled until the application restarts."); // sorta a lie.. but eh
+                            CommunicationsRuntime.Current.RuntimeLog.Emergency($"Listener thread has restarted too many times ({ListenerThreadRestart}). HTTP listener is disabled until the application restarts."); // sorta a lie.. but eh
                             break;
                         }
 
                         Thread.Sleep(1000 * ListenerThreadRestart);
-                        CommunicationsRuntime.Log.Warning($"Attempting listener thread restart #{ListenerThreadRestart}"); // sorta a lie.. but eh
+                        CommunicationsRuntime.Current.RuntimeLog.Warning($"Attempting listener thread restart #{ListenerThreadRestart}"); // sorta a lie.. but eh
                     }
                 }
             });
-            ListenerThread.Name = Runtime.Current.ApplicationId + "-WebServer#" + GetHashCode();
+            ListenerThread.Name = UnifyRuntime.Current.ApplicationId + "-WebServer#" + GetHashCode();
 
             Router ??= new Router();
         }
@@ -121,7 +121,7 @@ namespace CNCO.Unify.Communications.Http {
                 WebResponse response = new WebResponse(context.Response);
 
                 if (_logAccess)
-                    CommunicationsRuntime.Log.Debug(tag, $"HTTP-{request.Verb} {request.Path}");
+                    CommunicationsRuntime.Current.RuntimeLog.Debug(tag, $"HTTP-{request.Verb} {request.Path}");
 
                 Router.Process(request, response);
 
@@ -135,9 +135,9 @@ namespace CNCO.Unify.Communications.Http {
                     }
                 } catch { }
 
-                CommunicationsRuntime.Log.Error(tag, $"Failed to process HTTP request {path}: {e}");
+                CommunicationsRuntime.Current.RuntimeLog.Error(tag, $"Failed to process HTTP request {path}: {e}");
                 if (!string.IsNullOrEmpty(e.StackTrace))
-                    CommunicationsRuntime.Log.Error(tag, e.StackTrace);
+                    CommunicationsRuntime.Current.RuntimeLog.Error(tag, e.StackTrace);
             }
         }
 
@@ -152,9 +152,9 @@ namespace CNCO.Unify.Communications.Http {
                 HttpListener.Stop();
                 HttpListener.Close();
             } catch (Exception e) {
-                CommunicationsRuntime.Log.Error(tag, $"Error while disposing! {e.Message}");
+                CommunicationsRuntime.Current.RuntimeLog.Error(tag, $"Error while disposing! {e.Message}");
                 if (!string.IsNullOrEmpty(e.StackTrace))
-                    CommunicationsRuntime.Log.Error(tag, e.StackTrace);
+                    CommunicationsRuntime.Current.RuntimeLog.Error(tag, e.StackTrace);
             }
             GC.SuppressFinalize(this);
         }

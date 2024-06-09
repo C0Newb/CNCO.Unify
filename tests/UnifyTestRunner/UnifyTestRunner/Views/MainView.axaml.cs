@@ -3,6 +3,8 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CNCO.Unify;
+using CNCO.Unify.Communications;
+using CNCO.Unify.Security;
 using CNCO.Unify.Storage;
 using NUnit.Engine;
 using System;
@@ -32,8 +34,15 @@ namespace UnifyTestRunner.Views {
 
             ResultsGrid.ItemsSource = Results;
 
-            var _ = Runtime.Current.ApplicationId = "UnifyTestRunner";
-            Runtime.Current.Initialize();
+            new Task(() => {
+                UnifyRuntime.Create("UnifyTestRunner")
+                    .UseSecurityRuntime(new SecurityRuntimeConfiguration {
+                        // Here you can configure the runtime.
+                    })
+                    .UseCommunicationsRuntime(new CommunicationsRuntimeConfiguration {
+                        // .. same for the communications runtime.
+                    });
+            }).Start();
         }
 
         private void CreateTestPackage() {

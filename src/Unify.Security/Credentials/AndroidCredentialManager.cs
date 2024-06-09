@@ -29,14 +29,14 @@ namespace CNCO.Unify.Security.Credentials {
 #pragma warning disable CS8604 // Possible null reference argument.
             _sharedPreferences = EncryptedSharedPreferences.Create(
                 SHARED_PREFERENCES_FILENAME,
-                Runtime.Current.ApplicationId,
+                UnifyRuntime.Current.ApplicationId,
                 Application.Context,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm
             );
 #pragma warning restore CS8604 // Possible null reference argument.
 #else
-            SecurityRuntime.Current.Log.Warning($"{GetType().Name}::()", "You CANNOT use this class as this platform is unsupported!");
+            SecurityRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::()", "You CANNOT use this class as this platform is unsupported!");
 #endif
         }
 
@@ -70,9 +70,9 @@ namespace CNCO.Unify.Security.Credentials {
 
                 return CredentialHelpers.GetAndVerifyCredential(value);
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to remove {credentialName}");
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to remove {credentialName}");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
 
                 throw;
             }
@@ -95,9 +95,9 @@ namespace CNCO.Unify.Security.Credentials {
                     }
                 }
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to remove {credentialName}");
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to remove {credentialName}");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
 
                 throw;
             }
@@ -122,9 +122,9 @@ namespace CNCO.Unify.Security.Credentials {
                     }
                 }
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(tag, $"Failed to set {credentialName}");
-                SecurityRuntime.Current.Log.Error(tag, ex.Message);
-                SecurityRuntime.Current.Log.Error(tag, ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to set {credentialName}");
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
 
                 throw;
             }

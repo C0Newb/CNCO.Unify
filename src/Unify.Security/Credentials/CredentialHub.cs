@@ -26,13 +26,13 @@ namespace CNCO.Unify.Security.Credentials {
 
                 _credentials = JsonSerializer.Deserialize<Dictionary<string, string>>(credentials) ?? new Dictionary<string, string>();
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(
+                SecurityRuntime.Current.RuntimeLog.Error(
                     $"{GetType().Name}::{nameof(PullCredentials)}",
                     $"Failed to pull JSON credentials for {_credentialsName}."
                 );
 
-                SecurityRuntime.Current.Log.Error(ex.Message);
-                SecurityRuntime.Current.Log.Error(ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(ex.StackTrace ?? "No stack trace available.");
 
                 throw;
             }
@@ -43,13 +43,13 @@ namespace CNCO.Unify.Security.Credentials {
                 _credentialManager.Set(_credentialsName, credentials);
                 //throw new InvalidOperationException($"Failed to set credentials in {_credentialManager.GetType().Name}.");
             } catch (Exception ex) {
-                SecurityRuntime.Current.Log.Error(
+                SecurityRuntime.Current.RuntimeLog.Error(
                     $"{GetType().Name}::{nameof(PullCredentials)}",
                     $"Failed to push JSON credentials for {_credentialsName}."
                 );
 
-                SecurityRuntime.Current.Log.Error(ex.Message);
-                SecurityRuntime.Current.Log.Error(ex.StackTrace ?? "No stack trace available.");
+                SecurityRuntime.Current.RuntimeLog.Error(ex.Message);
+                SecurityRuntime.Current.RuntimeLog.Error(ex.StackTrace ?? "No stack trace available.");
 
                 throw;
             }

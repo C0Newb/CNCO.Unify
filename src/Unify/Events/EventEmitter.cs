@@ -39,6 +39,7 @@ namespace CNCO.Unify.Events {
                 throw new InvalidEventNameException(eventName);
 
             var eventEmitterListener = new EventEmitterListener(this, eventName, callback, oneTimeListener);
+            // Add listeners list if it doesn't exist
             if (!_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value)) {
                 if (_listeners.Count >= MAX_EVENTS)
                     throw new TooManyEventsException();
@@ -58,6 +59,8 @@ namespace CNCO.Unify.Events {
                 eventEmitterListeners.Add(eventEmitterListener);
 
             _listeners[eventName] = eventEmitterListeners;
+
+            UnifyRuntime.Current.RuntimeLog.Debug($"Added event listener `{eventEmitterListener}` to `{eventName}`");
         }
 
         private static string NormalizeEventName(string eventName) => eventName.ToLower();
@@ -75,7 +78,7 @@ namespace CNCO.Unify.Events {
                     return;
                 }
 
-                Runtime.Current.UnifyLog.Debug("EventEmitter", $"Event \"{eventName}\" has been fired.");
+                UnifyRuntime.Current.RuntimeLog.Debug("EventEmitter", $"Event \"{eventName}\" has been fired.");
 
                 foreach (var eventEmitterListener in eventEmitterList) {
                     eventEmitterListener.Activate(parameters);
@@ -159,23 +162,29 @@ namespace CNCO.Unify.Events {
 
         public void RemoveListener(string eventName, ICallback callback) {
             eventName = NormalizeEventName(eventName);
-            if (_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value)) {
-                var eventEmitterListeners = value;
-                if (eventEmitterListeners == null || eventEmitterListeners.Count == 0) {
-                    _listeners.Remove(eventName);
-                    return;
-                }
+            if (!_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? eventEmitterListeners))
+                return; // No such event :)
 
-                var newEventEmitterListeners = new List<IEventEmitterListener>(eventEmitterListeners.Count - 1);
-
-                foreach (var eventEmitterListener in eventEmitterListeners) {
-                    if (eventEmitterListener.GetCallback() != callback) newEventEmitterListeners.Add(eventEmitterListener);
-                }
-
+            if (eventEmitterListeners == null || eventEmitterListeners.Count == 0) {
                 _listeners.Remove(eventName);
-                if (eventEmitterListeners.Count >= 1)
-                    _listeners[eventName] = newEventEmitterListeners;
+                UnifyRuntime.Current.RuntimeLog.Debug($"Removed empty event `{eventName}`.");
+                return; // no listeners
             }
+
+            int removedCount = eventEmitterListeners.RemoveAll(x => x.GetCallback() == callback);
+            if (removedCount == 0) {
+                UnifyRuntime.Current.RuntimeLog.Verbose($"Attempt to remove callback not in the `{eventName}` event.");
+                return; // nothing removed.
+            }
+
+            if (eventEmitterListeners.Count == 0) {
+                _listeners.Remove(eventName);
+                UnifyRuntime.Current.RuntimeLog.Debug($"Removed empty event `{eventName}`.");
+                return; // no listeners.
+            }
+
+            _listeners[eventName] = eventEmitterListeners!;
+            UnifyRuntime.Current.RuntimeLog.Debug($"Removed `{callback}` from event `{eventName}`.");
         }
 
         public void RemoveAllListeners(string eventName) => _listeners.Remove(NormalizeEventName(eventName));
