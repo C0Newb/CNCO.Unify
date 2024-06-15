@@ -172,10 +172,11 @@ namespace CNCO.Unify {
                 _runtimeHooks.Clear();
 
                 // Only log if UnifyRuntime has an instance (it really should by now!)
+                string section = GetType().FullName ?? GetType().Name;
                 if (failedHooks > 0)
-                    UnifyRuntime.ApplicationLog.Info($"All hooks {hooksCount} called, {failedHooks} failed.");
+                    UnifyRuntime.ApplicationLog.Info(section, $"All hooks {hooksCount} called, {failedHooks} failed.");
                 else
-                    UnifyRuntime.ApplicationLog.Info($"All hooks {hooksCount} called, 0 failed.");
+                    UnifyRuntime.ApplicationLog.Info(section, $"All hooks {hooksCount} called, 0 failed.");
             }
         }
         #endregion

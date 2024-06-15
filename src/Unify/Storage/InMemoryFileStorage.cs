@@ -188,5 +188,17 @@ namespace CNCO.Unify.Storage {
                 return false;
             }
         }
+
+        public Stream? Open(string name, FileStreamOptions? streamOptions) {
+            try {
+                name = NormalizeName(name);
+                // This technically doesn't work for writes, if I'm not mistaken...
+                return new MemoryStream(Files[name], streamOptions?.Access.HasFlag(FileAccess.Write) ?? false);
+            } catch {
+                if (_throwErrors)
+                    throw;
+                return null;
+            }
+        }
     }
 }

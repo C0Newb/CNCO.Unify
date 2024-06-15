@@ -1,4 +1,5 @@
-﻿namespace CNCO.Unify.Storage {
+﻿
+namespace CNCO.Unify.Storage {
     /// <summary>
     /// Used to provide no storage capabilities when a <see cref="IFileStorage"/> is required.
     /// 
@@ -13,6 +14,7 @@
 
         public bool Exists(string name) => false;
         public string GetPath(string filename) => filename;
+        public FileStream? Open(string name, FileStreamOptions? streamOptions) => null;
         public string? Read(string name) => null;
 
         public byte[]? ReadBytes(string name) => null;
@@ -20,5 +22,6 @@
         public bool Write(string name, string contents) => true;
 
         public bool WriteBytes(string name, byte[] contents) => true;
+        Stream? IFileStorage.Open(string name, FileStreamOptions? streamOptions) => new MemoryStream();
     }
 }

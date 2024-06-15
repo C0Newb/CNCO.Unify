@@ -95,8 +95,6 @@ namespace CNCO.Unify.Communications.Http {
 
 
         public void Process(WebRequest request, WebResponse response) {
-            string tag = $"{GetType().Name}::{nameof(Process)}";
-
             if (string.IsNullOrEmpty(request.Path))
                 return;
 
@@ -126,7 +124,7 @@ namespace CNCO.Unify.Communications.Http {
                 response.Status(404);
                 response.End();
                 if (_log)
-                    CommunicationsRuntime.Current.RuntimeLog.Warning($"404: no listener found for path {request.Path}!");
+                    CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"404: no listener found for path {request.Path}!");
                 return;
             }
 
@@ -144,7 +142,7 @@ namespace CNCO.Unify.Communications.Http {
                 response.Status(404);
                 response.End();
                 if (_log)
-                    CommunicationsRuntime.Current.RuntimeLog.Warning($"404: no listener found for path {request.Path}!");
+                    CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"404: no listener found for path {request.Path}!");
                 return;
             }
         }

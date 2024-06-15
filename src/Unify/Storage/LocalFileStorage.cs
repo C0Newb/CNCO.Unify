@@ -133,5 +133,19 @@
                 return false;
             }
         }
+
+        public Stream? Open(string name, FileStreamOptions? streamOptions) {
+            try {
+                streamOptions ??= new FileStreamOptions() {
+                    Mode = FileMode.OpenOrCreate,
+                    Access = FileAccess.ReadWrite,
+                };
+                return File.Open(GetPath(name), streamOptions);
+            } catch {
+                if (_throwErrors)
+                    throw;
+                return null;
+            }
+        }
     }
 }

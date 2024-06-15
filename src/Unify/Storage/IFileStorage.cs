@@ -47,6 +47,14 @@
 
 
         /// <summary>
+        /// Opens the file and returns the <see cref="FileStream"/>.
+        /// </summary>
+        /// <param name="name">Name of the file to open.</param>
+        /// <returns>Stream of the file.</returns>
+        public Stream? Open(string name, FileStreamOptions? streamOptions);
+
+
+        /// <summary>
         /// Checks whether a file with <paramref name="name"/> exists on the storage.
         /// </summary>
         /// <param name="name"></param>

@@ -47,6 +47,7 @@ namespace CNCO.Unify.Communications.Http {
 
         public WebResponse(HttpListenerResponse response) {
             _response = response;
+            _response.AddHeader("Server", ""); // Removes Microsoft-HttpApi/2.0
         }
 
         public void End() {
@@ -65,11 +66,8 @@ namespace CNCO.Unify.Communications.Http {
         /// Does not send anything, sets the <c>Content-Disposition</c> header to "attachment".
         /// </summary>
         /// <param name="fileName">What the attachment will be named when sent to the user.</param>
-        /// <param name="fileType">Use <see cref="System.Net.Mime.MediaTypeNames"/>.</param>
-        public void Attachment(string fileName, string fileType) {
+        public void Attachment(string fileName) {
             Headers["Content-Disposition"] = "attachment" + (!string.IsNullOrEmpty(fileName) ? $"; filename=\"{fileName}\"" : "");
-            if (!string.IsNullOrEmpty(fileType))
-                Headers["Content-Type"] = fileType;
         }
 
 
@@ -109,14 +107,26 @@ namespace CNCO.Unify.Communications.Http {
         /// This will *serve* a file, not mark is to be downloaded by the user.
         /// All we do is read a file and send it's contents back.
         /// </summary>
-        /// <param name="path"></param>
+        /// <param name="path">Path to the file to send.</param>
+        /// <param name="fileType">Use <see cref="System.Net.Mime.MediaTypeNames"/>.</param>
         /// <exception cref="NotImplementedException"></exception>
-        public void SendFile(string path, IFileStorage storage) {
+        public void SendFile(string path, IFileStorage storage, string? fileType = null) {
             if (!storage.Exists(path))
                 throw new FileNotFoundException(path);
 
-            byte[] bytes = storage.ReadBytes(path) ?? Array.Empty<byte>();
-            OutputStream.Write(bytes);
+            if (!string.IsNullOrEmpty(fileType))
+                Headers["Content-Type"] = fileType;
+            else if (MimeMapping.TryGetMimeType(path, out string? actualMimeType))
+                Headers["Content-Type"] = actualMimeType;
+
+            using (var fileStream = storage.Open(path, new FileStreamOptions { Access = FileAccess.Read })) {
+                if (fileStream == null) {
+                    _response.StatusCode = 404;
+                } else {
+                    _response.SendChunked = true;
+                    fileStream.CopyTo(_response.OutputStream);
+                }
+            }
             _response.Close();
         }
 
@@ -133,9 +143,10 @@ namespace CNCO.Unify.Communications.Http {
             var name = attachmentOptions?.AttachmentName ?? Path.GetFileName(path);
 
             MimeMapping.TryGetMimeType(path, out string? actualMimeType);
-            var mimeType = attachmentOptions?.MimeType ?? actualMimeType ?? "text/plain;charset=UTF-8";
-            Attachment(name, mimeType);
-            SendFile(path, storage);
+            var mimeType = attachmentOptions?.MimeType ?? actualMimeType; // ?? "text/plain;charset=UTF-8";
+            // it's better to have no mimeType and let the receiver figure it out then for us to go "yeah it's this" when we don't know :p
+            Attachment(name);
+            SendFile(path, storage, mimeType);
         }
     }
 

@@ -71,6 +71,8 @@ namespace CNCO.Unify.Security {
             if (_instance != null)
                 return;
 
+            Configuration = runtimeConfiguration ?? new SecurityRuntimeConfiguration();
+
             lock (_initializationLock) {
                 if (_instance != null)
                     return;

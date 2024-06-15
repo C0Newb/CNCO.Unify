@@ -111,8 +111,6 @@ namespace CNCO.Unify.Communications.Http {
         #endregion
 
         private void HandleRequest(HttpListenerContext context) {
-            string tag = $"{GetType().Name}::{nameof(HandleRequest)}";
-
             try {
                 if (Router == null)
                     return;
@@ -121,7 +119,7 @@ namespace CNCO.Unify.Communications.Http {
                 WebResponse response = new WebResponse(context.Response);
 
                 if (_logAccess)
-                    CommunicationsRuntime.Current.RuntimeLog.Debug(tag, $"HTTP-{request.Verb} {request.Path}");
+                    CommunicationsRuntime.Current.RuntimeLog.Debug($"{GetType().Name}::{nameof(HandleRequest)}", $"HTTP-{request.Verb} {request.Path}");
 
                 Router.Process(request, response);
 
@@ -134,6 +132,7 @@ namespace CNCO.Unify.Communications.Http {
                         context.Response.Close();
                     }
                 } catch { }
+                string tag = $"{GetType().Name}::{nameof(HandleRequest)}";
 
                 CommunicationsRuntime.Current.RuntimeLog.Error(tag, $"Failed to process HTTP request {path}: {e}");
                 if (!string.IsNullOrEmpty(e.StackTrace))
