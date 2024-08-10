@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿using CNCO.Unify.Communications.Http.Routing;
+using System.Collections.Specialized;
 using System.Net;
 using System.Web;
 
@@ -18,7 +19,7 @@ namespace CNCO.Unify.Communications.Http {
         /// <summary>
         /// The HTTP verb used for this request.
         /// </summary>
-        public HttpVerb Verb { get; set; }
+        public HttpVerb? Verb { get; set; }
 
         /// <summary>
         /// This is the full URL, such as <c>localhost:8008/api/v1/getData?myParameter=abc123</c>
@@ -52,13 +53,13 @@ namespace CNCO.Unify.Communications.Http {
         public NameValueCollection Query { get; set; } = new NameValueCollection();
 
         /// <summary>
-        /// Parameters captured by the path.
+        /// Route information.
         /// </summary>
-        public NameValueCollection Parameters { get; set; } = new NameValueCollection();
+        public RouteTemplate? RouteTemplate { get; set; }
         #endregion
 
 
-        public readonly Version ProtocolVersion;
+        public readonly Version ProtocolVersion = new Version();
 
         #region Requestor data
         /// <summary>
@@ -69,25 +70,24 @@ namespace CNCO.Unify.Communications.Http {
         /// <summary>
         /// List of cookies sent in the <see cref="WebRequest"/>.
         /// </summary>
-        public CookieCollection Cookies { get; set; }
+        public CookieCollection Cookies { get; set; } = new CookieCollection();
 
         /// <summary>
         /// The remote IP of the requester.
         /// </summary>
-        public IPAddress RemoteAddress { get; set; }
+        public IPAddress? RemoteAddress { get; set; }
 
         public string? UserAgent => Headers["User-Agent"];
 
 
-        public Stream BodyStream { get; set; }
+        public Stream BodyStream { get; set; } = Stream.Null;
         #endregion
 
-
+        public WebRequest() { }
 
         public WebRequest(HttpListenerRequest request) {
             if (Enum.TryParse(request.HttpMethod, true, out HttpVerb verb))
                 Verb = verb;
-
 
             Uri = request.Url;
             Query = HttpUtility.ParseQueryString(Uri?.Query ?? string.Empty);
@@ -117,21 +117,12 @@ namespace CNCO.Unify.Communications.Http {
 
             Query = HttpUtility.ParseQueryString(uri.Query ?? string.Empty);
 
-            Cookies = new CookieCollection();
-            foreach (var cookie in cookies) {
-                Cookies.Add(cookie);
-            }
+            Cookies = [.. cookies];
 
 
             RemoteAddress = IPAddress.Loopback;
             BodyStream = Stream.Null;
             ProtocolVersion = new Version(1, 1);
-        }
-
-        /// <inheritdoc cref="WebRequest(Uri, Cookie[])"/>
-        /// <param name="pathParameters">Parameters passed in the path.</param>
-        public WebRequest(Uri uri, Cookie[] cookies, NameValueCollection pathParameters) : this(uri, cookies) {
-            Parameters = pathParameters;
         }
     }
 }

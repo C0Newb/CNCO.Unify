@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using CNCO.Unify.Communications.Http.Routing;
+using System.Net;
 
 namespace CNCO.Unify.Communications.Http {
     public class WebServer : IWebServer {
@@ -45,8 +46,9 @@ namespace CNCO.Unify.Communications.Http {
                         CommunicationsRuntime.Current.RuntimeLog.Warning($"Attempting listener thread restart #{ListenerThreadRestart}"); // sorta a lie.. but eh
                     }
                 }
-            });
-            ListenerThread.Name = UnifyRuntime.Current.ApplicationId + "-WebServer#" + GetHashCode();
+            }) {
+                Name = UnifyRuntime.Current.ApplicationId + "-WebServer#" + GetHashCode()
+            };
 
             Router ??= new Router();
         }
@@ -114,6 +116,26 @@ namespace CNCO.Unify.Communications.Http {
             try {
                 if (Router == null)
                     return;
+
+                try {
+                    var defaultHeaders = CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.DefaultWebServerResponseHeaders;
+                    if (defaultHeaders != null) {
+                        foreach (var header in defaultHeaders.AllKeys) {
+                            if (defaultHeaders[header] == null)
+                                continue;
+
+                            context.Response.Headers[header] = defaultHeaders[header];
+                        }
+                    }
+                } catch (Exception ex) {
+                    // Failed to apply default headers
+                    CommunicationsRuntime.Current.RuntimeLog.Warning(
+                        $"{GetType().Name}::{nameof(HandleRequest)}",
+                        "Failed to apply default headers. Error: " +
+                        ex.Message +
+                        "Stack: " + ex.StackTrace
+                     );
+                }
 
                 WebRequest request = new WebRequest(context.Request);
                 WebResponse response = new WebResponse(context.Response);

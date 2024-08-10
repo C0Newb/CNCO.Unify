@@ -6,20 +6,28 @@ using System.Text.Json.Nodes;
 
 namespace CNCO.Unify.Communications.Http {
     public class WebResponse {
-        private readonly HttpListenerResponse _response;
+        private readonly HttpListenerResponse? _response;
 
+        public bool HasEnded { get; private set; } = false;
 
         public CookieCollection Cookies {
-            get => _response.Cookies;
-            set => _response.Cookies = value;
+            get => _response?.Cookies ?? [];
+            set {
+                if (_response != null)
+                    _response.Cookies = value ?? [];
+            }
         }
+
         public WebHeaderCollection Headers {
-            get => _response.Headers;
-            set => _response.Headers = value;
+            get => _response?.Headers ?? [];
+            set {
+                if (_response != null)
+                    _response.Headers = value ?? [];
+            }
         }
 
         public Stream OutputStream {
-            get => _response.OutputStream;
+            get => _response?.OutputStream ?? Stream.Null;
         }
 
         public string? ContentType {
@@ -32,7 +40,7 @@ namespace CNCO.Unify.Communications.Http {
             }
         }
 
-        public bool KeepAlive => _response.KeepAlive;
+        public bool KeepAlive => _response?.KeepAlive ?? false;
 
         public string? RedirectLocation {
             get => Headers[HttpResponseHeader.Location];
@@ -44,6 +52,7 @@ namespace CNCO.Unify.Communications.Http {
             }
         }
 
+        public WebResponse() { }
 
         public WebResponse(HttpListenerResponse response) {
             _response = response;
@@ -51,15 +60,16 @@ namespace CNCO.Unify.Communications.Http {
         }
 
         public void End() {
-            _response.Close();
+            HasEnded = true;
+            _response?.Close();
         }
 
         public void AddCookie(Cookie cookie) {
             ArgumentNullException.ThrowIfNull(cookie, nameof(cookie));
-            _response.AppendCookie(cookie);
+            _response?.AppendCookie(cookie);
         }
-        public void AddHeader(string name, string value) => _response.AddHeader(name, value);
-        public void AppendHeader(string name, string value) => _response.AppendHeader(name, value);
+        public void AddHeader(string name, string value) => _response?.AddHeader(name, value);
+        public void AppendHeader(string name, string value) => _response?.AppendHeader(name, value);
 
 
         /// <summary>
@@ -72,8 +82,14 @@ namespace CNCO.Unify.Communications.Http {
 
 
         public void Redirect(string uri) {
+            if (_response == null)
+                throw new NullReferenceException("No response available to set.");
+
             RedirectLocation = uri;
-            _response.StatusCode = (int)HttpStatusCode.Redirect;
+            if (string.IsNullOrEmpty(uri))
+                _response.StatusCode = 200;
+            else
+                _response.StatusCode = (int)HttpStatusCode.Redirect;
         }
 
         /// <summary>
@@ -81,6 +97,9 @@ namespace CNCO.Unify.Communications.Http {
         /// </summary>
         /// <param name="statusCode"></param>
         public void Status(int statusCode) {
+            if (_response == null)
+                throw new NullReferenceException("No response available to set.");
+
             _response.StatusCode = statusCode;
         }
 
@@ -88,19 +107,30 @@ namespace CNCO.Unify.Communications.Http {
         /// Sends a string back as the response. Ends the response.
         /// </summary>
         /// <param name="data">String to respond with.</param>
-        public void Send(string data) {
-            byte[] bytes = Encoding.UTF8.GetBytes(data);
+        public void Send(string? data) {
+            if (_response == null)
+                throw new NullReferenceException("No response available to set.");
+
+            byte[] bytes = Encoding.UTF8.GetBytes(data ?? string.Empty);
             OutputStream.Write(bytes);
-            _response.Close();
+            End();
         }
 
         /// <summary>
         /// Send a JSON response back. Ends the response.
         /// </summary>
         /// <param name="data">JSON data to send.</param>
-        public void SendJson(JsonObject data) {
+        public void SendJson(JsonObject? data) {
+            if (_response == null)
+                throw new NullReferenceException("No response available to set.");
+
+            if (data == null) {
+                Send(null);
+                return;
+            }
+
             JsonSerializer.Serialize(OutputStream, data);
-            _response.Close();
+            End();
         }
 
         /// <summary>
@@ -111,6 +141,9 @@ namespace CNCO.Unify.Communications.Http {
         /// <param name="fileType">Use <see cref="System.Net.Mime.MediaTypeNames"/>.</param>
         /// <exception cref="NotImplementedException"></exception>
         public void SendFile(string path, IFileStorage storage, string? fileType = null) {
+            if (_response == null)
+                throw new NullReferenceException("No response available to set.");
+
             if (!storage.Exists(path))
                 throw new FileNotFoundException(path);
 
@@ -127,7 +160,7 @@ namespace CNCO.Unify.Communications.Http {
                     fileStream.CopyTo(_response.OutputStream);
                 }
             }
-            _response.Close();
+            End();
         }
 
         /// <summary>
@@ -137,6 +170,9 @@ namespace CNCO.Unify.Communications.Http {
         /// <param name="attachmentOptions">Options related to the file being downloaded.</param>
         /// <exception cref="NotImplementedException">Not implemented.</exception>
         public void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null) {
+            if (_response == null)
+                throw new NullReferenceException("No response available to set.");
+
             if (!storage.Exists(path))
                 throw new FileNotFoundException(path);
 

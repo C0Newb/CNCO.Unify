@@ -18,6 +18,8 @@ namespace CNCO.Unify.Communications {
 
         private static IWebClient? _webClient;
 
+        public CommunicationsRuntimeConfiguration Configuration { get; private set; }
+
         /// <summary>
         /// Application wide, shared <see cref="IWebClient"/>.
         /// </summary>
@@ -48,6 +50,8 @@ namespace CNCO.Unify.Communications {
         public CommunicationsRuntime(CommunicationsRuntimeConfiguration? runtimeConfiguration) {
             if (_instance != null)
                 return;
+
+            Configuration = runtimeConfiguration ?? new CommunicationsRuntimeConfiguration();
 
             lock (_initializationLock) {
                 if (_instance != null)

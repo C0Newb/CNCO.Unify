@@ -56,10 +56,10 @@
 
 
         public Task<HttpResponseMessage> ConnectAsync(string uri) {
-            return HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Connect, uri));
+            return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Connect, uri));
         }
         public Task<HttpResponseMessage> ConnectAsync(Uri uri) {
-            return HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Connect, uri));
+            return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Connect, uri));
         }
 
 
@@ -87,18 +87,18 @@
 
 
         public Task<HttpResponseMessage> HeadAsync(string uri) {
-            return HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, uri));
+            return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Head, uri));
         }
         public Task<HttpResponseMessage> HeadAsync(Uri uri) {
-            return HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, uri));
+            return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Head, uri));
         }
 
 
         public Task<HttpResponseMessage> OptionsAsync(string uri) {
-            return HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Options, uri));
+            return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Options, uri));
         }
         public Task<HttpResponseMessage> OptionsAsync(Uri uri) {
-            return HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Options, uri));
+            return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Options, uri));
         }
 
 
@@ -127,10 +127,10 @@
 
 
         public Task<HttpResponseMessage> TraceAsync(string uri) {
-            return HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Trace, uri));
+            return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Trace, uri));
         }
         public Task<HttpResponseMessage> TraceAsync(Uri uri) {
-            return HttpClient.SendAsync(new HttpRequestMessage(HttpMethod.Trace, uri));
+            return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Trace, uri));
         }
     }
 }
