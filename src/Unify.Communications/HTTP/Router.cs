@@ -248,17 +248,25 @@ namespace CNCO.Unify.Communications.Http {
                             continue;
                         }
 
+                        object? value = parameter?.Value ?? null;
                         if (parameter?.Type != methodParameters[i].ParameterType) {
-                            string methodTag = $"{Controller.FullName}::{MethodInfo.Name}({string.Join(", ", methodParameters.Select(x => x.ParameterType))})";
-                            CommunicationsRuntime.Current.RuntimeLog.Warning(
-                                "Router::ControllerMethod::Callback",
-                                $"Cannot call {methodTag}) as the request parameter type {parameter?.Type.FullName?? "NULL_PARAMETER"} " +
-                                $"does not match the method parameter type {methodParameters[i].ParameterType.FullName}!"
-                            );
-                            return;
+                            // _try_ casting
+                            try {
+                                value = Convert.ChangeType(parameter?.Value, methodParameters[i].ParameterType);
+                            } catch (Exception e) {
+                                // nope
+                                string methodTag = $"{Controller.FullName}::{MethodInfo.Name}({string.Join(", ", methodParameters.Select(x => x.ParameterType))})";
+                                CommunicationsRuntime.Current.RuntimeLog.Warning(
+                                    "Router::ControllerMethod::Callback",
+                                    $"Cannot call {methodTag}) as the request parameter type {parameter?.Type.FullName ?? "NULL_PARAMETER"} " +
+                                    $"does not match the method parameter type {methodParameters[i].ParameterType.FullName}! " +
+                                    $"An attempt to convert via Convert.ChangeType() failed with the following message: {e.Message}"
+                                );
+                                return;
+                            }
                         }
 
-                        parameters.Add(parameter?.Value ?? null);
+                        parameters.Add(value);
                     }
 
                     MethodInfo.Invoke(classInstance, parameters.ToArray());
