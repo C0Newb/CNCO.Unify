@@ -2,7 +2,7 @@
 
 namespace CNCO.Unify.Communications.Http.Routing {
     public class HttpPostAttribute : HttpMethodAttribute {
-        private static readonly IEnumerable<HttpMethod> _method = [HttpMethod.Post];
+        private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Post];
 
         public HttpPostAttribute() : base(_method) { }
 

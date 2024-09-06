@@ -1,6 +1,7 @@
 ﻿using CNCO.Unify.Communications.Http;
 using System.Net;
 using System.Net.Sockets;
+using HttpMethod = System.Net.Http.HttpMethod;
 
 namespace UnifyTests.Communications.Http {
     [TestFixture]
@@ -95,7 +96,7 @@ namespace UnifyTests.Communications.Http {
         }
 
         [Test]
-        public async Task CanReceiveHTTPMethod_PUT() {
+        public async Task CanReceiveHTTPMethodPUT() {
             var uniqueCode = Guid.NewGuid().ToString();
             var port = GetRandomOpenPort();
             string address = $"http://127.0.0.1:{port}";

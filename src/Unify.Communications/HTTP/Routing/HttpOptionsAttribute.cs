@@ -2,7 +2,7 @@
 
 namespace CNCO.Unify.Communications.Http.Routing {
     public class HttpOptionsAttribute : HttpMethodAttribute {
-        private static readonly IEnumerable<HttpMethod> _method = [HttpMethod.Options];
+        private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Options];
 
         public HttpOptionsAttribute() : base(_method) { }
 

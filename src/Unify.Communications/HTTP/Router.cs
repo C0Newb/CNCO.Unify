@@ -12,10 +12,10 @@ namespace CNCO.Unify.Communications.Http {
             public HttpVerb Verb { get; private set; }
             public string Path { get; private set; }
             public string PathRegex { get; private set; }
-            public Action<WebRequest, WebResponse> OnWebRequest { get; private set; }
+            public Action<IWebRequest, IWebResponse> OnWebRequest { get; private set; }
             public Task? Task { get; set; }
 
-            public Listener(HttpVerb verb, string path, Action<WebRequest, WebResponse> onWebRequest) {
+            public Listener(HttpVerb verb, string path, Action<IWebRequest, IWebResponse> onWebRequest) {
                 path = '/' + path.Trim('/'); // force only one '/' at the start :)
 
                 Verb = verb;
@@ -59,18 +59,18 @@ namespace CNCO.Unify.Communications.Http {
             }
         }
 
-        public void All(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.All, path, callback));
-        public void Connect(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Connect, path, callback));
-        public void Delete(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Delete, path, callback));
-        public void Get(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Get, path, callback));
-        public void Head(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Head, path, callback));
-        public void Options(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Options, path, callback));
-        public void Patch(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Patch, path, callback));
-        public void Post(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Post, path, callback));
-        public void Put(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Put, path, callback));
-        public void Trace(string path, Action<WebRequest, WebResponse> callback) => AddListener(new Listener(HttpVerb.Trace, path, callback));
+        public void All(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Any, path, callback));
+        public void Connect(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Connect, path, callback));
+        public void Delete(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Delete, path, callback));
+        public void Get(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Get, path, callback));
+        public void Head(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Head, path, callback));
+        public void Options(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Options, path, callback));
+        public void Patch(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Patch, path, callback));
+        public void Post(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Post, path, callback));
+        public void Put(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Put, path, callback));
+        public void Trace(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Trace, path, callback));
 
-        public void Remove(string path, Action<WebRequest, WebResponse>? callback, HttpVerb? httpVerb) {
+        public void Remove(string path, Action<IWebRequest, IWebResponse>? callback, HttpVerb? httpVerb) {
             if (callback == null || !Listeners.TryGetValue(path, out List<Listener>? listeners)) {
                 Listeners.Remove(path);
                 return;
@@ -89,7 +89,7 @@ namespace CNCO.Unify.Communications.Http {
         /// </summary>
         /// <param name="request">Incoming request.</param>
         /// <param name="response">Incoming request's response.</param>
-        public void Process(WebRequest request, WebResponse response) {
+        public void Process(IWebRequest request, IWebResponse response) {
             if (string.IsNullOrEmpty(request.Path))
                 return;
 
@@ -135,7 +135,7 @@ namespace CNCO.Unify.Communications.Http {
 
             foreach (Listener listener in listenersForPath!) {
                 try {
-                    if (listener.Verb == HttpVerb.All || listener.Verb == request.Verb) {
+                    if (listener.Verb == HttpVerb.Any || listener.Verb == request.Verb) {
                         // same path, same verb, send er...
                         listener.Task = new Task(() => listener.OnWebRequest(request, response), cancellationToken);
                         listener.Task.Start();
@@ -155,7 +155,7 @@ namespace CNCO.Unify.Communications.Http {
             cancellationTokenSource.CancelAfter(CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.RouterListenerResponseTimeoutMilliseconds);
             foreach (Listener listener in listenersForPath) {
                 try {
-                    if (listener.Verb == HttpVerb.All || listener.Verb == request.Verb) {
+                    if (listener.Verb == HttpVerb.Any || listener.Verb == request.Verb) {
                         listener.Task?.Wait(cancellationToken); // it should be cancelling, but ..
                         listener.Task?.Dispose();
                     }
@@ -202,8 +202,8 @@ namespace CNCO.Unify.Communications.Http {
             public IEnumerable<HttpMethodAttribute> HttpMethodAttributes { get; }
             public MethodInfo MethodInfo { get; }
 
-            public Action<WebRequest, WebResponse> Callback // this is what is called for this HttpMethodAttribute requests!
-                => new Action<WebRequest, WebResponse>((request, response) => {
+            public Action<IWebRequest, IWebResponse> Callback // this is what is called for this HttpMethodAttribute requests!
+                => new Action<IWebRequest, IWebResponse>((request, response) => {
                     var controllerContext = new ControllerContext(request, response);
                     var classInstance = Activator.CreateInstance(Controller);
                     if (classInstance is Controller controllerInstance) {
@@ -330,31 +330,31 @@ namespace CNCO.Unify.Communications.Http {
 
                 foreach (var httpMethod in httpMethodAttribute.HttpMethods) {
                     switch (httpMethod) {
-                        case HttpMethod.Get:
+                        case HttpVerb.Get:
                             Get(methodRoute, callback);
                             break;
-                        case HttpMethod.Post:
+                        case HttpVerb.Post:
                             Post(methodRoute, callback);
                             break;
-                        case HttpMethod.Patch:
+                        case HttpVerb.Patch:
                             Patch(methodRoute, callback);
                             break;
-                        case HttpMethod.Put:
+                        case HttpVerb.Put:
                             Put(methodRoute, callback);
                             break;
-                        case HttpMethod.Delete:
+                        case HttpVerb.Delete:
                             Delete(methodRoute, callback);
                             break;
-                        case HttpMethod.Trace:
+                        case HttpVerb.Trace:
                             Trace(methodRoute, callback);
                             break;
-                        case HttpMethod.Head:
+                        case HttpVerb.Head:
                             Head(methodRoute, callback);
                             break;
-                        case HttpMethod.Connect:
+                        case HttpVerb.Connect:
                             Connect(methodRoute, callback);
                             break;
-                        case HttpMethod.Options:
+                        case HttpVerb.Options:
                             Options(methodRoute, callback);
                             break;
 
@@ -362,7 +362,7 @@ namespace CNCO.Unify.Communications.Http {
                             CommunicationsRuntime.Current.RuntimeLog.Alert(
                                 $"{GetType()}::{nameof(AddListener)}",
                                 $"Unknown HttpMethod was attempted to be added via a {typeof(HttpMethodAttribute).FullName}! Method: {httpMethod}. " +
-                                $"Defaulting to {HttpVerb.All}."
+                                $"Defaulting to {HttpVerb.Any}."
                             );
                             All(methodRoute, callback);
                             break;

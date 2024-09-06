@@ -91,25 +91,25 @@ namespace CNCO.Unify.Communications.Http {
         }
 
         #region Router method proxies
-        public void All(string path, Action<WebRequest, WebResponse> callback) => Router!.All(path, callback);
+        public void All(string path, Action<IWebRequest, IWebResponse> callback) => Router!.All(path, callback);
 
-        public void Connect(string path, Action<WebRequest, WebResponse> callback) => Router!.Connect(path, callback);
+        public void Connect(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Connect(path, callback);
 
-        public void Delete(string path, Action<WebRequest, WebResponse> callback) => Router!.Delete(path, callback);
+        public void Delete(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Delete(path, callback);
 
-        public void Get(string path, Action<WebRequest, WebResponse> callback) => Router!.Get(path, callback);
+        public void Get(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Get(path, callback);
 
-        public void Head(string path, Action<WebRequest, WebResponse> callback) => Router!.Head(path, callback);
+        public void Head(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Head(path, callback);
 
-        public void Options(string path, Action<WebRequest, WebResponse> callback) => Router!.Options(path, callback);
+        public void Options(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Options(path, callback);
 
-        public void Patch(string path, Action<WebRequest, WebResponse> callback) => Router!.Patch(path, callback);
+        public void Patch(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Patch(path, callback);
 
-        public void Post(string path, Action<WebRequest, WebResponse> callback) => Router!.Post(path, callback);
+        public void Post(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Post(path, callback);
 
-        public void Put(string path, Action<WebRequest, WebResponse> callback) => Router!.Put(path, callback);
+        public void Put(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Put(path, callback);
 
-        public void Trace(string path, Action<WebRequest, WebResponse> callback) => Router!.Trace(path, callback);
+        public void Trace(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Trace(path, callback);
         #endregion
 
         private void HandleRequest(HttpListenerContext context) {

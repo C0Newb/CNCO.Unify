@@ -8,53 +8,38 @@ namespace CNCO.Unify.Communications.Http {
     /// Represents the HTTP request.
     /// Contains the request query string, parameters, HTTP headers, cookies, and more.
     /// </summary>
-    public class WebRequest {
+    public class WebRequest : IWebRequest {
 
         #region Request path information
-        /// <summary>
-        /// This is the protocol used to make the request.
-        /// </summary>
         public Protocol Protocol { get; set; } = Protocol.HTTP;
 
-        /// <summary>
-        /// The HTTP verb used for this request.
-        /// </summary>
-        public HttpVerb? Verb { get; set; }
+        private HttpVerb? _httpVerb;
+        public HttpVerb? Verb {
+            get => _httpVerb;
+            set {
+                if (_httpVerb == HttpVerb.Any) {
+                    throw new InvalidOperationException("The HttpVerb Any cannot be used in requests.");
+                }
+                _httpVerb = value;
+            }
+        }
 
-        /// <summary>
-        /// This is the full URL, such as <c>localhost:8008/api/v1/getData?myParameter=abc123</c>
-        /// </summary>
         public Uri? Uri { get; set; }
 
-        /// <summary>
-        /// This will be the domain, or host, the request was sent to, such as <c>localhost:8008</c>.
-        /// </summary>
         public string? Domain {
             get => Uri?.Host;
         }
-
-        /// <summary>
-        /// This is the page being hit, such as <c>/api/v1/getData</c>.
-        /// </summary>
+        
         public string? Path {
             get => Uri?.AbsolutePath;
         }
 
-        /// <summary>
-        /// This is the query string at the end of the URL, such as <c>?myParameter=abc123</c>.
-        /// </summary>
         public string? QueryString {
             get => Uri?.Query;
         }
 
-        /// <summary>
-        /// The queries sent in the URL.
-        /// </summary>
         public NameValueCollection Query { get; set; } = new NameValueCollection();
 
-        /// <summary>
-        /// Route information.
-        /// </summary>
         public RouteTemplate? RouteTemplate { get; set; }
         #endregion
 
@@ -62,23 +47,13 @@ namespace CNCO.Unify.Communications.Http {
         public readonly Version ProtocolVersion = new Version();
 
         #region Requestor data
-        /// <summary>
-        /// Request headers.
-        /// </summary>
         public NameValueCollection Headers { get; set; } = new NameValueCollection();
 
-        /// <summary>
-        /// List of cookies sent in the <see cref="WebRequest"/>.
-        /// </summary>
         public CookieCollection Cookies { get; set; } = new CookieCollection();
 
-        /// <summary>
-        /// The remote IP of the requester.
-        /// </summary>
         public IPAddress? RemoteAddress { get; set; }
 
         public string? UserAgent => Headers["User-Agent"];
-
 
         public Stream BodyStream { get; set; } = Stream.Null;
         #endregion
@@ -110,9 +85,9 @@ namespace CNCO.Unify.Communications.Http {
         /// <param name="cookies">Request cookies.</param>
         public WebRequest(Uri uri, Cookie[] cookies) {
             Uri = uri;
-            if (uri.Scheme.ToLower() == "http")
+            if (uri.Scheme.Equals("http", StringComparison.CurrentCultureIgnoreCase))
                 Protocol = Protocol.HTTP;
-            else if (uri.Scheme.ToLower() == "https")
+            else if (uri.Scheme.Equals("https", StringComparison.CurrentCultureIgnoreCase))
                 Protocol = Protocol.HTTPS;
 
             Query = HttpUtility.ParseQueryString(uri.Query ?? string.Empty);

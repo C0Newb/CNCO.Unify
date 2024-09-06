@@ -2,7 +2,13 @@
     /// <summary>
     /// HTTP methods.
     /// </summary>
-    public enum HttpMethod {
+    public enum HttpVerb {
+        /// <summary>
+        /// Used to accept any type of <see cref="HttpVerb"/>. Largely a placeholder.
+        /// This is not a valid verb for web requests.
+        /// </summary>
+        Any,
+
         /// <summary>
         /// Requests a representation of the specified resource. Only used to retrieve data.
         /// </summary>

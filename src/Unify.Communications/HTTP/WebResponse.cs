@@ -5,8 +5,18 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace CNCO.Unify.Communications.Http {
-    public class WebResponse {
+    /// <summary>
+    /// Represents an HTTP response.
+    /// </summary>
+    public class WebResponse : IWebResponse {
         private readonly HttpListenerResponse? _response;
+
+        /// <summary>
+        /// Raw response output stream.
+        /// </summary>
+        private Stream OutputStream {
+            get => _response?.OutputStream ?? Stream.Null;
+        }
 
         public bool HasEnded { get; private set; } = false;
 
@@ -24,10 +34,6 @@ namespace CNCO.Unify.Communications.Http {
                 if (_response != null)
                     _response.Headers = value ?? [];
             }
-        }
-
-        public Stream OutputStream {
-            get => _response?.OutputStream ?? Stream.Null;
         }
 
         public string? ContentType {
@@ -71,15 +77,9 @@ namespace CNCO.Unify.Communications.Http {
         public void AddHeader(string name, string value) => _response?.AddHeader(name, value);
         public void AppendHeader(string name, string value) => _response?.AppendHeader(name, value);
 
-
-        /// <summary>
-        /// Does not send anything, sets the <c>Content-Disposition</c> header to "attachment".
-        /// </summary>
-        /// <param name="fileName">What the attachment will be named when sent to the user.</param>
         public void Attachment(string fileName) {
             Headers["Content-Disposition"] = "attachment" + (!string.IsNullOrEmpty(fileName) ? $"; filename=\"{fileName}\"" : "");
         }
-
 
         public void Redirect(string uri) {
             if (_response == null)
@@ -91,11 +91,7 @@ namespace CNCO.Unify.Communications.Http {
             else
                 _response.StatusCode = (int)HttpStatusCode.Redirect;
         }
-
-        /// <summary>
-        /// Sets the HTTP status for the response.
-        /// </summary>
-        /// <param name="statusCode"></param>
+        
         public void Status(int statusCode) {
             if (_response == null)
                 throw new NullReferenceException("No response available to set.");
@@ -103,10 +99,6 @@ namespace CNCO.Unify.Communications.Http {
             _response.StatusCode = statusCode;
         }
 
-        /// <summary>
-        /// Sends a string back as the response. Ends the response.
-        /// </summary>
-        /// <param name="data">String to respond with.</param>
         public void Send(string? data) {
             if (_response == null)
                 throw new NullReferenceException("No response available to set.");
@@ -116,10 +108,6 @@ namespace CNCO.Unify.Communications.Http {
             End();
         }
 
-        /// <summary>
-        /// Send a JSON response back. Ends the response.
-        /// </summary>
-        /// <param name="data">JSON data to send.</param>
         public void SendJson(JsonObject? data) {
             if (_response == null)
                 throw new NullReferenceException("No response available to set.");
@@ -129,17 +117,11 @@ namespace CNCO.Unify.Communications.Http {
                 return;
             }
 
+            _response.ContentType = "application/json";
             JsonSerializer.Serialize(OutputStream, data);
             End();
         }
 
-        /// <summary>
-        /// This will *serve* a file, not mark is to be downloaded by the user.
-        /// All we do is read a file and send it's contents back.
-        /// </summary>
-        /// <param name="path">Path to the file to send.</param>
-        /// <param name="fileType">Use <see cref="System.Net.Mime.MediaTypeNames"/>.</param>
-        /// <exception cref="NotImplementedException"></exception>
         public void SendFile(string path, IFileStorage storage, string? fileType = null) {
             if (_response == null)
                 throw new NullReferenceException("No response available to set.");
@@ -163,12 +145,6 @@ namespace CNCO.Unify.Communications.Http {
             End();
         }
 
-        /// <summary>
-        /// Sends a file to the user that will be downloaded.
-        /// </summary>
-        /// <param name="path">Path to the file to download.</param>
-        /// <param name="attachmentOptions">Options related to the file being downloaded.</param>
-        /// <exception cref="NotImplementedException">Not implemented.</exception>
         public void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null) {
             if (_response == null)
                 throw new NullReferenceException("No response available to set.");

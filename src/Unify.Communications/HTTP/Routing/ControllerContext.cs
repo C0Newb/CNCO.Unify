@@ -2,16 +2,13 @@
     /// <summary>
     /// Controller context for an incoming request.
     /// </summary>
-    public class ControllerContext {
+    public class ControllerContext : IControllerContext {
         private readonly object _lockObject = new object();
 
-        private WebRequest? _webRequest;
-        private WebResponse? _webResponse;
+        private IWebRequest? _webRequest;
+        private IWebResponse? _webResponse;
 
-        /// <summary>
-        /// The incoming web request.
-        /// </summary>
-        public WebRequest WebRequest {
+        public IWebRequest WebRequest {
             get {
                 if (_webRequest == null) {
                     lock (_lockObject) {
@@ -21,16 +18,13 @@
                 return _webRequest;
             }
 
-            set {
+            /*set {
                 ArgumentNullException.ThrowIfNull(value);
                 _webRequest = value;
-            }
+            }*/
         }
 
-        /// <summary>
-        /// The outgoing web response.
-        /// </summary>
-        public WebResponse WebResponse {
+        public IWebResponse WebResponse {
             get {
                 if (_webResponse == null) {
                     lock (_lockObject) {
@@ -40,16 +34,16 @@
                 return _webResponse;
             }
 
-            set {
+            /*set {
                 ArgumentNullException.ThrowIfNull(value);
                 _webResponse = value;
-            }
+            }*/
         }
 
 
         public ControllerContext() { }
 
-        public ControllerContext(WebRequest WebRequest, WebResponse WebResponse) {
+        public ControllerContext(IWebRequest WebRequest, IWebResponse WebResponse) {
             ArgumentNullException.ThrowIfNull(WebRequest);
             ArgumentNullException.ThrowIfNull(WebResponse);
             _webRequest = WebRequest;

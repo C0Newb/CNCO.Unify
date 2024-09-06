@@ -6,11 +6,11 @@ namespace CNCO.Unify.Communications.Http.Routing {
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class HttpMethodAttribute : Attribute {
-        private readonly List<HttpMethod> _httpMethods;
+        private readonly List<HttpVerb> _httpMethods;
 
-        public HttpMethodAttribute(IEnumerable<HttpMethod> httpMethods) : this(httpMethods, null) { }
+        public HttpMethodAttribute(IEnumerable<HttpVerb> httpMethods) : this(httpMethods, null) { }
 
-        public HttpMethodAttribute(IEnumerable<HttpMethod> httpMethods, [StringSyntax("Route")] string? template) {
+        public HttpMethodAttribute(IEnumerable<HttpVerb> httpMethods, [StringSyntax("Route")] string? template) {
             ArgumentNullException.ThrowIfNull(httpMethods);
             _httpMethods = httpMethods.ToList();
             Template = template;
@@ -19,7 +19,7 @@ namespace CNCO.Unify.Communications.Http.Routing {
         /// <summary>
         /// Http methods this method is to be activated on.
         /// </summary>
-        public IEnumerable<HttpMethod> HttpMethods => _httpMethods;
+        public IEnumerable<HttpVerb> HttpMethods => _httpMethods;
 
         /// <inheritdoc cref="IRouteTemplate.Template"/>
         [StringSyntax("Route")]

@@ -2,7 +2,7 @@
 
 namespace CNCO.Unify.Communications.Http.Routing {
     public class HttpTraceAttribute : HttpMethodAttribute {
-        private static readonly IEnumerable<HttpMethod> _method = [HttpMethod.Trace];
+        private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Trace];
 
         public HttpTraceAttribute() : base(_method) { }
 

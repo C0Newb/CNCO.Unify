@@ -2,7 +2,7 @@
 
 namespace CNCO.Unify.Communications.Http.Routing {
     public class HttpDeleteAttribute : HttpMethodAttribute {
-        private static readonly IEnumerable<HttpMethod> _method = [HttpMethod.Delete];
+        private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Delete];
 
         public HttpDeleteAttribute() : base(_method) { }
 

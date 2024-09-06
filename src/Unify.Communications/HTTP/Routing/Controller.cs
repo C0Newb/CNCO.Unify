@@ -3,13 +3,13 @@
     public abstract class Controller {
         private readonly object _lockObject = new object();
 
-        private ControllerContext? _controllerContext;
+        private IControllerContext? _controllerContext;
 
-        public WebRequest Request => Context.WebRequest;
-        public WebResponse Response => Context.WebResponse;
+        public IWebRequest Request => Context.WebRequest;
+        public IWebResponse Response => Context.WebResponse;
 
 
-        public ControllerContext Context {
+        public IControllerContext Context {
             get {
                 if (_controllerContext == null) {
                     lock (_lockObject) {
