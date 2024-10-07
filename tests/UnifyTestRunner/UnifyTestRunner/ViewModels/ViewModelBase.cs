@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace UnifyTestRunner.ViewModels {
     public abstract class ViewModelBase : ReactiveObject, INotifyPropertyChanged {
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public new event PropertyChangedEventHandler? PropertyChanged;
 
         /// <summary>
         /// Sets property if it does not equal existing value. Notifies listeners if change occurs.
