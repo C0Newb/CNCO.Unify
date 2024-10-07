@@ -6,7 +6,6 @@
         private readonly object _lockObject = new object();
 
         private IWebRequest? _webRequest;
-        private IWebResponse? _webResponse;
 
         public IWebRequest WebRequest {
             get {
@@ -17,37 +16,22 @@
                 }
                 return _webRequest;
             }
-
-            /*set {
-                ArgumentNullException.ThrowIfNull(value);
-                _webRequest = value;
-            }*/
         }
 
-        public IWebResponse WebResponse {
-            get {
-                if (_webResponse == null) {
-                    lock (_lockObject) {
-                        _webResponse ??= new WebResponse();
-                    }
-                }
-                return _webResponse;
-            }
+        public IWebResponse? WebResponse { get; }
 
-            /*set {
-                ArgumentNullException.ThrowIfNull(value);
-                _webResponse = value;
-            }*/
-        }
-
+        public IWebSocket? WebSocket { get; }
 
         public ControllerContext() { }
 
-        public ControllerContext(IWebRequest WebRequest, IWebResponse WebResponse) {
-            ArgumentNullException.ThrowIfNull(WebRequest);
-            ArgumentNullException.ThrowIfNull(WebResponse);
-            _webRequest = WebRequest;
-            _webResponse = WebResponse;
+        public ControllerContext(IWebRequest webRequest, IWebResponse? webResponse, IWebSocket? webSocket) {
+            ArgumentNullException.ThrowIfNull(webRequest);
+            if (webSocket == null)
+                ArgumentNullException.ThrowIfNull(WebResponse);
+
+            _webRequest = webRequest;
+            WebResponse = webResponse;
+            WebSocket = webSocket;
         }
     }
 }

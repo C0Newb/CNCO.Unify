@@ -58,6 +58,8 @@ namespace CNCO.Unify.Communications.Http {
         public Stream BodyStream { get; set; } = Stream.Null;
         #endregion
 
+        public WebSocket? WebSocket { get; private set; }
+
         #region Constructors
         /// <summary>
         /// Initializes a new instance of <see cref="WebRequest"/>.
@@ -86,9 +88,7 @@ namespace CNCO.Unify.Communications.Http {
         }
 
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="WebRequest"/>.
-        /// </summary>
+        /// <inheritdoc cref="WebRequest()"/>
         /// <param name="uri">The full URL, including the protocol, domain, path and query string.</param>
         /// <param name="cookies">Request cookies.</param>
         public WebRequest(Uri uri, Cookie[] cookies) {
@@ -108,5 +108,15 @@ namespace CNCO.Unify.Communications.Http {
             ProtocolVersion = new Version(1, 1);
         }
         #endregion
+
+        public WebSocket CreateWebSocketConnection() => CreateWebSocketConnection(null, null, null);
+        public WebSocket CreateWebSocketConnection(string? subProtocol, TimeSpan? keepAliveInterval) => CreateWebSocketConnection(subProtocol, null, keepAliveInterval);
+        public WebSocket CreateWebSocketConnection(string? subProtocol, int? receiveBufferSize, TimeSpan? keepAliveInterval) {
+            if (_listenerContext == null)
+                throw new NullReferenceException("Cannot create WebSocket connection without a HttpListenerContext.");
+
+            WebSocket = WebSocket.CreateWebSocketConnection(_listenerContext, this, subProtocol, receiveBufferSize, keepAliveInterval);
+            return WebSocket;
+        }
     }
 }

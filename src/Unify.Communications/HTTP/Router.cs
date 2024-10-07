@@ -1,5 +1,4 @@
 ﻿using CNCO.Unify.Communications.Http.Routing;
-using System.Collections.Specialized;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -8,29 +7,6 @@ namespace CNCO.Unify.Communications.Http {
     /// Routes incoming requests.
     /// </summary>
     public class Router : IRouter {
-        private sealed class Listener {
-            public HttpVerb Verb { get; private set; }
-            public string Path { get; private set; }
-            public string PathRegex { get; private set; }
-            public Action<IWebRequest, IWebResponse> OnWebRequest { get; private set; }
-            public Task? Task { get; set; }
-
-            public Listener(HttpVerb verb, string path, Action<IWebRequest, IWebResponse> onWebRequest) {
-                path = '/' + path.Trim('/'); // force only one '/' at the start :)
-
-                Verb = verb;
-                Path = path;
-                PathRegex = Regex.Replace(path, @":.*?:|\{.*?\}", ".*");
-                OnWebRequest = onWebRequest;
-            }
-        }
-
-        private readonly Dictionary<string, List<Listener>> Listeners = new Dictionary<string, List<Listener>>();
-
-        // Use this to go from paths to paths with parameter names (/my/path/to/blahBlah/doc -> /my/path/to/:docPath:/doc)
-        private readonly Dictionary<string, string> PathRegexLookup = new Dictionary<string, string>();
-
-
         private bool _log = true;
 
         public Router(bool initializeRoutes = true) {
@@ -42,6 +18,35 @@ namespace CNCO.Unify.Communications.Http {
         public void SetLogging(bool enabled) => _log = enabled;
 
         #region Listeners
+        private sealed class Listener {
+            public HttpVerb Verb { get; private set; }
+            public string Path { get; private set; }
+            public string PathRegex { get; private set; }
+            public Action<IWebRequest, IWebResponse>? OnWebRequest { get; private set; }
+            public Action<IWebSocket>? OnWebSocketRequest { get; private set; }
+            public Task? Task { get; set; }
+            public bool IsWebSocket { get; set; } = false;
+
+            private Listener(HttpVerb verb, string path) {
+                Verb = verb;
+                Path = '/' + path.Trim('/'); // force only one '/' at the start :)
+                PathRegex = Regex.Replace(path, @":.*?:|\{.*?\}", ".*");
+            }
+
+            public Listener(HttpVerb verb, string path, Action<IWebRequest, IWebResponse> onWebRequest) : this(verb, path) => OnWebRequest = onWebRequest;
+            public Listener(string path, Action<IWebSocket> onWebSocketRequest) : this(HttpVerb.Any, path) {
+                IsWebSocket = true;
+                OnWebSocketRequest = onWebSocketRequest;
+            }
+        }
+
+        private readonly Dictionary<string, List<Listener>> Listeners = new Dictionary<string, List<Listener>>();
+
+        // Use this to go from paths to paths with parameter names (/my/path/to/blahBlah/doc -> /my/path/to/:docPath:/doc)
+        private readonly Dictionary<string, string> PathRegexLookup = new Dictionary<string, string>();
+        #endregion
+
+        #region Listeners methods
         private void AddListener(Listener listener) {
             List<Listener>? currentListeners = null;
             if (Listeners.TryGetValue(listener.Path, out List<Listener>? value))
@@ -52,11 +57,13 @@ namespace CNCO.Unify.Communications.Http {
             Listeners[listener.Path] = currentListeners;
 
             if (
-                listener.Path != listener.PathRegex &&
-                !PathRegexLookup.ContainsKey(listener.PathRegex)
+                (listener.Path != listener.PathRegex || listener.Path.EndsWith('*'))
+                && !PathRegexLookup.ContainsKey(listener.PathRegex)
             ) {
                 PathRegexLookup.Add(listener.PathRegex, listener.Path);
             }
+
+            CommunicationsRuntime.Current.RuntimeLog.Verbose($"Added new {listener.Verb} route {listener.Path}");
         }
 
         public void All(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Any, path, callback));
@@ -69,6 +76,8 @@ namespace CNCO.Unify.Communications.Http {
         public void Post(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Post, path, callback));
         public void Put(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Put, path, callback));
         public void Trace(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Trace, path, callback));
+
+        public void WebSocket(string path, Action<IWebSocket> callback) => AddListener(new Listener(path, callback));
 
         public void Remove(string path, Action<IWebRequest, IWebResponse>? callback, HttpVerb? httpVerb) {
             if (callback == null || !Listeners.TryGetValue(path, out List<Listener>? listeners)) {
@@ -93,10 +102,12 @@ namespace CNCO.Unify.Communications.Http {
             if (string.IsNullOrEmpty(request.Path))
                 return;
 
-            Listeners.TryGetValue(request.Path.TrimEnd('/'), out List<Listener>? listenersForPath);
+            string requestPath = '/' + request.Path.Trim('/');
+            Listeners.TryGetValue(requestPath, out List<Listener>? listenersForPath);
 
+            // Find the listeners via regex?
             if (listenersForPath == null || listenersForPath?.Count == 0) {
-                // try to find it via regex
+                // yep, try to find any via regex
                 foreach (var regexString in PathRegexLookup.Keys) {
                     Regex regex = new Regex(regexString);
                     var match = regex.Match(request.Path);
@@ -112,7 +123,6 @@ namespace CNCO.Unify.Communications.Http {
                     Listeners.TryGetValue(originalPath, out List<Listener>? listenersForRegexPath);
                     if (listenersForRegexPath != null && listenersForRegexPath.Count > 0) {
                         listenersForPath = listenersForRegexPath;
-
                         request.RouteTemplate = new RouteTemplate(originalPath, request.Path);
 
                         break;
@@ -131,11 +141,44 @@ namespace CNCO.Unify.Communications.Http {
             bool listenerFired = false;
 
             CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.CancelAfter(CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.RouterListenerResponseTimeoutMilliseconds);
             CancellationToken cancellationToken = cancellationTokenSource.Token;
 
+            // Activate listeners!
+            bool hasActivatedWebSocket = false; // So we can throw a "hey, don't have HTTP listeners on the same route has WebSockets!" warning!
+            bool hasActivatedWebSocketWarningEmitted = false; // ... but only once
             foreach (Listener listener in listenersForPath!) {
                 try {
-                    if (listener.Verb == HttpVerb.Any || listener.Verb == request.Verb) {
+                    if (response.HasEnded) {
+                        CommunicationsRuntime.Current.RuntimeLog.Verbose(
+                            $"{GetType().Name}::{nameof(Process)}",
+                             $"Error encountered calling listener for {listener.Verb} \"{listener.Path}\" as the response has ended."
+                        );
+                        continue;
+                    }
+
+                    if (listener.IsWebSocket) {
+                        if (listener.OnWebSocketRequest == null) // What? How?
+                            throw new NullReferenceException($"{nameof(listener.OnWebSocketRequest)} is null, no listener action to call!");
+
+                        listener.Task = new Task(() => listener.OnWebSocketRequest(request.CreateWebSocketConnection()), TaskCreationOptions.LongRunning);
+                        listener.Task.Start();
+                        listenerFired = true;
+                        hasActivatedWebSocket = true;
+
+                    } else if (listener.Verb == HttpVerb.Any || listener.Verb == request.Verb) {
+                        if (listener.OnWebRequest == null) // What? How?
+                            throw new NullReferenceException($"{nameof(listener.OnWebRequest)} is null, no listener action to call!");
+
+                        if (hasActivatedWebSocket && !hasActivatedWebSocketWarningEmitted) {
+                            hasActivatedWebSocketWarningEmitted = true;
+                            CommunicationsRuntime.Current.RuntimeLog.Warning(
+                                $"{GetType().Name}::{nameof(Process)}",
+                                "You have a HTTP listener on the same route as a WebSocket handler! You cannot do this as once the HTTP response closes, the WebSocket will close."
+                                + Environment.NewLine + "You have been warned."
+                            );
+                        }
+
                         // same path, same verb, send er...
                         listener.Task = new Task(() => listener.OnWebRequest(request, response), cancellationToken);
                         listener.Task.Start();
@@ -152,12 +195,26 @@ namespace CNCO.Unify.Communications.Http {
                 }
             }
 
-            cancellationTokenSource.CancelAfter(CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.RouterListenerResponseTimeoutMilliseconds);
+            // Wait for a response ...
             foreach (Listener listener in listenersForPath) {
                 try {
-                    if (listener.Verb == HttpVerb.Any || listener.Verb == request.Verb) {
+                    //if (listener.IsWebSocket)
+                    //    continue; // never mind here!
+
+                    if (listener.IsWebSocket || listener.Verb == HttpVerb.Any || listener.Verb == request.Verb) {
                         listener.Task?.Wait(cancellationToken); // it should be cancelling, but ..
-                        listener.Task?.Dispose();
+
+                        int attempt = 0;
+                        while (!(listener.Task?.IsCompleted ?? false) && attempt < 25) {
+                            Thread.Sleep(25);
+                            attempt++;
+                        }
+
+                        try {
+                            listener.Task?.Dispose();
+                        } catch {
+                            CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"Listener task hang for {request.Path}!");
+                        }
                     }
                 } catch (OperationCanceledException) { }
             }
@@ -169,6 +226,11 @@ namespace CNCO.Unify.Communications.Http {
                     CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"404: no listener found for path {request.Path}!");
                 return;
             } else if (!response.HasEnded) {
+                if (request.WebSocket != null && request.WebSocket.IsOpen) {
+                    // You cannot close the response stream, that would terminate the WebSocket connection!
+                    return;
+                }
+
                 response.Status(CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.RouterNoResponseFromListenersStatusCode ?? 500);
                 response.End();
                 if (_log)
@@ -196,88 +258,6 @@ namespace CNCO.Unify.Communications.Http {
             }
         }
 
-        private class ControllerMethod {
-            private readonly Type Controller;
-
-            public IEnumerable<HttpMethodAttribute> HttpMethodAttributes { get; }
-            public MethodInfo MethodInfo { get; }
-
-            public Action<IWebRequest, IWebResponse> Callback // this is what is called for this HttpMethodAttribute requests!
-                => new Action<IWebRequest, IWebResponse>((request, response) => {
-                    var controllerContext = new ControllerContext(request, response);
-                    var classInstance = Activator.CreateInstance(Controller);
-                    if (classInstance is Controller controllerInstance) {
-                        // it should be ..
-                        controllerInstance.Context = controllerContext;
-                    } else {
-                        CommunicationsRuntime.Current.RuntimeLog.Warning(
-                            "Router::ControllerMethod::Callback",
-                            $"{nameof(classInstance)} could not be casted to type ${typeof(Controller).Name}! " +
-                            $"{nameof(classInstance)} type? {classInstance?.GetType().FullName} - base? {classInstance?.GetType().BaseType?.FullName ?? "UNKNOWN"}"
-                        );
-                    }
-
-                    var methodParameters = MethodInfo.GetParameters();
-                    if (methodParameters.Length == 0) {
-                        MethodInfo.Invoke(classInstance, []);
-                        return;
-                    }
-
-                    if (methodParameters.Length != request.RouteTemplate?.RouteParameters.Count()) {
-                        // ? what
-                        CommunicationsRuntime.Current.RuntimeLog.Alert(
-                            "Router::ControllerMethod::Callback",
-                            $"{nameof(classInstance)}::{MethodInfo.Name}() has an incorrect parameter count for the current request template! " +
-                            $"Request has {request.RouteTemplate?.RouteParameters.Count() ?? 0} parameters, but the method requires {methodParameters.Length}."
-                        );
-                        throw new TargetParameterCountException($"Request has {request.RouteTemplate?.RouteParameters.Count() ?? 0} parameters, but the method requires {methodParameters.Length}.");
-                    }
-
-                    // try to inject the parameters :)
-                    var parameters = new List<object?>(methodParameters.Length);
-                    for (int i = 0; i < methodParameters.Length; i++) {
-                        var parameter = request.RouteTemplate?.RouteParameters.ElementAt(i);
-
-                        if (parameter == null) {
-                            parameters.Add(null);
-                            continue;
-                        }
-
-                        if (methodParameters[i].ParameterType == typeof(string)) {
-                            parameters.Add(parameter?.ToStringValue());
-                            continue;
-                        }
-
-                        object? value = parameter?.Value ?? null;
-                        if (parameter?.Type != methodParameters[i].ParameterType) {
-                            // _try_ casting
-                            try {
-                                value = Convert.ChangeType(parameter?.Value, methodParameters[i].ParameterType);
-                            } catch (Exception e) {
-                                // nope
-                                string methodTag = $"{Controller.FullName}::{MethodInfo.Name}({string.Join(", ", methodParameters.Select(x => x.ParameterType))})";
-                                CommunicationsRuntime.Current.RuntimeLog.Warning(
-                                    "Router::ControllerMethod::Callback",
-                                    $"Cannot call {methodTag}) as the request parameter type {parameter?.Type.FullName ?? "NULL_PARAMETER"} " +
-                                    $"does not match the method parameter type {methodParameters[i].ParameterType.FullName}! " +
-                                    $"An attempt to convert via Convert.ChangeType() failed with the following message: {e.Message}"
-                                );
-                                return;
-                            }
-                        }
-
-                        parameters.Add(value);
-                    }
-
-                    MethodInfo.Invoke(classInstance, parameters.ToArray());
-                });
-
-            public ControllerMethod(Type controller, IEnumerable<HttpMethodAttribute> httpMethodAttributes, MethodInfo methodInfo) {
-                Controller = controller;
-                HttpMethodAttributes = httpMethodAttributes.Where(x => x != null);
-                MethodInfo = methodInfo;
-            }
-        }
         private static IEnumerable<Type> GetControllers() {
             return from assemblies in AppDomain.CurrentDomain.GetAssemblies()
                    from types in assemblies.GetTypes()
@@ -286,84 +266,100 @@ namespace CNCO.Unify.Communications.Http {
         }
 
         private static string GetControllerRoute(Type controller) {
+            string route = '/' + controller.Name.ToLower();
+            var controllerAttribute = controller.GetCustomAttribute<ControllerAttribute>(false);
+            if (controllerAttribute != null && controllerAttribute.Template != null) {
+                route = controllerAttribute.Template.Replace("[controller]", controller.Name.ToLower());
+                if (!route.StartsWith('/'))
+                    route = '/' + route;
+                return route;
+            }
+
             var routeAttribute = controller.GetCustomAttribute<RouteAttribute>(false);
             if (routeAttribute == null)
-                return '/' + controller.Name.ToLower();
-            var route = routeAttribute.Template.Replace("[controller]", controller.Name.ToLower());
+                return route; // none defined, use controller name.
+
+            route = routeAttribute.Template.Replace("[controller]", controller.Name.ToLower());
             if (!route.StartsWith('/'))
                 route = '/' + route;
             return route;
         }
 
-        private static string GetMethodRoute(MethodInfo method, Type httpMethodType) {
+        private static string GetMethodRoute(MethodInfo method, Type routeAttributeType) {
             try {
-                var httpMethodAttribute = (HttpMethodAttribute)method.GetCustomAttributes(httpMethodType, false)[0];
-                if (httpMethodAttribute == null)
+                IRouteTemplate? methodAttribute = (IRouteTemplate)method.GetCustomAttributes(routeAttributeType, false)[0];
+
+                if (methodAttribute == null)
                     return string.Empty; //'/' + method.Name.ToLower();
-                var route = httpMethodAttribute.Template ?? string.Empty;
+
+                var route = methodAttribute.Template ?? string.Empty;
                 if (!route.StartsWith('/'))
                     route = '/' + route;
+
                 return route;
             } catch (Exception e) {
                 CommunicationsRuntime.Current.RuntimeLog.Error(
-                    $"{typeof(Router).FullName}::{nameof(GetMethodRoute)}({method}, {httpMethodType})",
+                    $"{typeof(Router).FullName}::{nameof(GetMethodRoute)}({method}, {routeAttributeType})",
                     e.Message + Environment.NewLine + e.StackTrace
                 );
                 return string.Empty;
             }
         }
 
-        private static IEnumerable<ControllerMethod> GetMethods(Type controller) {
-            var controllerMethods = new List<ControllerMethod>();
+        private static List<ControllerInvoker> GetMethods(Type controller) {
+            var controllerMethods = new List<ControllerInvoker>();
             var methods = controller.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
             foreach (var method in methods) {
                 var httpMethodAttributes = method.GetCustomAttributes<HttpMethodAttribute>();
-                if (httpMethodAttributes == null)
+                var webSocketMethodAttributes = method.GetCustomAttributes<WebSocketAttribute>(false);
+                if (httpMethodAttributes == null && webSocketMethodAttributes == null) // No listeners here!
                     continue;
 
-                controllerMethods.Add(new(controller, httpMethodAttributes, method));
+                controllerMethods.Add(new(controller, httpMethodAttributes, webSocketMethodAttributes, method));
             }
 
             return controllerMethods;
         }
 
-        private void AddListener(string route, ControllerMethod method) {
-            var callback = method.Callback;
+        private void AddListener(string route, ControllerInvoker method) {
+            Action<IWebRequest, IWebResponse> httpCallback = (req, res) => method.Invoke(req, res, null);
+            Action<IWebSocket> webSocketCallback = (socket) => method.Invoke(socket.WebRequest, null, socket);
 
             route = '/' + route.Trim('/');
 
+            // HTTP requests
             foreach (var httpMethodAttribute in method.HttpMethodAttributes) {
-                string methodRoute = route + GetMethodRoute(method.MethodInfo, httpMethodAttribute.GetType());
+                string methodRoute = route + GetMethodRoute(method.MethodInfo, httpMethodAttribute.GetType()).TrimStart('/');
 
                 foreach (var httpMethod in httpMethodAttribute.HttpMethods) {
                     switch (httpMethod) {
                         case HttpVerb.Get:
-                            Get(methodRoute, callback);
+                            Get(methodRoute, httpCallback);
                             break;
                         case HttpVerb.Post:
-                            Post(methodRoute, callback);
+                            Post(methodRoute, httpCallback);
                             break;
                         case HttpVerb.Patch:
-                            Patch(methodRoute, callback);
+                            Patch(methodRoute, httpCallback);
                             break;
                         case HttpVerb.Put:
-                            Put(methodRoute, callback);
+                            Put(methodRoute, httpCallback);
                             break;
                         case HttpVerb.Delete:
-                            Delete(methodRoute, callback);
+                            Delete(methodRoute, httpCallback);
                             break;
                         case HttpVerb.Trace:
-                            Trace(methodRoute, callback);
+                            Trace(methodRoute, httpCallback);
                             break;
                         case HttpVerb.Head:
-                            Head(methodRoute, callback);
+                            Head(methodRoute, httpCallback);
                             break;
                         case HttpVerb.Connect:
-                            Connect(methodRoute, callback);
+                            Connect(methodRoute, httpCallback);
                             break;
                         case HttpVerb.Options:
-                            Options(methodRoute, callback);
+                            Options(methodRoute, httpCallback);
                             break;
 
                         default: // ? what
@@ -372,10 +368,16 @@ namespace CNCO.Unify.Communications.Http {
                                 $"Unknown HttpMethod was attempted to be added via a {typeof(HttpMethodAttribute).FullName}! Method: {httpMethod}. " +
                                 $"Defaulting to {HttpVerb.Any}."
                             );
-                            All(methodRoute, callback);
+                            All(methodRoute, httpCallback);
                             break;
                     }
                 }
+            }
+
+            // WebSockets
+            foreach (var webSocket in method.WebSocketAttributes) {
+                string methodRoute = route + GetMethodRoute(method.MethodInfo, typeof(WebSocketAttribute));
+                WebSocket(methodRoute, webSocketCallback);
             }
         }
         #endregion

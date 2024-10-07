@@ -72,5 +72,27 @@ namespace CNCO.Unify.Communications.Http {
         /// The HTTP verb used for this request.
         /// </summary>
         HttpVerb? Verb { get; set; }
+
+        /// <summary>
+        /// If <see cref="CreateWebSocketConnection()"/> is called, the newly created WebSocket will be stored here.
+        /// </summary>
+        WebSocket? WebSocket { get; }
+
+
+        /// <summary>
+        /// Completes the WebSocket handshake on this request and returns the newly created <see cref="Http.WebSocket"/>.
+        /// </summary>
+        /// <remarks>
+        /// This will block execution while the WebSocket upgrade/connection handshake is being completed.
+        /// </remarks>
+        /// <returns>Newly created WebSocket.</returns>
+        public WebSocket CreateWebSocketConnection();
+        /// <inheritdoc cref="CreateWebSocketConnection()"/>
+        /// <param name="keepAliveInterval">The WebSocket protocol keep-alive interval in milliseconds.</param>
+        public WebSocket CreateWebSocketConnection(string? subProtocol, TimeSpan? keepAliveInterval);
+
+        /// <inheritdoc cref="CreateWebSocketConnection(string?, TimeSpan?)"/>
+        /// <param name="receiveBufferSize">The receive buffer size in bytes.</param>
+        public WebSocket CreateWebSocketConnection(string? subProtocol, int? receiveBufferSize, TimeSpan? keepAliveInterval);
     }
 }

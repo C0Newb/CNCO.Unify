@@ -85,6 +85,13 @@
 
 
         /// <summary>
+        /// Listens for incoming WebSocket connections.
+        /// </summary>
+        /// <inheritdoc cref="All(string, Action{IWebRequest, IWebResponse})"/>
+        public void WebSocket(string path, Action<IWebSocket> callback);
+
+
+        /// <summary>
         /// Whether access logging should be enabled or not.
         /// </summary>
         /// <param name="enabled">Whether access logs are enabled.</param>
