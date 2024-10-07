@@ -157,7 +157,17 @@ namespace CNCO.Unify.Communications.Http {
                         continue;
                     }
 
+                    // Is a WebSocket listener .. and the request is a WebSocket handshake?
                     if (listener.IsWebSocket) {
+                        if (
+                            request.Headers["Connection"] == null
+                            || request.Headers["Upgrade"] == null
+                            || !request.Headers["Connection"]!.Equals("upgrade", StringComparison.OrdinalIgnoreCase)
+                            || !request.Headers["Upgrade"]!.Equals("websocket", StringComparison.OrdinalIgnoreCase)
+                        ) {
+                            continue;
+                        }
+
                         if (listener.OnWebSocketRequest == null) // What? How?
                             throw new NullReferenceException($"{nameof(listener.OnWebSocketRequest)} is null, no listener action to call!");
 
