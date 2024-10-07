@@ -18,13 +18,11 @@ namespace CNCO.Unify {
         /// The name of the application log file saved to <see cref="ApplicationLogFileStorage"/>.
         /// </summary>
         public string ApplicationLogName { get; set; } = string.Empty;
-
         /// <summary>
         /// The <see cref="IFileStorage"/> used to store the log files.
         /// Defaults to <see cref="LocalFileStorage"/> using <see cref="ApplicationLogDirectory"/> unless you set <see cref="ApplicationLogNoFileStorage"/> to <see langword="false"/>.
         /// </summary>
         public IFileStorage? ApplicationLogFileStorage { get; set; }
-
         /// <summary>
         /// Disables creating a new <see cref="LocalFileStorage"/> instance to write the application log to.
         /// </summary>

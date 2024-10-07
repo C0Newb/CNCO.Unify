@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace CNCO.Unify.Logging {
+﻿namespace CNCO.Unify.Logging {
     /// <summary>
     /// Logger skeleton
     /// </summary>

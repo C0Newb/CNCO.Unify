@@ -1,4 +1,5 @@
 ﻿using CNCO.Unify.Logging;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace CNCO.Unify {
@@ -37,6 +38,16 @@ namespace CNCO.Unify {
         public bool Initialized {
             get => _initialized;
             protected set => _initialized = value;
+        }
+
+        public virtual Version Version {
+            get {
+                Version? version = Assembly.GetExecutingAssembly().GetName().Version;
+                if (version != null)
+                    return version;
+                FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+                return new Version(fileVersionInfo.FileVersion ?? fileVersionInfo.ProductVersion ?? "0.0.0");
+            }
         }
         #endregion
 
@@ -96,8 +107,8 @@ namespace CNCO.Unify {
         /// <summary>
         /// Checks whether a <see cref="RuntimeLink"/> has been added.
         /// </summary>
-        /// <param name="link">Link to search for.</param>
-        /// <returns>Whether <paramref name="link"/> has been added to the list of runtime links.</returns>
+        /// <param name="runtime">Link to search for.</param>
+        /// <returns>Whether <paramref name="runtime"/> has been added to the list of runtime links.</returns>
         public bool ContainsRuntimeLink(IRuntime runtime) {
             return _runtimeLinks.Where(x => x.Equals(runtime)).Any();
         }
@@ -105,7 +116,7 @@ namespace CNCO.Unify {
         /// <summary>
         /// Removes a <see cref="RuntimeLink"/> from the list of links.
         /// </summary>
-        /// <param name="link">The unique Runtime to remove.</param>
+        /// <param name="runtime">The unique Runtime to remove.</param>
         public void RemoveRuntimeLink(IRuntime runtime) {
             _runtimeLinks.RemoveAll(x => x.Equals(runtime));
         }
@@ -143,7 +154,6 @@ namespace CNCO.Unify {
         }
         #endregion
 
-
         #region Initialization
         /// <summary>
         /// Initializes this <see cref="IRuntime"/>, runs added <see cref="RuntimeHook"/>, and links dependent runtimes.
@@ -173,6 +183,9 @@ namespace CNCO.Unify {
 
                 // Only log if UnifyRuntime has an instance (it really should by now!)
                 string section = GetType().FullName ?? GetType().Name;
+                if (hooksCount == 0)
+                    return;
+
                 if (failedHooks > 0)
                     UnifyRuntime.ApplicationLog.Info(section, $"All hooks {hooksCount} called, {failedHooks} failed.");
                 else
