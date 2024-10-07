@@ -1,5 +1,4 @@
-﻿using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace CNCO.Unify.Communications.Http.Routing {
     /// <summary>

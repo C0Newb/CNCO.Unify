@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 namespace CNCO.Unify.Communications.Http.Routing {
-    public class HttpHeadAttribute : HttpMethodAttribute {
+    public sealed class HttpHeadAttribute : HttpMethodAttribute {
         private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Head];
 
         public HttpHeadAttribute() : base(_method) { }

@@ -9,6 +9,7 @@ namespace CNCO.Unify.Communications.Http {
     /// Contains the request query string, parameters, HTTP headers, cookies, and more.
     /// </summary>
     public class WebRequest : IWebRequest {
+        private readonly HttpListenerContext? _listenerContext;
 
         #region Request path information
         public Protocol Protocol { get; set; } = Protocol.HTTP;
@@ -29,7 +30,7 @@ namespace CNCO.Unify.Communications.Http {
         public string? Domain {
             get => Uri?.Host;
         }
-        
+
         public string? Path {
             get => Uri?.AbsolutePath;
         }
@@ -42,7 +43,6 @@ namespace CNCO.Unify.Communications.Http {
 
         public RouteTemplate? RouteTemplate { get; set; }
         #endregion
-
 
         public readonly Version ProtocolVersion = new Version();
 
@@ -58,9 +58,17 @@ namespace CNCO.Unify.Communications.Http {
         public Stream BodyStream { get; set; } = Stream.Null;
         #endregion
 
+        #region Constructors
+        /// <summary>
+        /// Initializes a new instance of <see cref="WebRequest"/>.
+        /// </summary>
         public WebRequest() { }
 
-        public WebRequest(HttpListenerRequest request) {
+        /// <inheritdoc cref="WebRequest()"/>
+        /// <param name="listenerContext">Listener context from <see cref="HttpListener.GetContext()"/>.</param>
+        public WebRequest(HttpListenerContext listenerContext) : this(listenerContext.Request) => _listenerContext = listenerContext;
+
+        internal WebRequest(HttpListenerRequest request) {
             if (Enum.TryParse(request.HttpMethod, true, out HttpVerb verb))
                 Verb = verb;
 
@@ -99,5 +107,6 @@ namespace CNCO.Unify.Communications.Http {
             BodyStream = Stream.Null;
             ProtocolVersion = new Version(1, 1);
         }
+        #endregion
     }
 }

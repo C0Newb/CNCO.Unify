@@ -1,6 +1,5 @@
 ﻿using CNCO.Unify.Communications.Http;
 using CNCO.Unify.Logging;
-using System;
 
 namespace CNCO.Unify.Communications {
     [LinkRuntime(typeof(UnifyRuntime))]
@@ -18,7 +17,7 @@ namespace CNCO.Unify.Communications {
 
         private static IWebClient? _webClient;
 
-        public CommunicationsRuntimeConfiguration Configuration { get; private set; }
+        public CommunicationsRuntimeConfiguration Configuration { get; }
 
         /// <summary>
         /// Application wide, shared <see cref="IWebClient"/>.
@@ -45,13 +44,13 @@ namespace CNCO.Unify.Communications {
             }
         }
 
-        public CommunicationsRuntime() : this(null) {}
+        public CommunicationsRuntime() : this(null) { }
 
         public CommunicationsRuntime(CommunicationsRuntimeConfiguration? runtimeConfiguration) {
+            Configuration = runtimeConfiguration ?? new CommunicationsRuntimeConfiguration();
+
             if (_instance != null)
                 return;
-
-            Configuration = runtimeConfiguration ?? new CommunicationsRuntimeConfiguration();
 
             lock (_initializationLock) {
                 if (_instance != null)

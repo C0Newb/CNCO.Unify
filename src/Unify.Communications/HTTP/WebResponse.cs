@@ -9,6 +9,7 @@ namespace CNCO.Unify.Communications.Http {
     /// Represents an HTTP response.
     /// </summary>
     public class WebResponse : IWebResponse {
+        private readonly object _lock = new object();
         private readonly HttpListenerResponse? _response;
 
         /// <summary>
@@ -66,8 +67,10 @@ namespace CNCO.Unify.Communications.Http {
         }
 
         public void End() {
-            HasEnded = true;
-            _response?.Close();
+            WrapWrite(() => {
+                HasEnded = true;
+                _response?.Close();
+            });
         }
 
         public void AddCookie(Cookie cookie) {
@@ -86,17 +89,23 @@ namespace CNCO.Unify.Communications.Http {
                 throw new NullReferenceException("No response available to set.");
 
             RedirectLocation = uri;
-            if (string.IsNullOrEmpty(uri))
-                _response.StatusCode = 200;
-            else
-                _response.StatusCode = (int)HttpStatusCode.Redirect;
+            WrapWrite(() => {
+                lock (_lock) {
+                    if (string.IsNullOrEmpty(uri))
+                        _response.StatusCode = 200;
+                    else
+                        _response.StatusCode = (int)HttpStatusCode.Redirect;
+                }
+            });
         }
-        
+
         public void Status(int statusCode) {
             if (_response == null)
                 throw new NullReferenceException("No response available to set.");
 
-            _response.StatusCode = statusCode;
+            lock (_lock) {
+                WrapWrite(() => _response.StatusCode = statusCode);
+            }
         }
 
         public void Send(string? data) {
@@ -104,8 +113,10 @@ namespace CNCO.Unify.Communications.Http {
                 throw new NullReferenceException("No response available to set.");
 
             byte[] bytes = Encoding.UTF8.GetBytes(data ?? string.Empty);
-            OutputStream.Write(bytes);
-            End();
+            lock (_lock) {
+                WrapWrite(() => OutputStream.Write(bytes));
+                End();
+            }
         }
 
         public void SendJson(JsonObject? data) {
@@ -118,31 +129,46 @@ namespace CNCO.Unify.Communications.Http {
             }
 
             _response.ContentType = "application/json";
-            JsonSerializer.Serialize(OutputStream, data);
-            End();
+
+            lock (_lock) {
+                WrapWrite(() => JsonSerializer.Serialize(OutputStream, data));
+                End();
+            }
         }
 
         public void SendFile(string path, IFileStorage storage, string? fileType = null) {
             if (_response == null)
                 throw new NullReferenceException("No response available to set.");
 
-            if (!storage.Exists(path))
-                throw new FileNotFoundException(path);
+            if (!storage.Exists(path)) {
+                lock (_lock) {
+                    WrapWrite(() => _response.StatusCode = 404);
+                    End();
+                }
+                return;
+            }
 
             if (!string.IsNullOrEmpty(fileType))
                 Headers["Content-Type"] = fileType;
             else if (MimeMapping.TryGetMimeType(path, out string? actualMimeType))
                 Headers["Content-Type"] = actualMimeType;
 
-            using (var fileStream = storage.Open(path, new FileStreamOptions { Access = FileAccess.Read })) {
-                if (fileStream == null) {
-                    _response.StatusCode = 404;
-                } else {
-                    _response.SendChunked = true;
-                    fileStream.CopyTo(_response.OutputStream);
+            WrapWrite(() => {
+                lock (_lock) {
+                    if (HasEnded)
+                        return;
+                    using (var fileStream = storage.Open(path, new FileStreamOptions { Access = FileAccess.Read })) {
+                        if (fileStream == null) {
+                            _response.StatusCode = 404;
+                        } else {
+                            _response.SendChunked = true;
+                            fileStream.CopyTo(_response.OutputStream);
+                        }
+                    }
+
+                    End();
                 }
-            }
-            End();
+            });
         }
 
         public void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null) {
@@ -159,6 +185,19 @@ namespace CNCO.Unify.Communications.Http {
             // it's better to have no mimeType and let the receiver figure it out then for us to go "yeah it's this" when we don't know :p
             Attachment(name);
             SendFile(path, storage, mimeType);
+        }
+
+        private static void WrapWrite(Action action) {
+            try {
+                action.Invoke();
+            } catch (HttpListenerException ex) {
+                // Connection closed?
+                if (!ex.Message.Contains("nonexistent")) {
+                    // Nope! Something else...
+                    throw;
+                }
+                // Yep! Ignore...
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 namespace CNCO.Unify.Communications.Http.Routing {
-    public class HttpPutAttribute : HttpMethodAttribute {
+    public sealed class HttpPutAttribute : HttpMethodAttribute {
         private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Put];
 
         public HttpPutAttribute() : base(_method) { }

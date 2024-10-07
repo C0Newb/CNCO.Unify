@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 namespace CNCO.Unify.Communications.Http.Routing {
-    public class HttpDeleteAttribute : HttpMethodAttribute {
+    public sealed class HttpDeleteAttribute : HttpMethodAttribute {
         private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Delete];
 
         public HttpDeleteAttribute() : base(_method) { }

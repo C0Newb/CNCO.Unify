@@ -15,6 +15,6 @@ namespace CNCO.Unify.Communications.Http.Routing {
         /// Then, in your request you'd call something like <c>/contact/123/photo</c> and the parameter <c>id</c> will be set to the value <c>123</c>.
         /// </remarks>
         [StringSyntax("Route")]
-        string Template { get; }
+        string? Template { get; }
     }
 }

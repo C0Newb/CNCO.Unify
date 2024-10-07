@@ -12,7 +12,7 @@ namespace CNCO.Unify.Communications.Http.Routing {
         : RouteAttribute( // sorry this looks so ugly :/
             string.Format( // puts the actual version (either the fallback or valid) into the template prefix from the config.
                 CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.VersionedRouteTemplatePrefix,
-                version < 1? CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.FallbackApiVersion : version
+                version < 1 ? CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.FallbackApiVersion : version
             ).TrimEnd('/') + '/' + template.TrimStart('/')
         ) {
     }

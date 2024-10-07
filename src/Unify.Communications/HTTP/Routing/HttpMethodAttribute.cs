@@ -5,7 +5,7 @@ namespace CNCO.Unify.Communications.Http.Routing {
     /// Specifies a method in a <see cref="Controller"/> is to be activated on particular <see cref="HttpMethods"/>.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
-    public class HttpMethodAttribute : Attribute {
+    public class HttpMethodAttribute : Attribute, IRouteTemplate {
         private readonly List<HttpVerb> _httpMethods;
 
         public HttpMethodAttribute(IEnumerable<HttpVerb> httpMethods) : this(httpMethods, null) { }

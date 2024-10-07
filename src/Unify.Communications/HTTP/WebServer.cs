@@ -1,31 +1,36 @@
-﻿using CNCO.Unify.Communications.Http.Routing;
-using System.Net;
+﻿using System.Net;
 
 namespace CNCO.Unify.Communications.Http {
     public class WebServer : IWebServer {
-        private readonly HttpListener HttpListener;
-        private readonly Thread ListenerThread;
-        private int ListenerThreadRestart = 0;
-        private bool RunListenerThread = true;
+        private readonly HttpListener _httpListener;
+        private readonly Thread _listenerThread;
+        private int _listenerThreadRestart = 0;
+        private bool _runListenerThread = true;
+        private IRouter? _router;
 
-        private IRouter Router;
+        private IRouter Router {
+            get {
+                _router ??= new Router();
+                return _router;
+            }
+        }
 
 
         private bool _logAccess = false;
 
         public WebServer() {
-            HttpListener = new HttpListener();
+            _httpListener = new HttpListener();
 
-            ListenerThread = new Thread(() => {
-                string tag = $"{GetType().Name}::${nameof(ListenerThread)}";
-                while (HttpListener.IsListening && RunListenerThread) {
+            _listenerThread = new Thread(() => {
+                string tag = $"{GetType().Name}::${nameof(_listenerThread)}";
+                while (_httpListener.IsListening && _runListenerThread) {
                     try {
                         // listen
-                        var context = HttpListener.GetContext();
+                        var context = _httpListener.GetContext();
                         Task.Run(() => HandleRequest(context));
 
                     } catch (Exception ex) {
-                        if (!RunListenerThread) {
+                        if (!_runListenerThread) {
                             CommunicationsRuntime.Current.RuntimeLog.Info(tag, "Listener thread stopped.");
                             return;
                         }
@@ -36,27 +41,25 @@ namespace CNCO.Unify.Communications.Http {
                             + ex.StackTrace ?? "No stack trace available.");
 
                         // restart the thread
-                        ListenerThreadRestart++;
-                        if (ListenerThreadRestart > 5) {
-                            CommunicationsRuntime.Current.RuntimeLog.Emergency($"Listener thread has restarted too many times ({ListenerThreadRestart}). HTTP listener is disabled until the application restarts."); // sorta a lie.. but eh
+                        _listenerThreadRestart++;
+                        if (_listenerThreadRestart > 5) {
+                            CommunicationsRuntime.Current.RuntimeLog.Emergency($"Listener thread has restarted too many times ({_listenerThreadRestart}). HTTP listener is disabled until the application restarts."); // sorta a lie.. but eh
                             break;
                         }
 
-                        Thread.Sleep(1000 * ListenerThreadRestart);
-                        CommunicationsRuntime.Current.RuntimeLog.Warning($"Attempting listener thread restart #{ListenerThreadRestart}"); // sorta a lie.. but eh
+                        Thread.Sleep(1000 * _listenerThreadRestart);
+                        CommunicationsRuntime.Current.RuntimeLog.Warning($"Attempting listener thread restart #{_listenerThreadRestart}"); // sorta a lie.. but eh
                     }
                 }
             }) {
                 Name = UnifyRuntime.Current.ApplicationId + "-WebServer#" + GetHashCode()
             };
-
-            Router ??= new Router();
         }
 
         public WebServer(WebServerOptions options) : this() {
             SetOptions(options);
         }
-        public WebServer(IRouter router) : this() => Router = router;
+        public WebServer(IRouter router) : this() => _router = router;
         public WebServer(IRouter router, WebServerOptions options) : this(router) {
             SetOptions(options);
         }
@@ -80,14 +83,14 @@ namespace CNCO.Unify.Communications.Http {
             if (!endpoint.StartsWith("http://") && !endpoint.StartsWith("https://")) {
                 endpoint = "http://" + endpoint;
             }
-            if (!endpoint.EndsWith("/"))
+            if (!endpoint.EndsWith('/'))
                 endpoint += "/";
 
-            HttpListener.Prefixes.Add(endpoint);
+            _httpListener.Prefixes.Add(endpoint);
         }
 
         public string[] GetEndpoints() {
-            return HttpListener.Prefixes.ToArray();
+            return _httpListener.Prefixes.ToArray();
         }
 
         #region Router method proxies
@@ -137,7 +140,7 @@ namespace CNCO.Unify.Communications.Http {
                      );
                 }
 
-                WebRequest request = new WebRequest(context.Request);
+                WebRequest request = new WebRequest(context);
                 WebResponse response = new WebResponse(context.Response);
 
                 if (_logAccess)
@@ -163,15 +166,15 @@ namespace CNCO.Unify.Communications.Http {
         }
 
         public void Abort() {
-            RunListenerThread = false;
-            HttpListener.Abort();
+            _runListenerThread = false;
+            _httpListener.Abort();
         }
         public void Dispose() {
             string tag = $"{GetType().Name}::{nameof(Dispose)}";
             try {
-                RunListenerThread = false;
-                HttpListener.Stop();
-                HttpListener.Close();
+                _runListenerThread = false;
+                _httpListener.Stop();
+                _httpListener.Close();
             } catch (Exception e) {
                 CommunicationsRuntime.Current.RuntimeLog.Error(tag, $"Error while disposing! {e.Message}");
                 if (!string.IsNullOrEmpty(e.StackTrace))
@@ -181,24 +184,24 @@ namespace CNCO.Unify.Communications.Http {
         }
 
         public void Listen(Uri uri) {
-            HttpListener.Prefixes.Add(uri.ToString());
+            _httpListener.Prefixes.Add(uri.ToString());
         }
 
         public void Start() {
-            RunListenerThread = true;
-            HttpListener.Start();
-            ListenerThread.Start();
+            _runListenerThread = true;
+            _httpListener.Start();
+            _listenerThread.Start();
         }
 
         public void Stop() {
-            RunListenerThread = false;
-            HttpListener.Stop();
+            _runListenerThread = false;
+            _httpListener.Stop();
         }
 
         public bool Running() {
-            return RunListenerThread && HttpListener.IsListening;
+            return _runListenerThread && _httpListener.IsListening;
         }
 
-        public void Use(IRouter router) => Router = router;
+        public void Use(IRouter router) => _router = router;
     }
 }
