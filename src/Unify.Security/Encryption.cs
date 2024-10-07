@@ -1,4 +1,5 @@
 ﻿using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,19 +9,71 @@ namespace CNCO.Unify.Security {
     /// Encryption helper functions.
     /// </summary>
     public static class Encryption {
+
+        /// <summary>
+        /// Encryption methods.
+        /// </summary>
+        /// <remarks>
+        /// AES256_CBC will be, generally speaking, the most secure for most applications.
+        /// ChatCha20Poly1305 is not widely supported!
+        /// DataProtection has less portability!
+        /// GCM can be compromised if the same nonce is used ever!
+        /// </remarks>
         [Flags]
         public enum Protections {
+            /// <summary>
+            /// Will not use any encryption.
+            /// </summary>
             None = 0x0,
+
+            /// <summary>
+            /// Use <see cref="DataProtectionProvider"/> for encryption.
+            /// </summary>
             DataProtection = 0x1,
+
+            /// <summary>
+            /// Use ChaCha20-Poly1305 for encryption.
+            /// </summary>
+            /// <remarks>
+            /// This is not widely supported! Please use a different protection unless you are for sure ChaCha20 is supported in your environment.
+            /// </remarks>
             ChaCha20Poly1305 = 0x2,
+
+            /// <summary>
+            /// Use 128 bit AES (CBC mode) for encryption.
+            /// </summary>
             AES128_CBC = 0x4,
+
+            /// <summary>
+            /// Use 128 bit AES (CBC mode) for encryption.
+            /// </summary>
             AES256_CBC = 0x8,
+
+            /// <summary>
+            /// Use AES (GCM/AEAD mode) for encryption.
+            /// </summary>
             AES128_GCM = 0x10,
+
+            /// <summary>
+            /// Use AES (GCM/AEAD mode) for encryption.
+            /// </summary>
+            /// <remarks>
+            /// Same as <see cref="Protections.AES128_GCM"/>.
+            /// </remarks>
             AES256_GCM = 0x20,
         }
 
+        private static readonly object _dpLock = new object();
+        private static DataProtector? _dataProtector;
         private static DataProtector DataProtector {
-            get => new DataProtector($"Unify:DataProtector:");
+            get {
+                if (_dataProtector == null) {
+                    lock (_dpLock) {
+                        _dataProtector ??= new DataProtector($"Unify:DataProtector:");
+                    }
+                }
+                return _dataProtector;
+            }
         }
 
         #region Encryption
@@ -149,7 +202,7 @@ namespace CNCO.Unify.Security {
         /// <param name="cipherMode">Which cipher mode to encrypt via.</param>
         /// <returns>Encrypted data string: <c>{version}$aes{key size}.{cipher mode}${cipher text}${iv}</c></returns>
         /// <exception cref="ArgumentNullException">An argument is null or of length 0 or less.</exception>
-        public static string EncryptAES(string plainText, byte[] key, byte[]? iv, int keySize = 256, CipherMode cipherMode = CipherMode.CBC) {
+        public static string EncryptAes(string plainText, byte[] key, byte[]? iv, int keySize = 256, CipherMode cipherMode = CipherMode.CBC) {
             // Check arguments.
             if (plainText == null || plainText.Length <= 0)
                 throw new ArgumentNullException(nameof(plainText));
@@ -184,32 +237,29 @@ namespace CNCO.Unify.Security {
             encryptedData += "$" + Convert.ToHexString(iv);
             return encryptedData;
         }
-        /// <inheritdoc cref="EncryptAES(string, byte[], byte[], int, CipherMode)"/>
+        /// <inheritdoc cref="EncryptAes(string, byte[], byte[], int, CipherMode)"/>
         /// <remarks>
         /// This first converts <paramref name="plainText"/> to base64, encrypts, then converts the encrypted string to bytes via <see cref="Encoding.UTF8"/>
         /// </remarks>
-        public static byte[] EncryptAES(byte[] plainText, byte[] key, byte[]? iv, int keySize = 256, CipherMode cipherMode = CipherMode.CBC) {
+        public static byte[] EncryptAes(byte[] plainText, byte[] key, byte[]? iv, int keySize = 256, CipherMode cipherMode = CipherMode.CBC) {
             var str = Convert.ToBase64String(plainText);
-            var encryptedStr = EncryptAES(str, key, iv, keySize, cipherMode);
+            var encryptedStr = EncryptAes(str, key, iv, keySize, cipherMode);
             return Encoding.UTF8.GetBytes(encryptedStr);
         }
 
-        /// <inheritdoc cref="EncryptAES(string, byte[], byte[], int, CipherMode)"/>
+        /// <inheritdoc cref="EncryptAes(string, byte[], byte[], int, CipherMode)"/>
         /// <returns>Encrypted data string: <c>{version}$aes256.CBC${cipher text}${iv}</c></returns>
-        public static string EncryptAES256_CBC(string plainText, byte[] key, byte[]? iv = null) => EncryptAES(plainText, key, iv, 256, CipherMode.CBC);
+        public static string EncryptAes256_Cbc(string plainText, byte[] key, byte[]? iv = null) => EncryptAes(plainText, key, iv, 256, CipherMode.CBC);
 
-        /// <inheritdoc cref="EncryptAES256_CBC(string, byte[], byte[])" />
-        public static byte[] EncryptAES256_CBC(byte[] plainText, byte[] key, byte[]? iv = null) => EncryptAES(plainText, key, iv, 256, CipherMode.CBC);
+        /// <inheritdoc cref="EncryptAes256_Cbc(string, byte[], byte[])" />
+        public static byte[] EncryptAes256_Cbc(byte[] plainText, byte[] key, byte[]? iv = null) => EncryptAes(plainText, key, iv, 256, CipherMode.CBC);
 
 
-        /// <inheritdoc cref="EncryptAES(string, byte[], byte[], int, CipherMode)"/>
+        /// <inheritdoc cref="EncryptAes(string, byte[], byte[], int, CipherMode)"/>
         /// <returns>Encrypted data string: <c>{version}$aes128.CBC${cipher text}${iv}</c></returns>
-        public static string EncryptAES128_CBC(string plainText, byte[] key, byte[]? iv) => EncryptAES(plainText, key, iv, 128, CipherMode.CBC);
-        /// <inheritdoc cref="EncryptAES128_CBC(string, byte[], byte[])" />
-        public static byte[] EncryptAES128_CBC(byte[] plainText, byte[] key, byte[]? iv = null) => EncryptAES(plainText, key, iv, 128, CipherMode.CBC);
-
-
-
+        public static string EncryptAes128_Cbc(string plainText, byte[] key, byte[]? iv) => EncryptAes(plainText, key, iv, 128, CipherMode.CBC);
+        /// <inheritdoc cref="EncryptAes128_Cbc(string, byte[], byte[])" />
+        public static byte[] EncryptAes128_Cbc(byte[] plainText, byte[] key, byte[]? iv = null) => EncryptAes(plainText, key, iv, 128, CipherMode.CBC);
 
         /// <summary>
         /// Decrypts a encrypted data string string and returns the decrypted data.
@@ -219,7 +269,7 @@ namespace CNCO.Unify.Security {
         /// <param name="key">Secret key to encrypt the data with</param>
         /// <returns>Encrypted data as base64 string</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public static string DecryptAES(string encryptedData, byte[] key) {
+        public static string DecryptAes(string encryptedData, byte[] key) {
             // Check arguments.
             if (encryptedData == null)
                 throw new ArgumentNullException(nameof(encryptedData));
@@ -268,15 +318,247 @@ namespace CNCO.Unify.Security {
             return plainText;
         }
 
-        /// <inheritdoc cref="DecryptAES(string, byte[])"/>
+        /// <inheritdoc cref="DecryptAes(string, byte[])"/>
         /// <remarks>
         /// This first uses <see cref="Encoding.UTF8"/> to get a string from <paramref name="encryptedData"/>, decrypts, then converts the encrypted string to bytes from base64.
         /// </remarks>
-        public static byte[] DecryptAES(byte[] encryptedData, byte[] key) {
+        public static byte[] DecryptAes(byte[] encryptedData, byte[] key) {
             var utf8 = new UTF8Encoding(false, true);
             var encryptedStr = utf8.GetString(encryptedData);
-            var str = DecryptAES(encryptedStr, key);
+            var str = DecryptAes(encryptedStr, key);
             return Convert.FromBase64String(str);
+        }
+        #endregion
+
+        #region AES GCM
+        /// <summary>
+        /// Encrypts a string and returns the encrypted string as a combination of the cipher (encrypted text) and iv.
+        /// Cipher is encoded in base64, iv in hex. Both separate by a dollar sign ($) like so: <c>{version}$aes128.GCM${cipher text}${nonce}${tag}${associateData}</c>
+        /// </summary>
+        /// <remarks>
+        /// If associate data is empty, 64 random bytes will be used.
+        /// </remarks>
+        /// <param name="plainText">Data to encrypt</param>
+        /// <param name="key">Secret key to encrypt the data with</param>
+        /// <param name="nonce">Random nonce (IV) to use. If blank, a random nonce of the the largest possible size will be generated.</param>
+        /// <param name="associateData">Associated data to use to generate the tag. <see href="https://en.wikipedia.org/wiki/Authenticated_encryption"/>.</param>
+        /// <param name="tagSize">How large the tag will be.</param>
+        /// <returns>Encrypted data string: <c>{version}$aes.GCM${cipher text}${nonce}${tag}${associateData}</c></returns>
+        /// <exception cref="ArgumentNullException">An argument is null or of length 0 or less.</exception>
+        [UnsupportedOSPlatform("browser")]
+        [UnsupportedOSPlatform("tvos")]
+        [UnsupportedOSPlatform("ios")]
+        public static string EncryptAes_Gcm(byte[] plainText, byte[] key, byte[]? nonce, byte[]? associateData, int tagSize = -1) {
+            // unsupported platforms
+            if (Platform.IsTvOS() || Platform.IsIOS() || Platform.IsBrowser() || !AesGcm.IsSupported)
+                throw new PlatformNotSupportedException();
+
+            // Check arguments.
+            if (plainText == null || plainText.Length <= 0)
+                throw new ArgumentNullException(nameof(plainText));
+            if (key == null || key.Length <= 0)
+                throw new ArgumentNullException(nameof(key));
+
+            if (tagSize == -1)
+                tagSize = AesGcm.TagByteSizes.MaxSize;
+            if (tagSize < AesGcm.TagByteSizes.MinSize)
+                throw new ArgumentException($"Tag size too small (<{AesGcm.TagByteSizes.MinSize}).", nameof(tagSize));
+            if (tagSize > AesGcm.TagByteSizes.MaxSize)
+                throw new ArgumentException($"Tag size too too large (>{AesGcm.TagByteSizes.MaxSize}).", nameof(tagSize));
+
+            nonce ??= GenerateRandomBytes(AesGcm.NonceByteSizes.MaxSize);
+            if (nonce.Length < AesGcm.NonceByteSizes.MinSize)
+                throw new ArgumentException($"Nonce size too small (<{AesGcm.NonceByteSizes.MinSize}).");
+            if (nonce.Length > AesGcm.NonceByteSizes.MaxSize)
+                throw new ArgumentException($"Nonce sie is too large (>{AesGcm.NonceByteSizes.MaxSize}).", nameof(nonce));
+
+
+            if (associateData == null || associateData.Length <= 0)
+                associateData = GenerateRandomBytes(64);
+
+            byte[] cipherText = new byte[plainText.Length];
+            byte[] tag = new byte[tagSize];
+
+            using (AesGcm aes = new AesGcm(key, tagSize)) {
+                aes.Encrypt(nonce, plainText, cipherText, tag, associateData);
+            }
+
+            CryptographicOperations.ZeroMemory(plainText);
+
+            GC.Collect();
+
+            string cipherTextBase64 = Convert.ToBase64String(cipherText);
+            string nonceHex = Convert.ToHexString(nonce);
+            string tagHex = Convert.ToHexString(tag);
+            string associatedDataHex = Convert.ToHexString(associateData ?? []);
+
+            int size = cipherTextBase64.Length + nonceHex.Length + tagHex.Length + 12; // 2 $'s, 10 for ver+aes.GCM
+            if (associateData != null)
+                size += associatedDataHex.Length + 1;
+
+            StringBuilder encryptedData = new StringBuilder("1$aes.GCM$", size);
+            encryptedData.Append(cipherTextBase64);
+            encryptedData.Append('$');
+            encryptedData.Append(nonceHex);
+            encryptedData.Append('$');
+            encryptedData.Append(tagHex);
+            if (associateData != null) {
+                encryptedData.Append('$');
+                encryptedData.Append(associatedDataHex);
+            }
+
+            return encryptedData.ToString();
+        }
+
+        /// <inheritdoc cref="EncryptAes_Gcm(byte[], byte[], byte[], byte[], int)"/>
+        [UnsupportedOSPlatform("browser")]
+        [UnsupportedOSPlatform("tvos")]
+        [UnsupportedOSPlatform("ios")]
+        public static string EncryptAes_Gcm(byte[] plainText, byte[] key, byte[]? nonce, string? associateData, int tagSize = -1) {
+            var utf8 = new UTF8Encoding(false, true);
+            byte[]? associatedDataBytes = null;
+            if (associateData != null) {
+                associatedDataBytes = utf8.GetBytes(associateData);
+            }
+
+            string cipherText = EncryptAes_Gcm(plainText, key, nonce, associatedDataBytes, tagSize);
+
+            return cipherText;
+        }
+
+        /// <inheritdoc cref="EncryptAes_Gcm(byte[], byte[], byte[], byte[], int)"/>
+        [UnsupportedOSPlatform("browser")]
+        [UnsupportedOSPlatform("tvos")]
+        [UnsupportedOSPlatform("ios")]
+        public static string EncryptAes_Gcm(string plainText, byte[] key, byte[]? nonce, byte[]? associateData, int tagSize = -1) {
+            var utf8 = new UTF8Encoding(false, true);
+            byte[] plainTextBytes = utf8.GetBytes(plainText);
+            string cipherText = EncryptAes_Gcm(plainTextBytes, key, nonce, associateData, tagSize);
+            CryptographicOperations.ZeroMemory(plainTextBytes);
+            return cipherText;
+        }
+
+        /// <inheritdoc cref="EncryptAes_Gcm(byte[], byte[], byte[], byte[], int)"/>
+        [UnsupportedOSPlatform("browser")]
+        [UnsupportedOSPlatform("tvos")]
+        [UnsupportedOSPlatform("ios")]
+        public static string EncryptAes_Gcm(string plainText, byte[] key, byte[]? nonce, string? associateData = null, int tagSize = -1) {
+            var utf8 = new UTF8Encoding(false, true);
+            byte[] plainTextBytes = utf8.GetBytes(plainText);
+            byte[]? associatedDataBytes = null;
+            if (associateData != null) {
+                associatedDataBytes = utf8.GetBytes(associateData);
+            }
+
+            string cipherText = EncryptAes_Gcm(plainTextBytes, key, nonce, associatedDataBytes, tagSize);
+
+            CryptographicOperations.ZeroMemory(plainTextBytes);
+            return cipherText;
+        }
+
+
+        /// <summary>
+        /// Decrypts a encrypted data string string and returns the decrypted data.
+        /// Encrypted data string must follow this format: <c>{version}$aes.GCM${cipher text}${nonce}${tag}${associateData}</c>
+        /// </summary>
+        /// <param name="encryptedData">Base64 string to decrypt, must follow this format: <c>{version}$aes.GCM${cipher text}${nonce}${tag}${associateData}</c></param>
+        /// <param name="key">Secret key to encrypt the data with</param>
+        /// <param name="associatedData">Associate data to use. This ignores whatever associate data is in the encrypted data string.</param>
+        /// <returns>Encrypted data as base64 string</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        [UnsupportedOSPlatform("browser")]
+        [UnsupportedOSPlatform("tvos")]
+        [UnsupportedOSPlatform("ios")]
+        public static byte[] DecryptAes_Gcm(string encryptedData, byte[] key, byte[]? associatedData) {
+            // unsupported platforms
+            if (Platform.IsTvOS() || Platform.IsIOS() || Platform.IsBrowser())
+                throw new PlatformNotSupportedException();
+
+            // Check arguments.
+            ArgumentNullException.ThrowIfNull(encryptedData);
+            if (key == null || key.Length <= 0)
+                throw new ArgumentNullException(nameof(key));
+
+            string[] encryptedDataParts = encryptedData.Split('$');
+            if (associatedData != null && encryptedDataParts.Length == 5)
+                throw new CryptographicException("Associated data mismatch. No associated data within cipher text, but " + nameof(associatedData) + " was supplied.");
+            if (encryptedDataParts.Length != 6)
+                throw new ArgumentException(nameof(encryptedData) + " must have 6 parts separated by dollar signs ($).");
+
+            // {version}$aes.GCM${cipher text}${nonce}${tag}${associateData}
+            //string versionString = encryptedDataParts[0];
+
+            string cipher = encryptedDataParts[1];
+            if (!cipher.StartsWith("aes", StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentOutOfRangeException("Data encrypted using \"" + cipher + "\" not AES.");
+            var cipherParts = cipher.Split('.');
+            // Determine which type of AES
+            if (cipherParts.Length != 2 || !cipherParts[1].Equals("GCM", StringComparison.OrdinalIgnoreCase)) {
+                throw new ArgumentOutOfRangeException("Unable to determine cipher mode of \"" + cipher + "\".");
+            }
+
+            byte[] cipherText = Convert.FromBase64String(encryptedDataParts[2]);
+            byte[] nonce = Convert.FromHexString(encryptedDataParts[3]);
+            byte[] tag = Convert.FromHexString(encryptedDataParts[4]);
+            if (encryptedDataParts.Length == 6) {
+                byte[] ADBytes = Convert.FromHexString(encryptedDataParts[5]);
+                if (associatedData != null && associatedData != ADBytes) {
+                    throw new CryptographicException("Associated data provided does not match associated data in cipher text.");
+                }
+                associatedData = ADBytes;
+            }
+
+            if (nonce == null || nonce.Length <= 0)
+                throw new NullReferenceException($"{nameof(nonce)} was not found or is empty.");
+            if (tag == null || tag.Length <= 0)
+                throw new NullReferenceException($"{nameof(tag)} was not found or is empty.");
+
+            byte[] plainTextBytes = new byte[cipherText.Length];
+            using (AesGcm aes = new AesGcm(key, tag.Length)) {
+                aes.Decrypt(nonce, cipherText, tag, plainTextBytes, associatedData);
+            }
+
+            return plainTextBytes;
+        }
+
+        /// <inheritdoc cref="DecryptAes_Gcm(string, byte[], byte[])"/>
+        /// <remarks>
+        /// This first uses <see cref="Encoding.UTF8"/> to get a string from <paramref name="encryptedData"/>, decrypts, then converts the encrypted string to bytes from base64.
+        /// </remarks>
+        [UnsupportedOSPlatform("browser")]
+        [UnsupportedOSPlatform("tvos")]
+        [UnsupportedOSPlatform("ios")]
+        public static byte[] DecryptAes_Gcm(byte[] encryptedData, byte[] key, byte[]? associatedData = null) {
+            var utf8 = new UTF8Encoding(false, true);
+            var encryptedStr = utf8.GetString(encryptedData);
+            return DecryptAes_Gcm(encryptedStr, key, associatedData);
+        }
+
+        /// <inheritdoc cref="DecryptAes_Gcm(string, byte[], byte[])"/>
+        /// <remarks>
+        /// This uses <see cref="Encoding.UTF8"/> to get converts the encrypted bytes to string.
+        /// </remarks>
+        [UnsupportedOSPlatform("browser")]
+        [UnsupportedOSPlatform("tvos")]
+        [UnsupportedOSPlatform("ios")]
+        public static string DecryptAesString_Gcm(string encryptedData, byte[] key, byte[]? associatedData = null) {
+            var utf8 = new UTF8Encoding(false, true);
+            byte[] bytes = DecryptAes_Gcm(encryptedData, key, associatedData);
+            return utf8.GetString(bytes);
+        }
+
+        /// <inheritdoc cref="DecryptAes_Gcm(string, byte[], byte[])"/>
+        /// <remarks>
+        /// This uses <see cref="Encoding.UTF8"/> to get converts the encrypted bytes to string.
+        /// </remarks>
+        [UnsupportedOSPlatform("browser")]
+        [UnsupportedOSPlatform("tvos")]
+        [UnsupportedOSPlatform("ios")]
+        public static string DecryptAesString_Gcm(byte[] encryptedData, byte[] key, byte[]? associatedData = null) {
+            var utf8 = new UTF8Encoding(false, true);
+            var encryptedStr = utf8.GetString(encryptedData);
+            byte[] bytes = DecryptAes_Gcm(encryptedStr, key, associatedData);
+            return utf8.GetString(bytes);
         }
         #endregion
 
@@ -483,11 +765,16 @@ namespace CNCO.Unify.Security {
 
 
             if (protectionsToUse.HasFlag(Protections.AES256_CBC))
-                cipherText = EncryptAES256_CBC(cipherText, actualKey, iv);
-            else
-                cipherText = EncryptAES128_CBC(cipherText, actualKey, iv);
+                cipherText = EncryptAes256_Cbc(cipherText, actualKey, iv);
+
+            if (protectionsToUse.HasFlag(Protections.AES128_CBC))
+                cipherText = EncryptAes128_Cbc(cipherText, actualKey, iv);
 
 #if !IOS
+            if ((protectionsToUse.HasFlag(Protections.AES256_GCM) || protectionsToUse.HasFlag(Protections.AES128_GCM)) && AesGcm.IsSupported) {
+                cipherText = EncryptAes_Gcm(cipherText, actualKey, nonce, associationData);
+            }
+
             if (protectionsToUse.HasFlag(Protections.ChaCha20Poly1305) && ChaCha20Poly1305.IsSupported) {
                 if (nonce == null || nonce.Length != 12)
                     throw new ArgumentException("Nonce must be 12 bytes (96 bit)", nameof(nonce));
@@ -509,8 +796,9 @@ namespace CNCO.Unify.Security {
         /// </summary>
         /// <param name="cipherText">Data to decrypt</param>
         /// <param name="key">Decryption key</param>
+        /// <param name="associatedData">Data that must match the associate data on the <paramref name="cipherText"/>.</param>
         /// <returns></returns>
-        public static string Decrypt(string cipherText, byte[] key) {
+        public static string Decrypt(string cipherText, byte[] key, byte[]? associatedData = null) {
             string[] parts;
             bool loop = true;
 
@@ -536,16 +824,18 @@ namespace CNCO.Unify.Security {
                     case "chacha20-poly1305":
                         cipherText = DecryptChaCha20Poly1305(cipherText, actualKey);
                         break;
+
+                    case "aes256.GCM":
+                    case "aes128.GCM":
+                    case "aes.GCM":
+                        cipherText = DecryptAesString_Gcm(cipherText, actualKey, associatedData);
+                        break;
 #endif
 
                     case "aes256.CBC":
                     case "aes128.CBC":
-                        cipherText = DecryptAES(cipherText, actualKey);
+                        cipherText = DecryptAes(cipherText, actualKey);
                         break;
-
-                    case "aes256.GCM":
-                    case "aes128.GCM":
-                        throw new NotImplementedException();
 
                     case "unifydp":
                         cipherText = DecryptDataProtector(cipherText);

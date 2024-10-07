@@ -74,12 +74,12 @@ namespace CNCO.Unify.Security {
         public override IDataProtector CreateProtector(string purpose) => base.CreateProtector($"{_purpose}:{purpose}");
 
 
-        public virtual byte[] Protect(byte[] plaintext) => Encryption.EncryptAES256_CBC(plaintext, Key);
+        public virtual byte[] Protect(byte[] plaintext) => Encryption.EncryptAes256_Cbc(plaintext, Key);
 
         public virtual string Protect(string plaintext) {
             string tag = $"{GetType().Name}::{nameof(Protect)}-{_purpose}";
             try {
-                string protectedString = Encryption.EncryptAES256_CBC(plaintext, Key);
+                string protectedString = Encryption.EncryptAes256_Cbc(plaintext, Key);
                 byte[] protectedBytes = Encoding.UTF8.GetBytes(protectedString);
                 return Convert.ToBase64String(protectedBytes);
             } catch (Exception ex) {
@@ -91,13 +91,13 @@ namespace CNCO.Unify.Security {
         }
 
 
-        public virtual byte[] Unprotect(byte[] protectedData) => Encryption.DecryptAES(protectedData, Key);
+        public virtual byte[] Unprotect(byte[] protectedData) => Encryption.DecryptAes(protectedData, Key);
         public virtual string Unprotect(string protectedData) {
             string tag = $"{GetType().Name}::{nameof(Unprotect)}-{_purpose}";
             try {
                 byte[] protectedBytes = Convert.FromBase64String(protectedData);
                 string protectedString = Encoding.UTF8.GetString(protectedBytes);
-                return Encryption.DecryptAES(protectedString, Key);
+                return Encryption.DecryptAes(protectedString, Key);
             } catch (Exception ex) {
                 SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to unprotect data (invalid key?)!");
                 SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);

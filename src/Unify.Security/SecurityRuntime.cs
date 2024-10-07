@@ -67,6 +67,7 @@ namespace CNCO.Unify.Security {
 
         public SecurityRuntime() : this(null) { }
 
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         public SecurityRuntime(SecurityRuntimeConfiguration? runtimeConfiguration = null) {
             if (_instance != null)
                 return;
@@ -98,14 +99,14 @@ namespace CNCO.Unify.Security {
                 }
 
                 _fileStorage ??= new LocalFileStorage(runtimeConfiguration?.CredentialFileParentDirectoryName);
-                string credentialsPath = runtimeConfiguration?.CredentialsFileName ?? UnifyRuntime.Current.ApplicationId;
+                string credentialsPath = runtimeConfiguration?.CredentialsFileName ?? UnifyRuntime.Current.ApplicationId + ".ucred.json";
 
                 RuntimeLog.Log($"Initialized {nameof(CredentialManager)}.");
                 RuntimeLog.Debug(
-                    $"{nameof(_platformCredentialManager)}<?>: {_platformCredentialManager.GetType().FullName}" +
-                    $"{nameof(_encryptionKeyProvider)}<?>: {_encryptionKeyProvider?.GetType().FullName ?? "none!"}" +
-                    $"{nameof(_encryptionProvider)}<?>: {_encryptionProvider.GetType().FullName}" +
-                    $"{nameof(_fileStorage)}<?>: {_fileStorage.GetType().FullName}" +
+                    $"{nameof(_platformCredentialManager)}<?>: {_platformCredentialManager.GetType().FullName}" + Environment.NewLine +
+                    $"{nameof(_encryptionKeyProvider)}<?>: {_encryptionKeyProvider?.GetType().FullName ?? "none!"}" + Environment.NewLine +
+                    $"{nameof(_encryptionProvider)}<?>: {_encryptionProvider.GetType().FullName}" + Environment.NewLine +
+                    $"{nameof(_fileStorage)}<?>: {_fileStorage.GetType().FullName}" + Environment.NewLine +
                     $"Path: {credentialsPath}"
                 );
                 _credentialManager = new FileBasedCredentialManager(
@@ -115,30 +116,27 @@ namespace CNCO.Unify.Security {
                 );
             }
         }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
         public static SecurityRuntime Create(SecurityRuntimeConfiguration? runtimeConfiguration)
             => new SecurityRuntime(runtimeConfiguration);
 
 
         #region Key generation
-        private string GenerateNewMasterKey() {
+        private byte[] GenerateNewMasterKey() {
             string masterKey = Encryption.GenerateRandomString(256);
             byte[] masterKeyBytes = Encoding.UTF8.GetBytes(masterKey);
             string masterKeyBase64 = Convert.ToBase64String(masterKeyBytes);
             _platformCredentialManager.Set($"{UnifyRuntime.Current.ApplicationId}::Key", masterKeyBase64);
-            return masterKey;
+            return masterKeyBytes;
         }
 
         private byte[] GetEncryptionKey() {
             string? masterKey = _platformCredentialManager.Get($"{UnifyRuntime.Current.ApplicationId}::Key");
-            if (masterKey != null) {
-                byte[] masterKeyBytes = Convert.FromBase64String(masterKey);
-                masterKey = Encoding.UTF8.GetString(masterKeyBytes);
-            } else {
-                masterKey = GenerateNewMasterKey();
-            }
-
-            return Encoding.UTF8.GetBytes(masterKey);
+            if (masterKey != null)
+                return Convert.FromBase64String(masterKey);
+            else
+                return GenerateNewMasterKey();
         }
         #endregion
     }
