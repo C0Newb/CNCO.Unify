@@ -1,6 +1,6 @@
 using UIKit;
 
-namespace AvaloniaTestRunner.iOS {
+namespace UnifyTestRunner.iOS {
     public class Application {
         // This is the main entry point of the application.
         static void Main(string[] args) {

@@ -17,7 +17,7 @@ namespace UnifyTests.Communications.Http.Routing {
 
 
         #region Route methods
-        [HttpAll("all")]
+        [HttpAny("all")]
         public void All() {
             Response.Send($"All-{Request.Verb}");
         }
@@ -150,12 +150,12 @@ namespace UnifyTests.Communications.Http.Routing {
 
 
         // Multiple
-        [HttpAll(":string:/:id:/:date:/:count:")]
+        [HttpAny(":string:/:id:/:date:/:count:")]
         public void StringGuidDateTimeInt(string @string, Guid id, DateTime dateTime, int count) {
             Response.Send(FormatUrlParameters(@string, count, dateTime, id));
         }
 
-        [HttpAll("curly/{string}/{id}/{date}/{count}")]
+        [HttpAny("curly/{string}/{id}/{date}/{count}")]
         public void CurlyBraceStringGuidDateTimeInt(string @string, Guid id, DateTime dateTime, int count) {
             Response.Send(FormatUrlParameters(@string, count, dateTime, id));
         }

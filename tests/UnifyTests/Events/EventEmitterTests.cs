@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace UnifyTests.Events {
     public class EventEmitterTests {
-        private static IEventEmitter EventEmitter;
+        private static EventEmitter EventEmitter;
 
         private static int CallbackHitCount = 0;
         private static object?[]? CallbackOptions = null;

@@ -3,7 +3,7 @@ using Avalonia.ReactiveUI;
 using System;
 using UnifyTestRunner;
 
-namespace AvaloniaTestRunner.Desktop {
+namespace UnifyTestRunner.Desktop {
     internal class Program {
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized

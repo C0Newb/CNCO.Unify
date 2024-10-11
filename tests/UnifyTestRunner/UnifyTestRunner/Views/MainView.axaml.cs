@@ -19,7 +19,6 @@ using UnifyTestRunner.ViewModels;
 namespace UnifyTestRunner.Views {
     public partial class MainView : UserControl {
         private bool _running = false;
-        private object _lock = new object();
         private bool _isDoingFileAction = false;
 
         private readonly ITestEngine engine = TestEngineActivator.CreateInstance();

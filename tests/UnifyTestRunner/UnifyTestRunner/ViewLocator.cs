@@ -5,7 +5,8 @@ using UnifyTestRunner.ViewModels;
 
 namespace UnifyTestRunner {
     public class ViewLocator : IDataTemplate {
-        public Control Build(object data) {
+#pragma warning disable CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
+        public Control? Build(object data) {
             if (data is null)
                 return null;
 
@@ -16,6 +17,7 @@ namespace UnifyTestRunner {
 
             return new TextBlock { Text = name };
         }
+#pragma warning restore CS8767 // Nullability of reference types in type of parameter doesn't match implicitly implemented member (possibly because of nullability attributes).
 
         public bool Match(object? data) {
             return data is ViewModelBase;

@@ -236,9 +236,7 @@ namespace CNCO.Unify.Communications.Http {
                             CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"Listener task hang for {request.Path}!");
                         }
                     }
-                }
-                catch (OperationCanceledException) { } 
-                catch (AggregateException e) {
+                } catch (OperationCanceledException) { } catch (AggregateException e) {
                     if (e.Message.Contains("websocket request without", StringComparison.OrdinalIgnoreCase) && e.Message.Contains("header", StringComparison.OrdinalIgnoreCase)) {
                         hasActivatedWebSocket = true;
                         listenerFired = false; // forces a 400 later.
@@ -280,7 +278,7 @@ namespace CNCO.Unify.Communications.Http {
                 }
 
                 response.End();
-                
+
                 if (_log)
                     CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"500: {listenersForPath?.Count ?? 0} listener(s) found for path {request.Path}, but none responded!");
             }

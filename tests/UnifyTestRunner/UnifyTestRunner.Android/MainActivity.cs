@@ -3,9 +3,8 @@ using Android.Content.PM;
 using Avalonia;
 using Avalonia.Android;
 using Avalonia.ReactiveUI;
-using UnifyTestRunner;
 
-namespace AvaloniaTestRunner.Android {
+namespace UnifyTestRunner.Android {
     [Activity(
         Label = "UnifyTestRunner.Android",
         Theme = "@style/MyTheme.NoActionBar",
