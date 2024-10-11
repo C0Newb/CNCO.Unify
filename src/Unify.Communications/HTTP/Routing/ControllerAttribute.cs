@@ -10,7 +10,7 @@ namespace CNCO.Unify.Communications.Http.Routing {
 
             template = template.TrimStart('/');
 
-            string globalPrefix = CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.GlobalRouteAttributePrefix;
+            string globalPrefix = CommunicationsRuntime.Current.Configuration.Http.GlobalRouteAttributePrefix;
             if (!string.IsNullOrEmpty(globalPrefix)) {
                 Template = globalPrefix.TrimEnd('/') + '/' + template;
             } else {

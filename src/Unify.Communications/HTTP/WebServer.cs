@@ -121,7 +121,7 @@ namespace CNCO.Unify.Communications.Http {
                     return;
 
                 try {
-                    var defaultHeaders = CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.DefaultWebServerResponseHeaders;
+                    var defaultHeaders = CommunicationsRuntime.Current.Configuration.Http.DefaultWebServerResponseHeaders;
                     if (defaultHeaders != null) {
                         foreach (var header in defaultHeaders.AllKeys) {
                             if (defaultHeaders[header] == null)

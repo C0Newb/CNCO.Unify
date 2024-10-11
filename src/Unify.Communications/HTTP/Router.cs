@@ -208,40 +208,58 @@ namespace CNCO.Unify.Communications.Http {
             // Wait for a response ...
             foreach (Listener listener in listenersForPath) {
                 try {
-                    //if (listener.IsWebSocket)
-                    //    continue; // never mind here!
-
                     if (listener.IsWebSocket || listener.Verb == HttpVerb.Any || listener.Verb == request.Verb) {
-                        listener.Task?.Wait(cancellationToken); // it should be cancelling, but ..
-
-                        int attempt = 0;
-                        while (!(listener.Task?.IsCompleted ?? false) && attempt < 25) {
-                            Thread.Sleep(25);
-                            attempt++;
-                        }
-
+                        Task task = listenerTasks[listener];
+                        task.Wait(CommunicationsRuntime.Current.Configuration.Http.Router.ResponseTimeoutMilliseconds); // it should be cancelling, but ...
+                        //task.Wait();
                         try {
-                            listener.Task?.Dispose();
+                            task?.Dispose();
                         } catch {
                             CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"Listener task hang for {request.Path}!");
                         }
                     }
-                } catch (OperationCanceledException) { }
+                }
+                catch (OperationCanceledException) { } 
+                catch (AggregateException e) {
+                    if (e.Message.Contains("websocket request without", StringComparison.OrdinalIgnoreCase) && e.Message.Contains("header", StringComparison.OrdinalIgnoreCase)) {
+                        hasActivatedWebSocket = true;
+                        listenerFired = false; // forces a 400 later.
+                    }
+                }
             }
 
+            listenerTasks.Clear();
+
             if (!listenerFired) {
-                response.Status(404);
+                if (hasActivatedWebSocket)
+                    response.Status(400);
+                else
+                    response.Status(404);
                 response.End();
-                if (_log)
-                    CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"404: no listener found for path {request.Path}!");
+
+                if (_log) {
+                    if (hasActivatedWebSocket)
+                        CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"400: invalid WebSocket connection handshake request to {request.Path}!");
+                    else
+                        CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"404: no listener found for path {request.Path}!");
+                }
                 return;
+
             } else if (!response.HasEnded) {
                 if (request.WebSocket != null && request.WebSocket.IsOpen) {
                     // You cannot close the response stream, that would terminate the WebSocket connection!
                     return;
                 }
 
-                response.Status(CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.RouterNoResponseFromListenersStatusCode ?? 500);
+                if (CommunicationsRuntime.Current.Configuration.Http.Router.EnableDefaultResponses) {
+                    response.Status(CommunicationsRuntime.Current.Configuration.Http.Router.DefaultResponseStatusCode ?? 500);
+                    string? body = CommunicationsRuntime.Current.Configuration.Http.Router.DefaultResponseBody;
+                    if (!string.IsNullOrEmpty(body)) {
+                        response.Send(body);
+                    }
+                } else {
+                    response.Status(500);
+                }
                 response.End();
                 if (_log)
                     CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"500: {listenersForPath?.Count ?? 0} listener(s) found for path {request.Path}, but none responded!");

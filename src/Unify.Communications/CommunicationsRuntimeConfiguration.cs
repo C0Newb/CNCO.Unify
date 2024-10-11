@@ -9,8 +9,8 @@ namespace CNCO.Unify.Communications {
         public CommunicationsRuntimeConfiguration() { }
 
         /// <summary>
-        /// Configuration options for the <see cref="Http"/> namespace.
+        /// Configuration options for the <see cref="Communications.Http"/> namespace.
         /// </summary>
-        public RuntimeHttpConfiguration RuntimeHttpConfiguration { get; set; } = new RuntimeHttpConfiguration();
+        public HttpRuntimeConfiguration Http { get; set; } = new HttpRuntimeConfiguration();
     }
 }

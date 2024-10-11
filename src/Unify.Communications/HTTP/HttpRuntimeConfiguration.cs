@@ -6,10 +6,10 @@ namespace CNCO.Unify.Communications.Http {
     /// <summary>
     /// Configuration settings for the <see cref="Http"/> namespace.
     /// </summary>
-    public sealed class RuntimeHttpConfiguration {
+    public sealed class HttpRuntimeConfiguration {
         private string? _apiVersionedRouteTemplatePrefix;
 
-        public RuntimeHttpConfiguration() { }
+        public HttpRuntimeConfiguration() { }
 
         #region Routing templates.
         /// <summary>
@@ -51,6 +51,16 @@ namespace CNCO.Unify.Communications.Http {
         #endregion
 
 
+        #region Router
+        public RouterRuntimeConfiguration Router { get; set; } = new RouterRuntimeConfiguration();
+        #endregion
+
+
+        #region WebSockets
+
+        #endregion
+
+
         #region Http server
         /// <summary>
         /// Response headers added to the <see cref="HttpListenerResponse"/> within <see cref="WebServer"/>.
@@ -59,19 +69,6 @@ namespace CNCO.Unify.Communications.Http {
         /// That is, these headers are added, by default, to all responses to requests to <see cref="WebServer"/>.
         /// </remarks>
         public NameValueCollection DefaultWebServerResponseHeaders { get; set; } = [];
-
-        /// <summary>
-        /// Http response status code when no listeners responded to the http request.
-        /// </summary>
-        /// <remarks>
-        /// Only used when listeners are found for a given http request but none sent a response after <see cref="RouterListenerResponseTimeoutMilliseconds"/>.
-        /// </remarks>
-        public int? RouterNoResponseFromListenersStatusCode { get; set; } = 500;
-
-        /// <summary>
-        /// Amount time to wait for listeners to a http request to respond before <see cref="RouterNoResponseFromListenersStatusCode"/> is sent.
-        /// </summary>
-        public int RouterListenerResponseTimeoutMilliseconds { get; set; } = 15000;
         #endregion
     }
 }
