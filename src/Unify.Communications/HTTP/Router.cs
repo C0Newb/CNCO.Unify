@@ -63,10 +63,10 @@ namespace CNCO.Unify.Communications.Http {
                 PathRegexLookup.Add(listener.PathRegex, listener.Path);
             }
 
-            CommunicationsRuntime.Current.RuntimeLog.Verbose($"Added new {listener.Verb} route {listener.Path}");
+            CommunicationsRuntime.Current.RuntimeLog.Verbose($"{GetType().Name}::{nameof(AddListener)}", $"Added new {listener.Verb} route {listener.Path}");
         }
 
-        public void All(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Any, path, callback));
+        public void Any(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Any, path, callback));
         public void Connect(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Connect, path, callback));
         public void Delete(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Delete, path, callback));
         public void Get(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Get, path, callback));
@@ -281,7 +281,7 @@ namespace CNCO.Unify.Communications.Http {
                 var methods = GetMethods(controller);
 
                 foreach (var method in methods) {
-                    AddListener(controllerRoute, method);
+                    AddControllerListener(controllerRoute, method);
                 }
             }
         }
@@ -310,6 +310,7 @@ namespace CNCO.Unify.Communications.Http {
             route = routeAttribute.Template.Replace("[controller]", controller.Name.ToLower());
             if (!route.StartsWith('/'))
                 route = '/' + route;
+            route = route.TrimEnd('/');
             return route;
         }
 
@@ -323,7 +324,7 @@ namespace CNCO.Unify.Communications.Http {
                 var route = methodAttribute.Template ?? string.Empty;
                 if (!route.StartsWith('/'))
                     route = '/' + route;
-
+                route = route.TrimEnd('/');
                 return route;
             } catch (Exception e) {
                 CommunicationsRuntime.Current.RuntimeLog.Error(
@@ -350,7 +351,7 @@ namespace CNCO.Unify.Communications.Http {
             return controllerMethods;
         }
 
-        private void AddListener(string route, ControllerInvoker method) {
+        private void AddControllerListener(string route, ControllerInvoker method) {
             Action<IWebRequest, IWebResponse> httpCallback = (req, res) => method.Invoke(req, res, null);
             Action<IWebSocket> webSocketCallback = (socket) => method.Invoke(socket.WebRequest, null, socket);
 
@@ -358,10 +359,14 @@ namespace CNCO.Unify.Communications.Http {
 
             // HTTP requests
             foreach (var httpMethodAttribute in method.HttpMethodAttributes) {
-                string methodRoute = route + GetMethodRoute(method.MethodInfo, httpMethodAttribute.GetType()).TrimStart('/');
+                string methodRoute = route + GetMethodRoute(method.MethodInfo, httpMethodAttribute.GetType());
 
                 foreach (var httpMethod in httpMethodAttribute.HttpMethods) {
                     switch (httpMethod) {
+                        case HttpVerb.Any:
+                            Any(methodRoute, httpCallback);
+                            break;
+
                         case HttpVerb.Get:
                             Get(methodRoute, httpCallback);
                             break;
@@ -392,11 +397,11 @@ namespace CNCO.Unify.Communications.Http {
 
                         default: // ? what
                             CommunicationsRuntime.Current.RuntimeLog.Alert(
-                                $"{GetType()}::{nameof(AddListener)}",
+                                $"{GetType()}::{nameof(AddControllerListener)}",
                                 $"Unknown HttpMethod was attempted to be added via a {typeof(HttpMethodAttribute).FullName}! Method: {httpMethod}. " +
                                 $"Defaulting to {HttpVerb.Any}."
                             );
-                            All(methodRoute, httpCallback);
+                            Any(methodRoute, httpCallback);
                             break;
                     }
                 }

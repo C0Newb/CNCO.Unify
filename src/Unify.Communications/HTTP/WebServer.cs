@@ -94,7 +94,7 @@ namespace CNCO.Unify.Communications.Http {
         }
 
         #region Router method proxies
-        public void All(string path, Action<IWebRequest, IWebResponse> callback) => Router!.All(path, callback);
+        public void All(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Any(path, callback);
 
         public void Connect(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Connect(path, callback);
 
