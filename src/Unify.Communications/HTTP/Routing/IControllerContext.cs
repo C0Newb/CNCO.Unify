@@ -14,7 +14,7 @@
         /// <remarks>
         /// Not available if the connection is a WebSocket connection.
         /// </remarks>
-        public IWebResponse? WebResponse { get; }
+        public IWebResponse WebResponse { get; }
 
         /// <summary>
         /// The WebSocket connection.

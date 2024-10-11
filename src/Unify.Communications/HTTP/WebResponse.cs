@@ -67,6 +67,9 @@ namespace CNCO.Unify.Communications.Http {
         }
 
         public void End() {
+            if (HasEnded)
+                return;
+
             WrapWrite(() => {
                 HasEnded = true;
                 _response?.Close();

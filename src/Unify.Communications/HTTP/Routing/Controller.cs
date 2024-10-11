@@ -9,7 +9,7 @@
         public IWebRequest Request => Context.WebRequest;
 
         /// <inheritdoc cref="ControllerContext.WebResponse"/>
-        public IWebResponse? Response => Context.WebResponse;
+        public IWebResponse Response => Context.WebResponse;
 
         /// <inheritdoc cref="ControllerContext.WebSocket"/>
         public IWebSocket? WebSocket => Context.WebSocket;

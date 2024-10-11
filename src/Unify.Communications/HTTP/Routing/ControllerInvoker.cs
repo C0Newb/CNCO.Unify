@@ -6,9 +6,6 @@ namespace CNCO.Unify.Communications.Http.Routing {
     /// Used by <see cref="Router"/> to invoke a method within a <see cref="Controller"/>.
     /// </summary>
     internal class ControllerInvoker {
-        // !! VERIFY this is ok to do !!
-        private static readonly ConcurrentDictionary<Type, object> controllerInstancesCache = new ConcurrentDictionary<Type, object>();
-
         private Type ControllerType { get; }
         public IEnumerable<HttpMethodAttribute> HttpMethodAttributes { get; }
         public IEnumerable<WebSocketAttribute> WebSocketAttributes { get; }
@@ -29,14 +26,7 @@ namespace CNCO.Unify.Communications.Http.Routing {
         /// <exception cref="TargetParameterCountException"></exception>
         public void Invoke(IWebRequest request, IWebResponse? response, IWebSocket? webSocket) {
             ControllerContext controllerContext = new ControllerContext(request, response, webSocket);
-
-            // Get controller class instance
-            if (controllerInstancesCache.TryGetValue(ControllerType, out object? classInstance) || classInstance == null) {
-                // Create new instance
-                classInstance = Activator.CreateInstance(ControllerType);
-                if (classInstance != null) // we'll throw the error later
-                    controllerInstancesCache.TryAdd(ControllerType, classInstance);
-            }
+            var classInstance = Activator.CreateInstance(ControllerType);
 
             if (classInstance != null && classInstance is Controller controllerInstance) {
                 controllerInstance.Context = controllerContext;

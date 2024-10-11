@@ -6,6 +6,7 @@
         private readonly object _lockObject = new object();
 
         private IWebRequest? _webRequest;
+        private IWebResponse? _webResponse;
 
         public IWebRequest WebRequest {
             get {
@@ -18,7 +19,16 @@
             }
         }
 
-        public IWebResponse? WebResponse { get; }
+        public IWebResponse WebResponse {
+            get {
+                if (_webResponse == null) {
+                    lock (_lockObject) {
+                        _webResponse ??= new NoopWebResponse();
+                    }
+                }
+                return _webResponse;
+            }
+        }
 
         public IWebSocket? WebSocket { get; }
 
@@ -30,7 +40,7 @@
                 ArgumentNullException.ThrowIfNull(WebResponse);
 
             _webRequest = webRequest;
-            WebResponse = webResponse;
+            _webResponse = webResponse ?? new NoopWebResponse();
             WebSocket = webSocket;
         }
     }

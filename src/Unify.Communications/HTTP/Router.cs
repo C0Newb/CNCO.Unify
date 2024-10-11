@@ -1,4 +1,5 @@
 ﻿using CNCO.Unify.Communications.Http.Routing;
+using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -7,7 +8,7 @@ namespace CNCO.Unify.Communications.Http {
     /// Routes incoming requests.
     /// </summary>
     public class Router : IRouter {
-        private bool _log = true;
+        private bool _log = false;
 
         public Router(bool initializeRoutes = true) {
             if (initializeRoutes) {
@@ -24,7 +25,7 @@ namespace CNCO.Unify.Communications.Http {
             public string PathRegex { get; private set; }
             public Action<IWebRequest, IWebResponse>? OnWebRequest { get; private set; }
             public Action<IWebSocket>? OnWebSocketRequest { get; private set; }
-            public Task? Task { get; set; }
+            //public Task? Task { get; set; }
             public bool IsWebSocket { get; set; } = false;
 
             private Listener(HttpVerb verb, string path) {
@@ -37,6 +38,17 @@ namespace CNCO.Unify.Communications.Http {
             public Listener(string path, Action<IWebSocket> onWebSocketRequest) : this(HttpVerb.Any, path) {
                 IsWebSocket = true;
                 OnWebSocketRequest = onWebSocketRequest;
+            }
+
+            public override bool Equals(object? obj) {
+                if (obj is Listener listener) {
+                    return listener.Path == Path && listener.PathRegex == PathRegex && listener.Verb == Verb;
+                }
+                return false;
+            }
+
+            public override int GetHashCode() {
+                return base.GetHashCode();
             }
         }
 
@@ -140,13 +152,23 @@ namespace CNCO.Unify.Communications.Http {
 
             bool listenerFired = false;
 
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
-            cancellationTokenSource.CancelAfter(CommunicationsRuntime.Current.Configuration.RuntimeHttpConfiguration.RouterListenerResponseTimeoutMilliseconds);
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
+            // List of tasks
+            ConcurrentDictionary<Listener, Task> listenerTasks = new ConcurrentDictionary<Listener, Task>();
 
             // Activate listeners!
             bool hasActivatedWebSocket = false; // So we can throw a "hey, don't have HTTP listeners on the same route has WebSockets!" warning!
+            bool hasActivatedHttp = false;
             bool hasActivatedWebSocketWarningEmitted = false; // ... but only once
+            void WarnAboutMixingHttpAndWebSocketRoutes() {
+                if (hasActivatedWebSocketWarningEmitted)
+                    return;
+                hasActivatedWebSocketWarningEmitted = true;
+                CommunicationsRuntime.Current.RuntimeLog.Warning(
+                    $"{GetType().Name}::{nameof(Process)}",
+                    "You have a HTTP listener on the same route as a WebSocket handler! You cannot do this as once the HTTP response closes, the WebSocket will close."
+                    + Environment.NewLine + "You have been warned."
+                );
+            }
             foreach (Listener listener in listenersForPath!) {
                 try {
                     if (response.HasEnded) {
@@ -159,39 +181,35 @@ namespace CNCO.Unify.Communications.Http {
 
                     // Is a WebSocket listener .. and the request is a WebSocket handshake?
                     if (listener.IsWebSocket) {
-                        if (
-                            request.Headers["Connection"] == null
-                            || request.Headers["Upgrade"] == null
-                            || !request.Headers["Connection"]!.Equals("upgrade", StringComparison.OrdinalIgnoreCase)
-                            || !request.Headers["Upgrade"]!.Equals("websocket", StringComparison.OrdinalIgnoreCase)
-                        ) {
+                        // up here so that we return a 400 even if it's not a valid WebSocket request
+                        hasActivatedWebSocket = true;
+
+                        if (!HasValidWebSocketConnectHandshakeHeaders(request)) {
                             continue;
                         }
 
                         if (listener.OnWebSocketRequest == null) // What? How?
                             throw new NullReferenceException($"{nameof(listener.OnWebSocketRequest)} is null, no listener action to call!");
 
-                        listener.Task = new Task(() => listener.OnWebSocketRequest(request.CreateWebSocketConnection()), TaskCreationOptions.LongRunning);
-                        listener.Task.Start();
+                        if (hasActivatedHttp && !hasActivatedWebSocketWarningEmitted)
+                            WarnAboutMixingHttpAndWebSocketRoutes();
+
+                        Task wsTask = new Task(() => listener.OnWebSocketRequest(request.CreateWebSocketConnection()));
+                        listenerTasks.TryAdd(listener, wsTask);
+                        wsTask.Start();
                         listenerFired = true;
-                        hasActivatedWebSocket = true;
 
                     } else if (listener.Verb == HttpVerb.Any || listener.Verb == request.Verb) {
                         if (listener.OnWebRequest == null) // What? How?
                             throw new NullReferenceException($"{nameof(listener.OnWebRequest)} is null, no listener action to call!");
 
-                        if (hasActivatedWebSocket && !hasActivatedWebSocketWarningEmitted) {
-                            hasActivatedWebSocketWarningEmitted = true;
-                            CommunicationsRuntime.Current.RuntimeLog.Warning(
-                                $"{GetType().Name}::{nameof(Process)}",
-                                "You have a HTTP listener on the same route as a WebSocket handler! You cannot do this as once the HTTP response closes, the WebSocket will close."
-                                + Environment.NewLine + "You have been warned."
-                            );
-                        }
+                        if (hasActivatedWebSocket && !hasActivatedWebSocketWarningEmitted)
+                            WarnAboutMixingHttpAndWebSocketRoutes();
 
                         // same path, same verb, send er...
-                        listener.Task = new Task(() => listener.OnWebRequest(request, response), cancellationToken);
-                        listener.Task.Start();
+                        Task httpTask = new Task(() => listener.OnWebRequest(request, response));
+                        listenerTasks.TryAdd(listener, httpTask);
+                        httpTask.Start();
                         listenerFired = true;
                     }
                 } catch (Exception ex) {
@@ -260,11 +278,25 @@ namespace CNCO.Unify.Communications.Http {
                 } else {
                     response.Status(500);
                 }
+
                 response.End();
+                
                 if (_log)
                     CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"500: {listenersForPath?.Count ?? 0} listener(s) found for path {request.Path}, but none responded!");
             }
         }
+
+        // Checks whether the request contains the headers required for a WebSocket connection handshake
+        private static bool HasValidWebSocketConnectHandshakeHeaders(IWebRequest request) {
+            return !(string.IsNullOrEmpty(request.Headers["Connection"])
+                || string.IsNullOrEmpty(request.Headers["Upgrade"])
+                || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Version"])
+                || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Key"])
+                || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Extensions"])
+                || !request.Headers["Connection"]!.Equals("upgrade", StringComparison.OrdinalIgnoreCase)
+                || !request.Headers["Upgrade"]!.Equals("websocket", StringComparison.OrdinalIgnoreCase));
+        }
+
 
         #region Route initialization
         /// <summary>
