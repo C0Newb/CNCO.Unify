@@ -1,7 +1,7 @@
 ﻿using System.Text;
 
 namespace CNCO.Unify.Security.Credentials {
-    internal class CredentialHelpers {
+    internal static class CredentialHelpers {
         /// <summary>
         /// Takes a string and returns the hash of the string and the string (in base64).
         /// Like so: <c>HASH$base64String</c>. Use this to detect tampering.

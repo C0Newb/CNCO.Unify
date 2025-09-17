@@ -86,11 +86,11 @@
         /// <inheritdoc cref="LogLevel.Error"/>
         /// </summary>
         /// <param name="message">Message to log.</param>
-        void Error(string message);
+        void Error(string message, Exception? exception = null);
 
-        /// <inheritdoc cref="Error(string)"/>
+        /// <inheritdoc cref="Error(string, Exception)"/>
         /// <param name="section">Section name this message belongs to.</param>
-        void Error(string section, string message);
+        void Error(string section, string message, Exception? exception = null);
 
 
         /// <summary>

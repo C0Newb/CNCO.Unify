@@ -4,6 +4,7 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CNCO.Unify;
 using CNCO.Unify.Communications;
+using CNCO.Unify.Communications.Http;
 using CNCO.Unify.Security;
 using CNCO.Unify.Storage;
 using NUnit.Engine;
@@ -41,6 +42,18 @@ namespace UnifyTestRunner.Views {
                     .UseCommunicationsRuntime(new CommunicationsRuntimeConfiguration {
                         // .. same for the communications runtime.
                     });
+
+                IRouter router = new Router(false);
+                WebServer server = new WebServer(router, new WebServerOptions {
+                    Endpoints = new[] { "http://*:25565" }
+                });
+
+                server.Start();
+
+                router.Any("/heartbeat", (req, res) => {
+                    res.Status(200);
+                    res.Send("ok");
+                });
             }).Start();
         }
 

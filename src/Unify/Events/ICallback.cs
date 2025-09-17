@@ -2,6 +2,17 @@
     /// <summary>
     /// Represents a callback (method).
     /// </summary>
+    public interface ICallback<T> where T : EventArgs {
+        /// <summary>
+        /// The main method for the callback.
+        /// </summary>
+        /// <param name="parameters">Parameters to be passed to the callback.</param>
+        void Main(T? parameters);
+    }
+
+    /// <summary>
+    /// Represents a callback (method).
+    /// </summary>
     public interface ICallback {
         /// <summary>
         /// The main method for the callback.

@@ -11,6 +11,7 @@ namespace CNCO.Unify {
         private static UnifyRuntime? _instance;
         private EventEmitter? _eventEmitter;
         private SinkLogger? _applicationLog;
+        private ILocalFileStorage? _fileStorage;
 
         #region Locks
         // Lock used when initializing this class.
@@ -45,6 +46,25 @@ namespace CNCO.Unify {
                 Current._eventEmitter ??= new EventEmitter();
                 return Current._eventEmitter;
             }
+        }
+
+        /// <summary>
+        /// Unify's global <see cref="ILocalFileStorage"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is not referenced anywhere within Unify, but can be used rather than having to manage your own instance.
+        /// If not set, on get a new instance of <see cref="LocalFileStorage"/> will be created at the runtime root of Unify (as determined by <see cref="Platform.GetApplicationRootDirectory()"/>).
+        /// </remarks>
+        public static ILocalFileStorage FileStorage {
+            get {
+                if (Current._fileStorage == null) {
+                    lock (_initializationLock) {
+                        Current._fileStorage ??= new LocalFileStorage(Path.Combine(Platform.GetApplicationRootDirectory(), "data"));
+                    }
+                }
+                return Current._fileStorage;
+            }
+            set => Current._fileStorage = value;
         }
 
         /// <summary>
@@ -107,6 +127,10 @@ namespace CNCO.Unify {
                                 ?? Assembly.GetExecutingAssembly().GetName().FullName;
                 Configuration = configuration;
                 _instance = this;
+
+                if (configuration.ApplicationFileStorage != null) {
+                    _fileStorage = configuration.ApplicationFileStorage;
+                }
             }
         }
         #endregion

@@ -1,6 +1,6 @@
 ﻿namespace CNCO.Unify.Logging {
     /// <summary>
-    /// Logger skeleton
+    /// Logger skeleton.
     /// </summary>
     public abstract class Logger : ILogger {
         private readonly ILogFormatter _formatter;
@@ -30,6 +30,13 @@
             _formatter = formatter;
         }
 
+        private void LogException(Exception? exception = null) {
+            if (exception != null) {
+                Log(LogLevel.Error, SectionName, "Exception: " + exception.Message);
+                Log(LogLevel.Error, SectionName, "StackTrace: " + exception.StackTrace ?? "No stack trace available!");
+            }
+        }
+
 
         public void Emergency(string message) => Log(LogLevel.Emergency, SectionName, message);
         public void Emergency(string section, string message) => Log(LogLevel.Emergency, section, message);
@@ -37,8 +44,14 @@
         public void Alert(string message) => Log(LogLevel.Alert, SectionName, message);
         public void Alert(string section, string message) => Log(LogLevel.Alert, section, message);
 
-        public void Error(string message) => Log(LogLevel.Error, SectionName, message);
-        public void Error(string section, string message) => Log(LogLevel.Error, section, message);
+        public void Error(string message, Exception? exception = null) {
+            Log(LogLevel.Error, SectionName, message);
+            LogException(exception);
+        }
+        public void Error(string section, string message, Exception? exception = null) {
+            Log(LogLevel.Error, section, message);
+            LogException(exception);
+        }
 
         public void Warning(string message) => Log(LogLevel.Warning, SectionName, message);
         public void Warning(string section, string message) => Log(LogLevel.Warning, section, message);

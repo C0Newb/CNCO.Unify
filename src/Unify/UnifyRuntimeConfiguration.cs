@@ -28,6 +28,13 @@ namespace CNCO.Unify {
         /// </summary>
         public bool ApplicationLogNoFileStorage { get; set; } = false;
 
+        /// <summary>
+        /// The <see cref="ILocalFileStorage"/> accessible via the <see cref="UnifyRuntime"/> anywhere.
+        /// </summary>
+        /// <remarks>
+        /// This is not referenced anywhere within Unify, but can be used rather than having to manage your own instance.
+        /// </remarks>
+        public ILocalFileStorage? ApplicationFileStorage { get; set; }
 
         /// <summary>
         /// Hooks that will run with <see cref="UnifyRuntime.Initialize"/>.

@@ -8,60 +8,7 @@ namespace CNCO.Unify.Security {
     /// <summary>
     /// Encryption helper functions.
     /// </summary>
-    public static class Encryption {
-
-        /// <summary>
-        /// Encryption methods.
-        /// </summary>
-        /// <remarks>
-        /// AES256_CBC will be, generally speaking, the most secure for most applications.
-        /// ChatCha20Poly1305 is not widely supported!
-        /// DataProtection has less portability!
-        /// GCM can be compromised if the same nonce is used ever!
-        /// </remarks>
-        [Flags]
-        public enum Protections {
-            /// <summary>
-            /// Will not use any encryption.
-            /// </summary>
-            None = 0x0,
-
-            /// <summary>
-            /// Use <see cref="DataProtectionProvider"/> for encryption.
-            /// </summary>
-            DataProtection = 0x1,
-
-            /// <summary>
-            /// Use ChaCha20-Poly1305 for encryption.
-            /// </summary>
-            /// <remarks>
-            /// This is not widely supported! Please use a different protection unless you are for sure ChaCha20 is supported in your environment.
-            /// </remarks>
-            ChaCha20Poly1305 = 0x2,
-
-            /// <summary>
-            /// Use 128 bit AES (CBC mode) for encryption.
-            /// </summary>
-            AES128_CBC = 0x4,
-
-            /// <summary>
-            /// Use 128 bit AES (CBC mode) for encryption.
-            /// </summary>
-            AES256_CBC = 0x8,
-
-            /// <summary>
-            /// Use AES (GCM/AEAD mode) for encryption.
-            /// </summary>
-            AES128_GCM = 0x10,
-
-            /// <summary>
-            /// Use AES (GCM/AEAD mode) for encryption.
-            /// </summary>
-            /// <remarks>
-            /// Same as <see cref="Protections.AES128_GCM"/>.
-            /// </remarks>
-            AES256_GCM = 0x20,
-        }
+    public static partial class Encryption {
 
         private static readonly object _dpLock = new object();
         private static DataProtector? _dataProtector;
@@ -658,46 +605,6 @@ namespace CNCO.Unify.Security {
 
             return randomString.ToString();
         }
-
-
-
-        /// <summary>
-        /// Generates a BCrypt hash from a string given a work factor.
-        /// </summary>
-        /// <param name="password">Data to hash</param>
-        /// <param name="workFactor">BCrypt work factor</param>
-        /// <returns>The hashed password.</returns>
-        public static string GenerateBCryptHash(SecureString password, int workFactor) {
-            IntPtr bstr = Marshal.SecureStringToBSTR(password);
-            try {
-                return BCrypt.Net.BCrypt.EnhancedHashPassword(Marshal.PtrToStringBSTR(bstr), workFactor);
-            } finally {
-                Marshal.ZeroFreeBSTR(bstr);
-            }
-        }
-
-        /// <inheritdoc cref="GenerateBCryptHash(SecureString, int)"/>
-        public static string GenerateBCryptHash(string password, int workFactor) => BCrypt.Net.BCrypt.EnhancedHashPassword(password, workFactor);
-
-
-        /// <summary>
-        /// Used to verify a BCrypt hash was derived from a given password
-        /// </summary>
-        /// <param name="password">Data to verify</param>
-        /// <param name="hash">Hash to verify against</param>
-        /// <returns>Whether the hash is generated from the password.</returns>
-        public static bool VerifyBCryptHash(SecureString password, string hash) {
-            IntPtr bstr = Marshal.SecureStringToBSTR(password);
-            try {
-                return BCrypt.Net.BCrypt.EnhancedVerify(Marshal.PtrToStringBSTR(bstr), hash);
-            } finally {
-                Marshal.ZeroFreeBSTR(bstr);
-            }
-        }
-
-        /// <inheritdoc cref="VerifyBCryptHash(SecureString, string)"/>
-        public static bool VerifyBCryptHash(string password, string hash) => BCrypt.Net.BCrypt.EnhancedVerify(password, hash);
-
 
         /// <summary>
         /// Uses <see cref="Rfc2898DeriveBytes"/> to derive an encryption key given the password and salt.

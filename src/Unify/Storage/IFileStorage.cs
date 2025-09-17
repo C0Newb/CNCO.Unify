@@ -14,11 +14,13 @@
         /// <summary>
         /// Writes <paramref name="contents"/> to a file in storage.
         /// </summary>
-        /// <param name="contents">Contents to be written.</param>
         /// <param name="name">Name of the file to write to.</param>
+        /// <param name="contents">Contents to be written.</param>
         /// <returns>Whether the file was saved or not.</returns>
         public bool Write(string name, string contents);
-        /// <inheritdoc cref="Write"/>
+        /// <inheritdoc cref="Write(string, string)"/>
+        public bool Write(string name, Stream contents);
+        /// <inheritdoc cref="Write(string, string)"/>
         public bool WriteBytes(string name, byte[] contents);
 
 
@@ -77,5 +79,27 @@
         /// <param name="newName">New file name.</param>
         /// <returns>Successfully renamed.</returns>
         public bool Rename(string name, string newName);
+
+        /// <summary>
+        /// Gets all files within a path.
+        /// </summary>
+        /// <param name="path">Path to list files in. Defaults to root.</param>
+        /// <param name="searchPattern">Pattern to search using.</param>
+        /// <returns>All files within a path.</returns>
+        public IEnumerable<string> GetFiles(string? path = null, string? searchPattern = null);
+        /// <summary>
+        /// Gets all directories within a path.
+        /// </summary>
+        /// <param name="path">Path to life files in. Defaults to root.</param>
+        /// <param name="searchPattern">Pattern to search using.</param>
+        /// <returns>All directories within a path.</returns>
+        public IEnumerable<string> GetDirectories(string? path = null, string? searchPattern = null);
+
+        /// <summary>
+        /// Whether a given path is a directory.
+        /// </summary>
+        /// <param name="path">Path to test.</param>
+        /// <returns>If the path is a directory.</returns>
+        public bool IsDirectory(string path);
     }
 }

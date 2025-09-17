@@ -216,9 +216,8 @@ namespace CNCO.Unify.Communications.Http {
                     response.Status(500);
                     CommunicationsRuntime.Current.RuntimeLog.Error(
                         $"{GetType().Name}::{nameof(Process)}",
-                        $"Error encountered calling listener for {listener.Verb} \"{listener.Path}\"" +
-                        Environment.NewLine + "Error: " + ex.Message +
-                        Environment.NewLine + "Stack: " + ex.StackTrace
+                        $"Error encountered calling listener for {listener.Verb} \"{listener.Path}\"",
+                        ex
                     );
                 }
             }
@@ -359,7 +358,8 @@ namespace CNCO.Unify.Communications.Http {
             } catch (Exception e) {
                 CommunicationsRuntime.Current.RuntimeLog.Error(
                     $"{typeof(Router).FullName}::{nameof(GetMethodRoute)}({method}, {routeAttributeType})",
-                    e.Message + Environment.NewLine + e.StackTrace
+                    "Failed to get method route!",
+                    e
                 );
                 return string.Empty;
             }

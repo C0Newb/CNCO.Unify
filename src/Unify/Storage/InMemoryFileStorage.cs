@@ -177,6 +177,19 @@ namespace CNCO.Unify.Storage {
             }
         }
 
+        public bool Write(string name, Stream contents) {
+            try {
+                using (var memoryStream = new MemoryStream()) {
+                    contents.CopyTo(memoryStream);
+                    return WriteBytes(name, memoryStream.ToArray());
+                }
+            } catch {
+                if (_throwErrors)
+                    throw;
+                return false;
+            }
+        }
+
         public bool WriteBytes(string name, byte[] contents) {
             try {
                 name = NormalizeName(name);
@@ -200,5 +213,9 @@ namespace CNCO.Unify.Storage {
                 return null;
             }
         }
+
+        public IEnumerable<string> GetFiles(string? path = null, string? searchPattern = null) => throw new NotImplementedException();
+        public IEnumerable<string> GetDirectories(string? path = null, string? searchPattern = null) => throw new NotImplementedException();
+        public bool IsDirectory(string path) => throw new NotImplementedException();
     }
 }
