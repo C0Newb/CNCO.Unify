@@ -4,7 +4,6 @@
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <WasmMainJSPath>AppBundle\main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
-	<AvaloniaBrowserVersion>11.0.6</AvaloniaBrowserVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.Browser" Version="$(AvaloniaBrowserVersion)" />
+    <PackageReference Include="Avalonia.Browser" Version="11.3.0" />
   </ItemGroup>
 
   <ItemGroup>
