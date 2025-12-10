@@ -17,7 +17,7 @@ namespace CNCO.Unify.Security.Credentials {
     [SupportedOSPlatform("android")]
     public class AndroidCredentialManager : ICredentialManager, ICredentialManagerEndpoint {
 #if ANDROID
-        private readonly object _lock = new object();
+        private readonly Lock _lock = new();
         private const string SHARED_PREFERENCES_FILENAME = "Unify.AndroidCredentials.json";
 
         private readonly ISharedPreferences _sharedPreferences;
