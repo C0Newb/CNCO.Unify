@@ -15,6 +15,23 @@
         /// </summary>
         public string Hint { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Which item is selected.
+        /// </summary>
+        public int SelectedIndex { get; set; } = -1;
+
+        /// <summary>
+        /// Which item is selected, if any.
+        /// </summary>
+        public string? SelectedItem {
+            get {
+                if (SelectedIndex >= 0 && SelectedIndex < Choices.Length) {
+                    return Choices[SelectedIndex];
+                }
+                return null;
+            }
+        }
+                
 
         public NotificationComboBox(string id, string[]? choices = null, string? hint = null) : base(id) {
             Choices = choices ?? [];

@@ -1,11 +1,14 @@
-﻿namespace CNCO.Unify.Notifications.Push {
+﻿using CNCO.Unify.Notifications.Push.Eventing;
+
+namespace CNCO.Unify.Notifications.Push {
     /// <summary>
     /// Push notification.
     /// </summary>
     public class PushNotification : IPushNotification {
-        private INotificationManager NotificationManager => NotificationRuntime.NotificationManager;
+        private static INotificationManager NotificationManager
+            => NotificationRuntime.NotificationManager;
 
-        private Guid _id = Guid.NewGuid();
+        private readonly Guid _id = Guid.NewGuid();
 
         public Guid Id => _id;
         public string Title { get; set; }
@@ -27,5 +30,17 @@
 
         // clean up images?
         public void Cancel() => NotificationManager.Cancel(this);
+
+        public event NotificationActivatedEventHandler? NotificationActivated;
+
+        public event NotificationFailedEventHandler? NotificationFailed;
+        public event NotificationDismissedEventHandler? NotificationDismissed;
+
+        public void OnActivated(NotificationActivationArguments args)
+            => NotificationActivated?.Invoke(this, args);
+        public void OnFailed(NotificationFailureReason reason, string? details)
+            => NotificationFailed?.Invoke(this, reason, details);
+        public void OnDimsissed(NotificationDismissalReason reason)
+            => NotificationDismissed?.Invoke(this, reason);
     }
 }

@@ -29,7 +29,7 @@ namespace CNCO.Unify.Notifications.Push {
         /// <summary>
         /// Actions (buttons, a textbox, etc) that can be interacted with on the notification.
         /// </summary>
-        public INotificationAction[] Actions { get; set; } = [];
+        public IEnumerable<INotificationAction> Actions { get; set; } = [];
 
         /// <summary>
         /// Conversation data if the notification type is <see cref="NotificationCategory.Conversation"/>.
@@ -41,6 +41,8 @@ namespace CNCO.Unify.Notifications.Push {
         /// </summary>
         public NotificationProgressData? ProgressData { get; set; }
 
+        public INotificationAction? GetNotificationAction(string id)
+            => Actions.First(action => action.Id == id);
 
         public void CleanUpImages() {
             Icon?.DeleteImage();

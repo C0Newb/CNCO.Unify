@@ -1,4 +1,6 @@
-﻿namespace CNCO.Unify.Notifications.Push.Actions {
+﻿using CNCO.Unify.Notifications.Push.Eventing;
+
+namespace CNCO.Unify.Notifications.Push.Actions {
     /// <summary>
     /// Notification action (button, textbox, etc).
     /// </summary>
@@ -13,9 +15,14 @@
         /// </summary>
         public string Id { get; set; }
 
+        public event NotificationActionActivatedEventHandler? ActionActivated;
+
         public NotificationAction(string id) {
             ArgumentNullException.ThrowIfNullOrEmpty(id);
             Id = id;
         }
+
+        public void OnActivated(string? value = null)
+            => ActionActivated?.Invoke(this, value);
     }
 }

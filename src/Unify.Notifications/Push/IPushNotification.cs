@@ -1,4 +1,6 @@
-﻿namespace CNCO.Unify.Notifications.Push {
+﻿using CNCO.Unify.Notifications.Push.Eventing;
+
+namespace CNCO.Unify.Notifications.Push {
     /// <summary>
     /// Push notification.
     /// </summary>
@@ -15,7 +17,6 @@
         /// This is similar to <see cref="Id"/>, but is used to group similar notifications together, such as a category.
         /// </remarks>
         public string Group { get; set; }
-
 
         /// <summary>
         /// Notification title.
@@ -38,7 +39,6 @@
         /// </summary>
         public DateTime? Timestamp { get; set; }
 
-
         /// <summary>
         /// Priority of the notification.
         /// </summary>
@@ -57,13 +57,42 @@
         /// </summary>
         public NotificationCategory Category { get; set; }
 
-
-
         /// <summary>
         /// Pushes the notification to the user via the operating system.
         /// </summary>
         public void Send();
 
+        /// <summary>
+        /// Delete the notification from the operating system.
+        /// </summary>
         public void Cancel();
+
+        #region Eventing
+        /// <summary>
+        /// Event fired when the notification is activated by the user.
+        /// </summary>
+        /// <remarks>
+        /// This is fired after all <see cref="NotificationActionActivatedEventHandler"/> events
+        /// are fired, making this the last event in the "this notification was activated" chain.
+        /// </remarks>
+        public event NotificationActivatedEventHandler? NotificationActivated;
+
+        /// <summary>
+        /// When the notification fails to be sent or displayed.
+        /// </summary>
+        public event NotificationFailedEventHandler? NotificationFailed;
+
+        /// <summary>
+        /// When the notification is dismissed and no longer visible to the user.
+        /// </summary>
+        /// <remarks>
+        /// Includes dismassals by this application. Be sure to check the <see cref="NotificationDismissalReason"/>.
+        /// </remarks>
+        public event NotificationDismissedEventHandler? NotificationDismissed;
+
+        void OnActivated(NotificationActivationArguments args);
+        void OnFailed(NotificationFailureReason reason, string? details);
+        void OnDimsissed(NotificationDismissalReason reason);
+        #endregion
     }
 }

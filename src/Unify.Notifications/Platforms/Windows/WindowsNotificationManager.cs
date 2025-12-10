@@ -1,9 +1,9 @@
 ﻿#if WINDOWS_TOAST_NOTIFICATIONS
 using CNCO.Unify.Notifications.Push;
 using CNCO.Unify.Notifications.Push.Actions;
+using CNCO.Unify.Notifications.Push.Eventing;
 using Microsoft.Toolkit.Uwp.Notifications;
-using Microsoft.VisualBasic;
-using System;
+using System.Collections.Concurrent;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -20,12 +20,18 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
     /// the shortcut with the COM server.
     /// </remarks>
     [SupportedOSPlatform("windows")]
-    public class WindowsNotificationManager : INotificationManager {
+    public partial class WindowsNotificationManager : INotificationManager {
 #pragma warning disable CA1416 // Validate platform compatibility
         public PlatformID PlatformId => PlatformID.Win32NT;
 
         private static ToastNotifierCompat? _toastNotifier;
-        private static Dictionary<string, IPushNotification> _activeNotifications = new Dictionary<string, IPushNotification>();
+        private static readonly ConcurrentDictionary<string, IPushNotification> _activeNotifications = new();
+
+        [GeneratedRegex("(?:action=)(?<id>[^&]+)")]
+        private static partial Regex ActivatedNotificationArgumentsButtonIdRegex();
+
+        [GeneratedRegex(@"\b(reply|send|respond)\b", RegexOptions.IgnoreCase, "en-US")]
+        private static partial Regex ReplyWordRegex();
 
         private static void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e) {
             // Why is this being called when the app is open!!??
@@ -87,7 +93,7 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
             _toastNotifier ??= ToastNotificationManagerCompat.CreateToastNotifier();
             ToastNotification toastNotification = GetToastNotification(pushNotification);
             _toastNotifier.Show(toastNotification);
-            _activeNotifications.Add($"{pushNotification.Group}_{GetTag(pushNotification)}", pushNotification);
+            _activeNotifications.TryAdd($"{pushNotification.Group}_{GetTag(pushNotification)}", pushNotification);
         }
 
         public void Update(IPushNotification pushNotification) {
@@ -176,6 +182,10 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
 
         internal static string GetTag(Guid id) => Convert.ToBase64String(Encoding.UTF8.GetBytes(id.ToString()));
         internal static string GetTag(IPushNotification pushNotification) => GetTag(pushNotification.Id);
+        internal static string GetId(string base64Tag)
+            =>  Encoding.UTF8.GetString(Convert.FromBase64String(base64Tag));
+        internal static string GetActionId(string base64Tag)
+            => GetId(Encoding.UTF8.GetString(Convert.FromBase64String(base64Tag)).Split(INotificationActionExtensions.ActionDelimiter)[1]);
 
         internal static XmlDocument GetToastXml(IPushNotification pushNotification) {
             ToastContentBuilder builder = new ToastContentBuilder();
@@ -217,7 +227,7 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
                     if (conversation.Name != null) { // Add person's name?
                         if (!setUserIcon && conversation.Icon != null && conversation.Icon.WriteImage()) { // Profile picture set?
                             // Add profile picture (override icon)
-                            builder.AddAppLogoOverride(conversation.Icon.Uri, ToastGenericAppLogoCrop.Circle, conversation.Icon.AlternativeText ?? conversation.Name + "'s profile picture.");
+                            builder.AddAppLogoOverride(conversation.Icon.Uri, ToastGenericAppLogoCrop.Circle, conversation.Icon.AlternativeText ?? (conversation.Name + "'s profile picture."));
                             setUserIcon = iconSet = true;
                         }
 
@@ -247,9 +257,7 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
             ToastSelectionBox? comboBox = null;
             var comboBoxItems = new List<ToastSelectionBoxItem>();
 
-            static string ToBase64(string? data) {
-                return Convert.ToBase64String(Encoding.UTF8.GetBytes(data ?? string.Empty));
-            }
+            static string ToBase64(string? data) => Convert.ToBase64String(Encoding.UTF8.GetBytes(data ?? string.Empty));
 
             if (pushNotification.Contents.Actions != null) {
                 foreach (var action in pushNotification.Contents.Actions) {
@@ -275,8 +283,9 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
                             continue;
 
                         comboBox = new ToastSelectionBox(actionComboBox.GetWindowsComponentId());
-                        if (!string.IsNullOrEmpty(actionComboBox.Hint))
+                        if (!string.IsNullOrEmpty(actionComboBox.Hint)) {
                             comboBox.Title = actionComboBox.Hint;
+                        }
 
                         comboBoxItems = new List<ToastSelectionBoxItem>(actionComboBox.Choices.Length);
                         foreach (string option in actionComboBox.Choices) {
@@ -286,6 +295,9 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
                                 comboBoxItems.Add(item);
                             }
                         }
+
+                        comboBox.DefaultSelectionBoxItemId = actionComboBox.SelectedItem;
+
                     }
                 }
             }
@@ -294,7 +306,7 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
                 bool setReplyButton = false;
                 for (int i = 0; i < buttons.Count && i <= 5; i++) {
                     if (buttons[i] != null) {
-                        bool containsReplyWord = Regex.IsMatch(buttons[i].Content, @"\b(reply|send|respond)\b", RegexOptions.IgnoreCase);
+                        bool containsReplyWord = ReplyWordRegex().IsMatch(buttons[i].Content);
                         if (!setReplyButton && containsReplyWord && textBox != null) {
                             // this will set the button to be the 'submit' button for the textbox.
                             buttons[i].TextBoxId = textBox.Id;
@@ -313,6 +325,7 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
                 ValueTuple<string, string>[] choicesTuple = new ValueTuple<string, string>[choices.Length];
 
                 for (int i = 0; i < choices.Length; i++) {
+                    // TODO: Is this right? Does the id need to be shoved into B64 like the other components?
                     choicesTuple[i] = new ValueTuple<string, string>(choices[i], choices[i]);
                 }
 
@@ -380,134 +393,146 @@ namespace CNCO.Unify.Notifications.Platforms.Windows {
 
         #region Events
         public static void Notification_Dismissed(ToastNotification sender, ToastDismissedEventArgs args) {
-            if (args.Reason != ToastDismissalReason.TimedOut) {
-                try {
-                    if (_activeNotifications.ContainsKey(sender.Group + "_" + sender.Tag) && _activeNotifications[sender.Group + "_" + sender.Tag] != null) {
-                        _activeNotifications[sender.Group + "_" + sender.Tag].Cancel();
-                    }
-                } catch (Exception) { }
-                _activeNotifications.Remove(sender.Group + "_" + sender.Tag);
+            if (args.Reason == ToastDismissalReason.TimedOut) {
+                return;
             }
 
-            string tag = sender.Tag;
-            try {
-                tag = Encoding.UTF8.GetString(Convert.FromBase64String(tag));
-            } catch { }
-            if (args.Reason == ToastDismissalReason.UserCanceled) {
-                Dictionary<string, string> data = new Dictionary<string, string>(3) {
-                    { "id", tag },
-                    { "clientId", sender.Group },
-                    { "reason", "user" }
-                };
-                //IPCDataQueue.Enqueue(IPC.KeyValuePairsToDataString("notify-dismissed", data));
+            IPushNotification? pushNotification = RemoveAndCancelNotification(sender);
+            var reason = args.Reason switch {
+                ToastDismissalReason.UserCanceled => NotificationDismissalReason.UserCanceled,
+                ToastDismissalReason.ApplicationHidden => NotificationDismissalReason.ApplicationHidden,
+                ToastDismissalReason.TimedOut => NotificationDismissalReason.TimedOut,
+                _ => NotificationDismissalReason.Unknown,
+            };
 
-                try {
-                    _activeNotifications.Remove(sender.Group + "_" + sender.Tag);
-                } catch (Exception) { }
-            }
+            pushNotification?.OnDimsissed(reason);
         }
 
         private static void Notification_Failed(ToastNotification sender, ToastFailedEventArgs args) {
-            string reason = "";
-            string moreDetails = "";
+            IPushNotification? pushNotification = RemoveAndCancelNotification(sender);
+            string tag = GetId(sender.Tag);
+
+            NotificationFailureReason reason = NotificationFailureReason.Unknown;
+            string details = "";
             switch (_toastNotifier?.Setting) {
                 case NotificationSetting.Enabled:
-                    Console.Error.WriteLine("Notification failed to send." + Environment.NewLine
-                        + "Unknown error: " + args.ErrorCode.Message);
+                    reason = NotificationFailureReason.Exception;
+                    NotificationRuntime.Current.RuntimeLog.Error($"Notification ${tag} failed to send.", args.ErrorCode);
                     break;
 
                 case NotificationSetting.DisabledForApplication:
-                    reason = "DisabledForApplication";
-                    moreDetails = "Enable notifications for " + UnifyRuntime.Current.ApplicationId + " inside the Settings app -> System -> Notifications & actions -> Get notifications from these senders -> Enable \"Neptune.\"";
+                    reason = NotificationFailureReason.DisabledForApplication;
+                    details = "Enable notifications for " + UnifyRuntime.Current.ApplicationId + " inside the Settings app -> System -> Notifications & actions -> Get notifications from these senders.";
+                    NotificationRuntime.Current.RuntimeLog.Warning(
+                        "Failed to send push notification, notifications are disabled for this application."
+                    );
                     break;
 
                 case NotificationSetting.DisabledForUser:
-                    reason = "DisabledForUser";
-                    moreDetails = "Notifications are disabled for your user account. Enable them inside the Settings app -> System -> Notifications & actions -> Enable \"Get notifications from apps and other senders.\"";
+                    reason = NotificationFailureReason.DisabledForUser;
+                    NotificationRuntime.Current.RuntimeLog.Warning(
+                        "Failed to send push notification, notifications are disabled for this user."
+                    );
+                    details = "Notifications are disabled for your user account. Enable them inside the Settings app -> System -> Notifications & actions -> Enable \"Get notifications from apps and other senders.\"";
                     break;
 
                 case NotificationSetting.DisabledByGroupPolicy:
-                    reason = "DisabledByGroupPolicy";
-                    moreDetails = "Notifications are disabled by your organization (via group policy). View more information inside the Settings app -> System -> Notifications & actions";
+                    reason = NotificationFailureReason.DisabledForDevice;
+                    NotificationRuntime.Current.RuntimeLog.Warning(
+                        "Failed to send push notification, notifications are disabled by group policy."
+                    );
+                    details = "Notifications are disabled by your organization (via group policy). View more information inside the Settings app -> System -> Notifications & actions";
                     // Can check registry here...
                     break;
 
                 case NotificationSetting.DisabledByManifest:
-                    reason = "DisabledByManifest";
+                    reason = NotificationFailureReason.DisabledForApplication;
+                    details = "Notifications are disabled for this application by the developer.";
+                    NotificationRuntime.Current.RuntimeLog.Warning(
+                        "Failed to send push notification, notifications are disabled via the application manifest yet you tried anyways?"
+                    );
                     break;
             }
 
-            string tag = sender.Tag;
-            try {
-                tag = Encoding.UTF8.GetString(Convert.FromBase64String(tag));
-            } catch { }
-            Dictionary<string, string> data = new Dictionary<string, string>(4) {
-                { "id", tag },
-                { "clientId", sender.Group },
-                { "failureReason", reason },
-                { "failureMoreDetails", moreDetails }
-            };
-
-            try {
-                if (_activeNotifications.ContainsKey(sender.Group + "_" + sender.Tag) && _activeNotifications[sender.Group + "_" + sender.Tag] != null) {
-                    _activeNotifications[sender.Group + "_" + sender.Tag].Cancel();
-                }
-            } catch (Exception) { }
-
-            _activeNotifications.Remove(sender.Group + "_" + sender.Tag);
-            //IPCDataQueue.Enqueue(IPC.KeyValuePairsToDataString("notify-failed", data));
+            pushNotification?.OnFailed(reason, details);
         }
 
         private static void Notification_Activated(ToastNotification sender, object args) {
             ToastActivatedEventArgs toastArgs = (ToastActivatedEventArgs)args;
-            string tag = sender.Tag;
-            try {
-                tag = Encoding.UTF8.GetString(Convert.FromBase64String(tag));
-            } catch { }
+            string tag = GetId(sender.Tag);
 
-            NotificationRuntime.Current.RuntimeLog.Debug($"{nameof(WindowsNotificationManager)}#{nameof(Notification_Activated)}", $"Notification {tag} (group: {sender.Group}) activated!");
+            NotificationRuntime.Current.RuntimeLog.Debug(
+                $"{nameof(WindowsNotificationManager)}#{nameof(Notification_Activated)}",
+                $"Notification {tag} (group: {sender.Group}) activated!"
+            );
+
+            // Remove from active list
+            IPushNotification? pushNotification = RemoveAndCancelNotification(sender);
 
             // Add data for actions
-            Dictionary<string, string> data = new Dictionary<string, string>(5)
-            {
-                { "id", tag },
-                { "group", sender.Group },
-            };
-
+            Dictionary<INotificationAction, string?> activatedActions = [];
+            NotificationButton? activatedButton = null;
             if (!string.IsNullOrEmpty(toastArgs.Arguments)) {
-                var match = Regex.Match(toastArgs.Arguments, "(?:action=)(?<id>[^&]+)");
+                var match = ActivatedNotificationArgumentsButtonIdRegex().Match(toastArgs.Arguments);
                 if (match.Success && !string.IsNullOrEmpty(match.Groups["id"].Value)) {
-                    data.Add("button", Encoding.UTF8.GetString(Convert.FromBase64String(match.Groups["id"].Value)));
+                    // Found our button
+                    var buttonId = GetActionId(match.Groups["id"].Value);
+                    activatedButton = pushNotification?.Contents.GetNotificationAction(buttonId) as NotificationButton;
                 }
             }
 
             foreach (var inputItem in toastArgs.UserInput) {
                 var splitKey = inputItem.Key.Split(INotificationActionExtensions.ActionDelimiter);
-                if (splitKey.Length != 2)
+                if (splitKey.Length != 2) {
                     continue;
+                }
 
-                var inputType = Enum.Parse<NotificationActionType>(splitKey[0], true);
-                var inputId = Encoding.UTF8.GetString(Convert.FromBase64String(splitKey[1]));
+                var inputId = GetId(splitKey[1]);
+                INotificationAction? inputAction = pushNotification?.Contents.GetNotificationAction(inputId);
+                if (inputAction == null) {
+                    continue;
+                }
 
-                switch (inputType) {
-                    case NotificationActionType.Textbox:
-                        data.Add("textBox", inputItem.Value as string ?? string.Empty);
-                        break;
-                    case NotificationActionType.ComboBox:
-                        data.Add("comboBoxSelectedItem", inputItem.Value as string ?? string.Empty);
-                        break;
+                var value = inputItem.Value as string;
+                activatedActions.Add(inputAction, value);
+
+                if (!string.IsNullOrEmpty(value)) {
+                    if (inputAction is NotificationTextBox notificationTextBox) {
+                        notificationTextBox.Contents = value;
+                    } else if (inputAction is NotificationComboBox notificationComboBox) {
+                        notificationComboBox.SelectedIndex = notificationComboBox.Choices.IndexOf(value);
+                    }
+
+                    // Activate action if there's a value, or...
+                    inputAction.OnActivated(value);
+                } else if (activatedButton?.TextBox == inputAction) {
+                    // ...textbox button clicked
+                    inputAction.OnActivated(value);
                 }
             }
 
+            activatedButton?.OnActivated();
+
+            pushNotification?.OnActivated(
+                new NotificationActivationArguments(activatedActions, activatedButton)
+            );
+        }
+
+        private static IPushNotification? RemoveAndCancelNotification(ToastNotification sender) {
             try {
-                if (_activeNotifications.ContainsKey(sender.Group + "_" + sender.Tag) && _activeNotifications[sender.Group + "_" + sender.Tag] != null) {
-                    _activeNotifications[sender.Group + "_" + sender.Tag].Cancel();
+                if (_activeNotifications.Remove(sender.Group + "_" + sender.Tag, out var pushNotification)) {
+                    pushNotification.Cancel();
+
+                    return pushNotification;
                 }
-            } catch (Exception) { }
-
-
-            _activeNotifications.Remove(sender.Group + "_" + sender.Tag);
-            //IPCDataQueue.Enqueue(IPC.KeyValuePairsToDataString("notify-activated", data));
+            } catch (Exception exception) {
+                NotificationRuntime.Current.RuntimeLog.Error(
+                    $"{nameof(WindowsNotificationManager)}#{nameof(RemoveAndCancelNotification)}",
+                    $"Failed to remove and cancel {sender.Tag} (group: {sender.Group})!",
+                    exception
+                );
+            }
+            return null;
         }
         #endregion
 #pragma warning restore CA1416 // Validate platform compatibility
