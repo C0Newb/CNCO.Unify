@@ -1,28 +1,29 @@
-﻿namespace CNCO.Unify.Notifications.Push {
-    public enum NotificationFailureReason {
-        /// <summary>
-        /// Unknown reason, see details.
-        /// </summary>
-        Unknown,
+﻿namespace CNCO.Unify.Notifications.Push;
 
-        /// <summary>
-        /// An exception was thrown.
-        /// </summary>
-        Exception,
+public enum NotificationFailureReason
+{
+  /// <summary>
+  /// Unknown reason, see details.
+  /// </summary>
+  Unknown,
 
-        /// <summary>
-        /// Disabled for this application.
-        /// </summary>
-        DisabledForApplication,
+  /// <summary>
+  /// An exception was thrown.
+  /// </summary>
+  Exception,
 
-        /// <summary>
-        /// Disabled for the current user or by the user.
-        /// </summary>
-        DisabledForUser,
+  /// <summary>
+  /// Disabled for this application.
+  /// </summary>
+  DisabledForApplication,
 
-        /// <summary>
-        /// Disabled device-wide or unsupported.
-        /// </summary>
-        DisabledForDevice,
-    }
+  /// <summary>
+  /// Disabled for the current user or by the user.
+  /// </summary>
+  DisabledForUser,
+
+  /// <summary>
+  /// Disabled device-wide or unsupported.
+  /// </summary>
+  DisabledForDevice,
 }

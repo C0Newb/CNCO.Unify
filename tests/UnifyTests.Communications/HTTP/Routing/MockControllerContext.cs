@@ -2,37 +2,42 @@
 using CNCO.Unify.Communications.Http.Routing;
 using Moq;
 
-namespace UnifyTests.Communications.Http.Routing {
-    internal class MockControllerContext : IControllerContext {
-        private readonly Mock<IWebRequest> _webRequestMock;
-        private readonly Mock<IWebResponse> _webResponseMock;
-        private readonly Mock<IWebSocket> _webSocketMock;
+namespace UnifyTests.Communications.Http.Routing;
 
-        internal string LastResponseData = string.Empty;
+internal class MockControllerContext : IControllerContext
+{
+  private readonly Mock<IWebRequest> _webRequestMock;
+  private readonly Mock<IWebResponse> _webResponseMock;
+  private readonly Mock<IWebSocket> _webSocketMock;
 
-        public IWebRequest WebRequest {
-            get => _webRequestMock.Object;
-        }
+  internal string LastResponseData = string.Empty;
 
-        public IWebResponse WebResponse {
-            get => _webResponseMock.Object;
-        }
+  public IWebRequest WebRequest
+  {
+    get => _webRequestMock.Object;
+  }
 
-        public IWebSocket WebSocket {
-            get => _webSocketMock.Object;
-        }
+  public IWebResponse WebResponse
+  {
+    get => _webResponseMock.Object;
+  }
 
-        public MockControllerContext() {
-            _webRequestMock = new Mock<IWebRequest>();
-            _webResponseMock = new Mock<IWebResponse>();
-            _webSocketMock = new Mock<IWebSocket>();
+  public IWebSocket WebSocket
+  {
+    get => _webSocketMock.Object;
+  }
 
-            _webRequestMock.SetupAllProperties();
-            _webResponseMock.SetupAllProperties();
-            _webSocketMock.SetupAllProperties();
+  public MockControllerContext()
+  {
+    _webRequestMock = new Mock<IWebRequest>();
+    _webResponseMock = new Mock<IWebResponse>();
+    _webSocketMock = new Mock<IWebSocket>();
 
-            _webResponseMock.Setup(m => m.Send(It.IsAny<string>()))
-                .Callback<string>(data => LastResponseData = data);
-        }
-    }
+    _webRequestMock.SetupAllProperties();
+    _webResponseMock.SetupAllProperties();
+    _webSocketMock.SetupAllProperties();
+
+    _webResponseMock.Setup(m => m.Send(It.IsAny<string>()))
+        .Callback<string>(data => LastResponseData = data);
+  }
 }

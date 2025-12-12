@@ -1,16 +1,17 @@
 ﻿using CNCO.Unify.Communications.Http;
 
-namespace CNCO.Unify.Communications {
-    /// <summary>
-    /// Configuration for the communications namespace.
-    /// </summary>
-    public sealed class CommunicationsRuntimeConfiguration : IRuntimeConfiguration {
+namespace CNCO.Unify.Communications;
 
-        public CommunicationsRuntimeConfiguration() { }
+/// <summary>
+/// Configuration for the communications namespace.
+/// </summary>
+public sealed class CommunicationsRuntimeConfiguration : IRuntimeConfiguration
+{
 
-        /// <summary>
-        /// Configuration options for the <see cref="Communications.Http"/> namespace.
-        /// </summary>
-        public HttpRuntimeConfiguration Http { get; set; } = new HttpRuntimeConfiguration();
-    }
+  public CommunicationsRuntimeConfiguration() { }
+
+  /// <summary>
+  /// Configuration options for the <see cref="Communications.Http"/> namespace.
+  /// </summary>
+  public HttpRuntimeConfiguration Http { get; set; } = new HttpRuntimeConfiguration();
 }

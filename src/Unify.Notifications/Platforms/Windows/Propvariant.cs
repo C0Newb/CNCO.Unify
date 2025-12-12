@@ -2,36 +2,42 @@
 using System;
 using System.Runtime.InteropServices;
 // DO NOT touch!
-namespace CNCO.Unify.Notifications.Platforms.Windows {
-    internal class PropVariantHelper {
-        private static class NativeMethods {
-            [DllImport("Ole32.dll", PreserveSig = false)]
-            internal static extern void PropVariantClear(ref PROPVARIANT pvar);
-        }
+namespace CNCO.Unify.Notifications.Platforms.Windows;
 
-        private PROPVARIANT variant;
-        public PROPVARIANT Propvariant {
-            get { return variant; }
-        }
+internal class PropVariantHelper
+{
+  private static class NativeMethods
+  {
+    [DllImport("Ole32.dll", PreserveSig = false)]
+    internal static extern void PropVariantClear(ref PROPVARIANT pvar);
+  }
 
-        public VarEnum VarType {
-            get { return (VarEnum)variant.vt; }
-            set { variant.vt = (ushort)value; }
-        }
+  private PROPVARIANT variant;
+  public PROPVARIANT Propvariant
+  {
+    get { return variant; }
+  }
 
-        public void SetValue(Guid value) {
-            NativeMethods.PropVariantClear(ref variant);
-            byte[] guid = value.ToByteArray();
-            variant.vt = (ushort)VarEnum.VT_CLSID;
-            variant.unionmember = Marshal.AllocCoTaskMem(guid.Length);
-            Marshal.Copy(guid, 0, variant.unionmember, guid.Length);
-        }
+  public VarEnum VarType
+  {
+    get { return (VarEnum)variant.vt; }
+    set { variant.vt = (ushort)value; }
+  }
 
-        public void SetValue(string val) {
-            NativeMethods.PropVariantClear(ref variant);
-            variant.vt = (ushort)VarEnum.VT_LPWSTR;
-            variant.unionmember = Marshal.StringToCoTaskMemUni(val);
-        }
-    }
+  public void SetValue(Guid value)
+  {
+    NativeMethods.PropVariantClear(ref variant);
+    byte[] guid = value.ToByteArray();
+    variant.vt = (ushort)VarEnum.VT_CLSID;
+    variant.unionmember = Marshal.AllocCoTaskMem(guid.Length);
+    Marshal.Copy(guid, 0, variant.unionmember, guid.Length);
+  }
+
+  public void SetValue(string val)
+  {
+    NativeMethods.PropVariantClear(ref variant);
+    variant.vt = (ushort)VarEnum.VT_LPWSTR;
+    variant.unionmember = Marshal.StringToCoTaskMemUni(val);
+  }
 }
 #endif

@@ -1,25 +1,30 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace CNCO.Unify.Communications.Http.Routing {
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class ControllerAttribute : Attribute, IRouteTemplate {
-        public ControllerAttribute() { }
+namespace CNCO.Unify.Communications.Http.Routing;
 
-        public ControllerAttribute([StringSyntax("Route")] string template) {
-            ArgumentNullException.ThrowIfNull(nameof(template));
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+public class ControllerAttribute : Attribute, IRouteTemplate
+{
+  public ControllerAttribute() { }
 
-            template = template.TrimStart('/');
+  public ControllerAttribute([StringSyntax("Route")] string template)
+  {
+    ArgumentNullException.ThrowIfNull(nameof(template));
 
-            string globalPrefix = CommunicationsRuntime.Current.Configuration.Http.GlobalRouteAttributePrefix;
-            if (!string.IsNullOrEmpty(globalPrefix)) {
-                Template = globalPrefix.TrimEnd('/') + '/' + template;
-            } else {
-                Template = template;
-            }
-        }
+    template = template.TrimStart('/');
 
-        /// <inheritdoc/>
-        [StringSyntax("Route")]
-        public string? Template { get; }
+    string globalPrefix = CommunicationsRuntime.Current.Configuration.Http.GlobalRouteAttributePrefix;
+    if (!string.IsNullOrEmpty(globalPrefix))
+    {
+      Template = globalPrefix.TrimEnd('/') + '/' + template;
     }
+    else
+    {
+      Template = template;
+    }
+  }
+
+  /// <inheritdoc/>
+  [StringSyntax("Route")]
+  public string? Template { get; }
 }

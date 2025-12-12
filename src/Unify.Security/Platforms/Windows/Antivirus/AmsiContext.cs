@@ -1,31 +1,35 @@
 ﻿using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
 using System.ComponentModel;
 
-namespace CNCO.Unify.Security.Platforms.Windows.Antivirus {
-    public class AmsiContext {
-        private readonly AmsiContextSafeHandle _context;
+namespace CNCO.Unify.Security.Platforms.Windows.Antivirus;
 
-        private AmsiContext(AmsiContextSafeHandle context) => _context = context;
+public class AmsiContext
+{
+  private readonly AmsiContextSafeHandle _context;
 
-        public static AmsiContext Create(string applicationName) {
-            int result = Amsi.AmsiInitialize(applicationName, out var context);
-            if (result != 0)
-                throw new Win32Exception(result);
+  private AmsiContext(AmsiContextSafeHandle context) => _context = context;
 
-            return new AmsiContext(context);
-        }
+  public static AmsiContext Create(string applicationName)
+  {
+    int result = Amsi.AmsiInitialize(applicationName, out var context);
+    if (result != 0)
+      throw new Win32Exception(result);
 
-        public AmsiSession CreateSession() {
-            var result = Amsi.AmsiOpenSession(_context, out var session);
-            session.Context = _context;
-            if (result != 0)
-                throw new Win32Exception(result);
+    return new AmsiContext(context);
+  }
 
-            return new AmsiSession(_context, session);
-        }
+  public AmsiSession CreateSession()
+  {
+    var result = Amsi.AmsiOpenSession(_context, out var session);
+    session.Context = _context;
+    if (result != 0)
+      throw new Win32Exception(result);
 
-        public void Dispose() {
-            _context.Dispose();
-        }
-    }
+    return new AmsiSession(_context, session);
+  }
+
+  public void Dispose()
+  {
+    _context.Dispose();
+  }
 }

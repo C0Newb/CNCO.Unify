@@ -4,28 +4,36 @@ using Avalonia.Markup.Xaml;
 using UnifyTestRunner.ViewModels;
 using UnifyTestRunner.Views;
 
-namespace UnifyTestRunner {
-    public partial class App : Application {
-        public static MainWindowModel? MainModel { get; set; }
+namespace UnifyTestRunner;
 
-        public override void Initialize() {
-            AvaloniaXamlLoader.Load(this);
-        }
+public partial class App : Application
+{
+  public static MainWindowModel? MainModel { get; set; }
 
-        public override void OnFrameworkInitializationCompleted() {
-            MainModel ??= new MainWindowModel();
+  public override void Initialize()
+  {
+    AvaloniaXamlLoader.Load(this);
+  }
 
-            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop) {
-                desktop.MainWindow = new MainWindow {
-                    DataContext = MainModel
-                };
-            } else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform) {
-                singleViewPlatform.MainView = new MainWindowView {
-                    DataContext = MainModel
-                };
-            }
+  public override void OnFrameworkInitializationCompleted()
+  {
+    MainModel ??= new MainWindowModel();
 
-            base.OnFrameworkInitializationCompleted();
-        }
+    if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+    {
+      desktop.MainWindow = new MainWindow
+      {
+        DataContext = MainModel
+      };
     }
+    else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
+    {
+      singleViewPlatform.MainView = new MainWindowView
+      {
+        DataContext = MainModel
+      };
+    }
+
+    base.OnFrameworkInitializationCompleted();
+  }
 }

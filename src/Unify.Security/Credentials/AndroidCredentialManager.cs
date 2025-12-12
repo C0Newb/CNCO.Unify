@@ -10,127 +10,150 @@ using System.Text;
 
 using System.Runtime.Versioning;
 
-namespace CNCO.Unify.Security.Credentials {
-    /// <summary>
-    /// <see cref="ICredentialManager"/> for Android.
-    /// </summary>
-    [SupportedOSPlatform("android")]
-    public class AndroidCredentialManager : ICredentialManager, ICredentialManagerEndpoint {
-#if ANDROID
-        private readonly Lock _lock = new();
-        private const string SHARED_PREFERENCES_FILENAME = "Unify.AndroidCredentials.json";
+namespace CNCO.Unify.Security.Credentials;
 
-        private readonly ISharedPreferences _sharedPreferences;
+/// <summary>
+/// <see cref="ICredentialManager"/> for Android.
+/// </summary>
+[SupportedOSPlatform("android")]
+public class AndroidCredentialManager : ICredentialManager, ICredentialManagerEndpoint
+{
+#if ANDROID
+  private readonly Lock _lock = new();
+  private const string SHARED_PREFERENCES_FILENAME = "Unify.AndroidCredentials.json";
+
+  private readonly ISharedPreferences _sharedPreferences;
 #endif
 
 
-        public AndroidCredentialManager() {
+  public AndroidCredentialManager()
+  {
 #if ANDROID
 #pragma warning disable CS8604 // Possible null reference argument.
-            _sharedPreferences = EncryptedSharedPreferences.Create(
-                SHARED_PREFERENCES_FILENAME,
-                UnifyRuntime.Current.ApplicationId,
-                Application.Context,
-                EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
-                EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm
-            );
+    _sharedPreferences = EncryptedSharedPreferences.Create(
+        SHARED_PREFERENCES_FILENAME,
+        UnifyRuntime.Current.ApplicationId,
+        Application.Context,
+        EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
+        EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm
+    );
 #pragma warning restore CS8604 // Possible null reference argument.
 #else
-            SecurityRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::()", "You CANNOT use this class as this platform is unsupported!");
+    SecurityRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::()", "You CANNOT use this class as this platform is unsupported!");
 #endif
-        }
+  }
 
 
 
-        public bool Exists(string credentialName) {
+  public bool Exists(string credentialName)
+  {
 #if ANDROID
-            try {
-                return !string.IsNullOrEmpty(Get(credentialName));
-            } catch {
-                return false; // probably
-            }
-#else
-            throw new PlatformNotSupportedException($"{GetType().Name} is only supported on Android.");
-#endif
-        }
-
-        public string? Get(string credentialName) {
-#if ANDROID
-            string tag = $"{GetType().Name}::{nameof(Get)}";
-
-            try {
-                string? value;
-
-                lock (_lock) {
-                    value = _sharedPreferences.GetString(credentialName, null);
-                }
-
-                if (value == null)
-                    return null;
-
-                return CredentialHelpers.GetAndVerifyCredential(value);
-            } catch (Exception ex) {
-                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to remove {credentialName}");
-                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
-                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
-
-                throw;
-            }
-#else
-            throw new PlatformNotSupportedException($"{GetType().Name} is only supported on Android.");
-#endif
-        }
-
-        public void Remove(string credentialName) {
-#if ANDROID
-            string tag = $"{GetType().Name}::{nameof(Remove)}";
-            try {
-                lock (_lock) {
-                    using (ISharedPreferencesEditor? editor = _sharedPreferences.Edit()) {
-                        if (editor == null)
-                            throw new NullReferenceException("Unable to get SharedPreferences editor!");
-
-                        editor.Remove(credentialName);
-                        editor.Apply();
-                    }
-                }
-            } catch (Exception ex) {
-                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to remove {credentialName}");
-                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
-                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
-
-                throw;
-            }
-#else
-            throw new PlatformNotSupportedException($"{GetType().Name} is only supported on Android.");
-#endif
-        }
-
-        public void Set(string credentialName, string value) {
-#if ANDROID
-            string tag = $"{GetType().Name}::{nameof(Set)}";
-            try {
-                value = CredentialHelpers.ApplyTamperHash(value);
-
-                lock (_lock) {
-                    using (ISharedPreferencesEditor? editor = _sharedPreferences.Edit()) {
-                        if (editor == null)
-                            throw new NullReferenceException("Unable to get SharedPreferences editor!");
-
-                        editor.PutString(credentialName, value);
-                        editor.Apply();
-                    }
-                }
-            } catch (Exception ex) {
-                SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to set {credentialName}");
-                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
-                SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
-
-                throw;
-            }
-#else
-            throw new PlatformNotSupportedException($"{GetType().Name} is only supported on Android.");
-#endif
-        }
+    try
+    {
+      return !string.IsNullOrEmpty(Get(credentialName));
     }
+    catch
+    {
+      return false; // probably
+    }
+#else
+    throw new PlatformNotSupportedException($"{GetType().Name} is only supported on Android.");
+#endif
+  }
+
+  public string? Get(string credentialName)
+  {
+#if ANDROID
+    string tag = $"{GetType().Name}::{nameof(Get)}";
+
+    try
+    {
+      string? value;
+
+      lock (_lock)
+      {
+        value = _sharedPreferences.GetString(credentialName, null);
+      }
+
+      if (value == null)
+        return null;
+
+      return CredentialHelpers.GetAndVerifyCredential(value);
+    }
+    catch (Exception ex)
+    {
+      SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to remove {credentialName}");
+      SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+      SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
+
+      throw;
+    }
+#else
+    throw new PlatformNotSupportedException($"{GetType().Name} is only supported on Android.");
+#endif
+  }
+
+  public void Remove(string credentialName)
+  {
+#if ANDROID
+    string tag = $"{GetType().Name}::{nameof(Remove)}";
+    try
+    {
+      lock (_lock)
+      {
+        using (ISharedPreferencesEditor? editor = _sharedPreferences.Edit())
+        {
+          if (editor == null)
+            throw new NullReferenceException("Unable to get SharedPreferences editor!");
+
+          editor.Remove(credentialName);
+          editor.Apply();
+        }
+      }
+    }
+    catch (Exception ex)
+    {
+      SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to remove {credentialName}");
+      SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+      SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
+
+      throw;
+    }
+#else
+    throw new PlatformNotSupportedException($"{GetType().Name} is only supported on Android.");
+#endif
+  }
+
+  public void Set(string credentialName, string value)
+  {
+#if ANDROID
+    string tag = $"{GetType().Name}::{nameof(Set)}";
+    try
+    {
+      value = CredentialHelpers.ApplyTamperHash(value);
+
+      lock (_lock)
+      {
+        using (ISharedPreferencesEditor? editor = _sharedPreferences.Edit())
+        {
+          if (editor == null)
+            throw new NullReferenceException("Unable to get SharedPreferences editor!");
+
+          editor.PutString(credentialName, value);
+          editor.Apply();
+        }
+      }
+    }
+    catch (Exception ex)
+    {
+      SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to set {credentialName}");
+      SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
+      SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
+
+      throw;
+    }
+#else
+    throw new PlatformNotSupportedException($"{GetType().Name} is only supported on Android.");
+#endif
+  }
 }

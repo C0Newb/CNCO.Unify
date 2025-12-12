@@ -2,16 +2,17 @@
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace UnifyTestRunner.NUnitResults {
-    [Serializable, XmlRoot("test-case")]
-    public class TestCase : TestBase {
-        [XmlAttribute("label")]
-        public string? Label { get; set; }
+namespace UnifyTestRunner.NUnitResults;
 
-        [XmlAttribute("site")]
-        public string Site { get; set; } = "Test";
+[Serializable, XmlRoot("test-case")]
+public class TestCase : TestBase
+{
+  [XmlAttribute("label")]
+  public string? Label { get; set; }
 
-        [XmlElement("failure", typeof(TestFailure))]
-        public TestFailure? Failure { get; set; }
-    }
+  [XmlAttribute("site")]
+  public string Site { get; set; } = "Test";
+
+  [XmlElement("failure", typeof(TestFailure))]
+  public TestFailure? Failure { get; set; }
 }

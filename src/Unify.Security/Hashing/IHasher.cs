@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace CNCO.Unify.Security;
 
-namespace CNCO.Unify.Security {
-    internal interface IHasher {
+internal interface IHasher
+{
 
-    }
 }

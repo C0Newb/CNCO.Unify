@@ -4,220 +4,261 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
-namespace CNCO.Unify.Communications.Http {
-    /// <summary>
-    /// Represents an HTTP response.
-    /// </summary>
-    public class WebResponse : IWebResponse {
-        private readonly object _lock = new object();
-        private readonly HttpListenerResponse? _response;
+namespace CNCO.Unify.Communications.Http;
 
-        /// <summary>
-        /// Raw response output stream.
-        /// </summary>
-        private Stream OutputStream {
-            get => _response?.OutputStream ?? Stream.Null;
-        }
+/// <summary>
+/// Represents an HTTP response.
+/// </summary>
+public class WebResponse : IWebResponse
+{
+  private readonly object _lock = new object();
+  private readonly HttpListenerResponse? _response;
 
-        public bool HasEnded { get; private set; } = false;
+  /// <summary>
+  /// Raw response output stream.
+  /// </summary>
+  private Stream OutputStream
+  {
+    get => _response?.OutputStream ?? Stream.Null;
+  }
 
-        public CookieCollection Cookies {
-            get => _response?.Cookies ?? [];
-            set {
-                if (_response != null)
-                    _response.Cookies = value ?? [];
-            }
-        }
+  public bool HasEnded { get; private set; } = false;
 
-        public WebHeaderCollection Headers {
-            get => _response?.Headers ?? [];
-            set {
-                if (_response != null)
-                    _response.Headers = value ?? [];
-            }
-        }
+  public CookieCollection Cookies
+  {
+    get => _response?.Cookies ?? [];
+    set
+    {
+      if (_response != null)
+        _response.Cookies = value ?? [];
+    }
+  }
 
-        public string? ContentType {
-            get => Headers[HttpResponseHeader.ContentType];
-            set {
-                if (string.IsNullOrEmpty(value))
-                    Headers.Remove(HttpResponseHeader.ContentType);
-                else
-                    Headers.Set(HttpResponseHeader.ContentType, value);
-            }
-        }
+  public WebHeaderCollection Headers
+  {
+    get => _response?.Headers ?? [];
+    set
+    {
+      if (_response != null)
+        _response.Headers = value ?? [];
+    }
+  }
 
-        public bool KeepAlive => _response?.KeepAlive ?? false;
+  public string? ContentType
+  {
+    get => Headers[HttpResponseHeader.ContentType];
+    set
+    {
+      if (string.IsNullOrEmpty(value))
+        Headers.Remove(HttpResponseHeader.ContentType);
+      else
+        Headers.Set(HttpResponseHeader.ContentType, value);
+    }
+  }
 
-        public string? RedirectLocation {
-            get => Headers[HttpResponseHeader.Location];
-            set {
-                if (string.IsNullOrEmpty(value))
-                    Headers.Remove(HttpResponseHeader.Location);
-                else
-                    Headers.Set(HttpResponseHeader.Location, value);
-            }
-        }
+  public bool KeepAlive => _response?.KeepAlive ?? false;
 
-        public WebResponse() { }
+  public string? RedirectLocation
+  {
+    get => Headers[HttpResponseHeader.Location];
+    set
+    {
+      if (string.IsNullOrEmpty(value))
+        Headers.Remove(HttpResponseHeader.Location);
+      else
+        Headers.Set(HttpResponseHeader.Location, value);
+    }
+  }
 
-        public WebResponse(HttpListenerResponse response) {
-            _response = response;
-            _response.AddHeader("Server", ""); // Removes Microsoft-HttpApi/2.0
-        }
+  public WebResponse() { }
 
-        public void End() {
-            if (HasEnded)
-                return;
+  public WebResponse(HttpListenerResponse response)
+  {
+    _response = response;
+    _response.AddHeader("Server", ""); // Removes Microsoft-HttpApi/2.0
+  }
 
-            WrapWrite(() => {
-                HasEnded = true;
-                _response?.Close();
-            });
-        }
+  public void End()
+  {
+    if (HasEnded)
+      return;
 
-        public void AddCookie(Cookie cookie) {
-            ArgumentNullException.ThrowIfNull(cookie, nameof(cookie));
-            _response?.AppendCookie(cookie);
-        }
-        public void AddHeader(string name, string value) => _response?.AddHeader(name, value);
-        public void AppendHeader(string name, string value) => _response?.AppendHeader(name, value);
+    WrapWrite(() =>
+    {
+      HasEnded = true;
+      _response?.Close();
+    });
+  }
 
-        public void Attachment(string fileName) {
-            Headers["Content-Disposition"] = "attachment" + (!string.IsNullOrEmpty(fileName) ? $"; filename=\"{fileName}\"" : "");
-        }
+  public void AddCookie(Cookie cookie)
+  {
+    ArgumentNullException.ThrowIfNull(cookie, nameof(cookie));
+    _response?.AppendCookie(cookie);
+  }
+  public void AddHeader(string name, string value) => _response?.AddHeader(name, value);
+  public void AppendHeader(string name, string value) => _response?.AppendHeader(name, value);
 
-        public void Redirect(string uri) {
-            if (_response == null)
-                throw new NullReferenceException("No response available to set.");
+  public void Attachment(string fileName)
+  {
+    Headers["Content-Disposition"] = "attachment" + (!string.IsNullOrEmpty(fileName) ? $"; filename=\"{fileName}\"" : "");
+  }
 
-            RedirectLocation = uri;
-            WrapWrite(() => {
-                lock (_lock) {
-                    if (string.IsNullOrEmpty(uri))
-                        _response.StatusCode = 200;
-                    else
-                        _response.StatusCode = (int)HttpStatusCode.Redirect;
-                }
-            });
-        }
+  public void Redirect(string uri)
+  {
+    if (_response == null)
+      throw new NullReferenceException("No response available to set.");
 
-        public void Status(int statusCode) {
-            if (_response == null)
-                throw new NullReferenceException("No response available to set.");
+    RedirectLocation = uri;
+    WrapWrite(() =>
+    {
+      lock (_lock)
+      {
+        if (string.IsNullOrEmpty(uri))
+          _response.StatusCode = 200;
+        else
+          _response.StatusCode = (int)HttpStatusCode.Redirect;
+      }
+    });
+  }
 
-            lock (_lock) {
-                WrapWrite(() => _response.StatusCode = statusCode);
-            }
-        }
+  public void Status(int statusCode)
+  {
+    if (_response == null)
+      throw new NullReferenceException("No response available to set.");
 
-        public void Send(string? data) {
-            if (_response == null)
-                throw new NullReferenceException("No response available to set.");
+    lock (_lock)
+    {
+      WrapWrite(() => _response.StatusCode = statusCode);
+    }
+  }
 
-            byte[] bytes = Encoding.UTF8.GetBytes(data ?? string.Empty);
-            lock (_lock) {
-                WrapWrite(() => OutputStream.Write(bytes));
-                End();
-            }
-        }
+  public void Send(string? data)
+  {
+    if (_response == null)
+      throw new NullReferenceException("No response available to set.");
 
-        public void SendJson(JsonObject? data) {
-            if (_response == null)
-                throw new NullReferenceException("No response available to set.");
+    byte[] bytes = Encoding.UTF8.GetBytes(data ?? string.Empty);
+    lock (_lock)
+    {
+      WrapWrite(() => OutputStream.Write(bytes));
+      End();
+    }
+  }
 
-            if (data == null) {
-                Send(null);
-                return;
-            }
+  public void SendJson(JsonObject? data)
+  {
+    if (_response == null)
+      throw new NullReferenceException("No response available to set.");
 
-            _response.ContentType = "application/json";
-
-            lock (_lock) {
-                WrapWrite(() => JsonSerializer.Serialize(OutputStream, data));
-                End();
-            }
-        }
-
-        public void SendFile(string path, IFileStorage storage, string? fileType = null) {
-            if (_response == null)
-                throw new NullReferenceException("No response available to set.");
-
-            if (!storage.Exists(path)) {
-                lock (_lock) {
-                    WrapWrite(() => _response.StatusCode = 404);
-                    End();
-                }
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(fileType))
-                Headers["Content-Type"] = fileType;
-            else if (MimeMapping.TryGetMimeType(path, out string? actualMimeType))
-                Headers["Content-Type"] = actualMimeType;
-
-            WrapWrite(() => {
-                lock (_lock) {
-                    if (HasEnded)
-                        return;
-                    using (var fileStream = storage.Open(path, new FileStreamOptions { Access = FileAccess.Read })) {
-                        if (fileStream == null) {
-                            _response.StatusCode = 404;
-                        } else {
-                            _response.SendChunked = true;
-                            fileStream.CopyTo(_response.OutputStream);
-                        }
-                    }
-
-                    End();
-                }
-            });
-        }
-
-        public void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null) {
-            if (_response == null)
-                throw new NullReferenceException("No response available to set.");
-
-            if (!storage.Exists(path))
-                throw new FileNotFoundException(path);
-
-            var name = attachmentOptions?.AttachmentName ?? Path.GetFileName(path);
-
-            MimeMapping.TryGetMimeType(path, out string? actualMimeType);
-            var mimeType = attachmentOptions?.MimeType ?? actualMimeType; // ?? "text/plain;charset=UTF-8";
-            // it's better to have no mimeType and let the receiver figure it out then for us to go "yeah it's this" when we don't know :p
-            Attachment(name);
-            SendFile(path, storage, mimeType);
-        }
-
-        private static void WrapWrite(Action action) {
-            try {
-                action.Invoke();
-            } catch (HttpListenerException ex) {
-                // Connection closed?
-                if (!ex.Message.Contains("nonexistent")) {
-                    // Nope! Something else...
-                    throw;
-                }
-                // Yep! Ignore...
-            }
-        }
+    if (data == null)
+    {
+      Send(null);
+      return;
     }
 
-    public class AttachmentOptions {
-        /// <summary>
-        /// Name of the file the user will get.
-        /// </summary>
-        /// <remarks>
-        /// This is not the name of the file, but becomes the file name when the user downloads it.
-        /// </remarks>
-        public string? AttachmentName;
+    _response.ContentType = "application/json";
 
-        /// <summary>
-        /// File type.
-        /// </summary>
-        public string? MimeType;
-
-        public AttachmentOptions() { }
+    lock (_lock)
+    {
+      WrapWrite(() => JsonSerializer.Serialize(OutputStream, data));
+      End();
     }
+  }
+
+  public void SendFile(string path, IFileStorage storage, string? fileType = null)
+  {
+    if (_response == null)
+      throw new NullReferenceException("No response available to set.");
+
+    if (!storage.Exists(path))
+    {
+      lock (_lock)
+      {
+        WrapWrite(() => _response.StatusCode = 404);
+        End();
+      }
+      return;
+    }
+
+    if (!string.IsNullOrEmpty(fileType))
+      Headers["Content-Type"] = fileType;
+    else if (MimeMapping.TryGetMimeType(path, out string? actualMimeType))
+      Headers["Content-Type"] = actualMimeType;
+
+    WrapWrite(() =>
+    {
+      lock (_lock)
+      {
+        if (HasEnded)
+          return;
+        using (var fileStream = storage.Open(path, new FileStreamOptions { Access = FileAccess.Read }))
+        {
+          if (fileStream == null)
+          {
+            _response.StatusCode = 404;
+          }
+          else
+          {
+            _response.SendChunked = true;
+            fileStream.CopyTo(_response.OutputStream);
+          }
+        }
+
+        End();
+      }
+    });
+  }
+
+  public void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null)
+  {
+    if (_response == null)
+      throw new NullReferenceException("No response available to set.");
+
+    if (!storage.Exists(path))
+      throw new FileNotFoundException(path);
+
+    var name = attachmentOptions?.AttachmentName ?? Path.GetFileName(path);
+
+    MimeMapping.TryGetMimeType(path, out string? actualMimeType);
+    var mimeType = attachmentOptions?.MimeType ?? actualMimeType; // ?? "text/plain;charset=UTF-8";
+                                                                  // it's better to have no mimeType and let the receiver figure it out then for us to go "yeah it's this" when we don't know :p
+    Attachment(name);
+    SendFile(path, storage, mimeType);
+  }
+
+  private static void WrapWrite(Action action)
+  {
+    try
+    {
+      action.Invoke();
+    }
+    catch (HttpListenerException ex)
+    {
+      // Connection closed?
+      if (!ex.Message.Contains("nonexistent"))
+      {
+        // Nope! Something else...
+        throw;
+      }
+      // Yep! Ignore...
+    }
+  }
+}
+
+public class AttachmentOptions
+{
+  /// <summary>
+  /// Name of the file the user will get.
+  /// </summary>
+  /// <remarks>
+  /// This is not the name of the file, but becomes the file name when the user downloads it.
+  /// </remarks>
+  public string? AttachmentName;
+
+  /// <summary>
+  /// File type.
+  /// </summary>
+  public string? MimeType;
+
+  public AttachmentOptions() { }
 }

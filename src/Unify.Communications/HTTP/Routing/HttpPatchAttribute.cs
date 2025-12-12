@@ -1,13 +1,15 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace CNCO.Unify.Communications.Http.Routing {
-    public sealed class HttpPatchAttribute : HttpMethodAttribute {
-        private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Patch];
+namespace CNCO.Unify.Communications.Http.Routing;
 
-        public HttpPatchAttribute() : base(_method) { }
+public sealed class HttpPatchAttribute : HttpMethodAttribute
+{
+  private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Patch];
 
-        public HttpPatchAttribute([StringSyntax("Route")] string template) : base(_method, template) {
-            ArgumentNullException.ThrowIfNull(template);
-        }
-    }
+  public HttpPatchAttribute() : base(_method) { }
+
+  public HttpPatchAttribute([StringSyntax("Route")] string template) : base(_method, template)
+  {
+    ArgumentNullException.ThrowIfNull(template);
+  }
 }

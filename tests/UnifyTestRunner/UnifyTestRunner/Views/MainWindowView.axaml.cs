@@ -1,11 +1,13 @@
 using Avalonia.Controls;
 
-namespace UnifyTestRunner.Views {
-    public partial class MainWindowView : UserControl {
+namespace UnifyTestRunner.Views;
 
-        public MainWindowView() {
-            InitializeComponent();
-            App.MainModel?.SetViews(viewMain, viewTestDetails);
-        }
-    }
+public partial class MainWindowView : UserControl
+{
+
+  public MainWindowView()
+  {
+    InitializeComponent();
+    App.MainModel?.SetViews(viewMain, viewTestDetails);
+  }
 }
