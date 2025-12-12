@@ -20,14 +20,14 @@ public class NotificationButton : NotificationAction, INotificationAction
   /// </remarks>
   public NotificationTextBox? TextBox { get; set; }
 
-
   /// <summary>
   /// Initializes a new instance of the <see cref="NotificationButton"/> class.
   /// </summary>
   /// <param name="id">Id of the button.</param>
   /// <param name="contents">Text in the button.</param>
   /// <param name="textBox">Textbox the button belongs to. This marks the button as the 'submit'/action button for the textbox.</param>
-  public NotificationButton(string id, string? contents = null, NotificationTextBox? textBox = null) : base(id)
+  public NotificationButton(string id, string? contents = null, NotificationTextBox? textBox = null)
+    : base(id)
   {
     Contents = contents ?? string.Empty;
     TextBox = textBox ?? null;

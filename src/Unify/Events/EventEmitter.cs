@@ -48,12 +48,7 @@ public partial class EventEmitter : IEventEmitter
     if (!ValidEventNameRegex().IsMatch(eventName))
       throw new InvalidEventNameException(eventName);
 
-    var eventEmitterListener = new EventEmitterListener(
-      this,
-      eventName,
-      callback,
-      oneTimeListener
-    );
+    var eventEmitterListener = new EventEmitterListener(this, eventName, callback, oneTimeListener);
     // Add listeners list if it doesn't exist
     if (!_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? value))
     {
@@ -209,9 +204,7 @@ public partial class EventEmitter : IEventEmitter
   public void RemoveListener(string eventName, ICallback callback)
   {
     eventName = NormalizeEventName(eventName);
-    if (
-      !_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? eventEmitterListeners)
-    )
+    if (!_listeners.TryGetValue(eventName, out List<IEventEmitterListener>? eventEmitterListeners))
       return; // No such event :)
 
     if (eventEmitterListeners == null || eventEmitterListeners.Count == 0)

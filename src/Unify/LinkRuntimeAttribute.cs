@@ -1,6 +1,5 @@
 ﻿namespace CNCO.Unify;
 
-
 /// <summary>
 /// Signals to a <see cref="IRuntime"/> that this class should be linked and initialized with during that <see cref="IRuntime"/>'s initialization.
 /// By default, the <see cref="IRuntime"/> is the <see cref="UnifyRuntime"/>.
@@ -22,7 +21,8 @@ public sealed class LinkRuntimeAttribute : Attribute
     _runtime = runtime;
   }
 
-  public LinkRuntimeAttribute() : this(typeof(UnifyRuntime)) { }
+  public LinkRuntimeAttribute()
+    : this(typeof(UnifyRuntime)) { }
 
   /// <summary>
   /// Runtime to link to.

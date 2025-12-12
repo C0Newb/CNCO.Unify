@@ -18,17 +18,20 @@ public sealed class SinkLogger : Logger
 
   /// <inheritdoc cref="SinkLogger"/>
   /// <inheritdoc cref="Logger(string)"/>
-  public SinkLogger(string sectionName) : base(sectionName) { }
+  public SinkLogger(string sectionName)
+    : base(sectionName) { }
 
   /// <inheritdoc cref="SinkLogger"/>
   /// <inheritdoc cref="Logger(ILogFormatter)"/>
-  public SinkLogger(ILogFormatter formatter) : base(formatter) { }
+  public SinkLogger(ILogFormatter formatter)
+    : base(formatter) { }
 
   /// <summary>
   /// Initializes a new <see cref="SinkLogger"/> instance.
   /// </summary>
   /// <param name="logger">Adds a <see cref="ILogger"/> sink to log to.</param>
-  public SinkLogger(ILogger logger, string? sectionName = null) : base(sectionName)
+  public SinkLogger(ILogger logger, string? sectionName = null)
+    : base(sectionName)
   {
     _loggers.Add(logger);
   }
@@ -53,7 +56,6 @@ public sealed class SinkLogger : Logger
   /// </summary>
   /// <param name="logger">The <see cref="ILogger"/> sink you wish to no longer log to.</param>
   public void RemoveLogger(ILogger logger) => _loggers.Remove(logger);
-
 
   /// <summary>
   /// Logs a message to all tracked <see cref="ILogger"/>'s.

@@ -1,7 +1,7 @@
-﻿using CNCO.Unify.Security;
-using CNCO.Unify.Storage;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
+using CNCO.Unify.Security;
+using CNCO.Unify.Storage;
 
 namespace UnifyTests.Configuration.Json;
 
@@ -11,7 +11,6 @@ public class SecureJsonConfiguration
   private MyEncryptionKeyProvider myEncryptionKeyProvider;
   private IEncryptionProvider myFileEncryption;
   private InMemoryFileStorage myFileStorage;
-
 
   [SetUp]
   public void Setup()
@@ -66,12 +65,18 @@ public class SecureJsonConfiguration
       ["StringValue"] = stringValue,
       ["GuidValue"] = guid,
       ["IntValue"] = intValue,
-      ["BoolValue"] = booleanValue
+      ["BoolValue"] = booleanValue,
     };
 
     string jsonString = JsonSerializer.Serialize(sampleJson);
-    jsonString = Encryption.Encrypt(jsonString, myEncryptionKeyProvider.GetEncryptionKey(), myEncryptionKeyProvider.GetProtections(),
-        myEncryptionKeyProvider.GetNonce(), myEncryptionKeyProvider.GetAssociationData(), myEncryptionKeyProvider.GetIV());
+    jsonString = Encryption.Encrypt(
+      jsonString,
+      myEncryptionKeyProvider.GetEncryptionKey(),
+      myEncryptionKeyProvider.GetProtections(),
+      myEncryptionKeyProvider.GetNonce(),
+      myEncryptionKeyProvider.GetAssociationData(),
+      myEncryptionKeyProvider.GetIV()
+    );
     myFileStorage.Write(TestFileName, jsonString);
 
     var jsonObject = new MySecureJsonConfig(TestFileName, myFileStorage, myFileEncryption);
@@ -88,10 +93,11 @@ public class SecureJsonConfiguration
   [Test]
   public void SecureAttribute_Validate()
   {
-    string superSecretString = "This is a super secret string: " + Encryption.GenerateRandomString(16);
+    string superSecretString =
+      "This is a super secret string: " + Encryption.GenerateRandomString(16);
     var mySecureJsonConfig = new MySecureJsonConfig(TestFileName, myFileStorage, myFileEncryption)
     {
-      StringValue = superSecretString
+      StringValue = superSecretString,
     };
     mySecureJsonConfig.BoolValue = !mySecureJsonConfig.BoolValue;
     mySecureJsonConfig.Save();
@@ -99,17 +105,26 @@ public class SecureJsonConfiguration
     var myJsonConfig = new MyJsonConfig(TestFileName, myFileStorage, myFileEncryption);
     Assert.Multiple(() =>
     {
-      Assert.That(mySecureJsonConfig.DecryptSecret(myJsonConfig.StringValue), Is.EqualTo(mySecureJsonConfig.StringValue), "String is properly encrypted and can be decrypted.");
+      Assert.That(
+        mySecureJsonConfig.DecryptSecret(myJsonConfig.StringValue),
+        Is.EqualTo(mySecureJsonConfig.StringValue),
+        "String is properly encrypted and can be decrypted."
+      );
 
       mySecureJsonConfig.Load();
-      Assert.That(mySecureJsonConfig.StringValue, Is.EqualTo(superSecretString), "SecureJsonConfig can load Secure properties correctly.");
+      Assert.That(
+        mySecureJsonConfig.StringValue,
+        Is.EqualTo(superSecretString),
+        "SecureJsonConfig can load Secure properties correctly."
+      );
     });
   }
 
   [Test]
   public void CanProtectSecrets()
   {
-    string superSecretString = "This is a super secret string: " + Encryption.GenerateRandomString(16);
+    string superSecretString =
+      "This is a super secret string: " + Encryption.GenerateRandomString(16);
 
     var myJsonConfig = new MySecureJsonConfig(TestFileName, myFileStorage, myFileEncryption);
     myJsonConfig.StringValue = myJsonConfig.EncryptSecret(superSecretString) ?? string.Empty;
@@ -121,7 +136,10 @@ public class SecureJsonConfiguration
     Assert.Multiple(() =>
     {
       Assert.That(protectedStringValue, Is.EqualTo(myLoadedJsonConfig.StringValue));
-      Assert.That(myLoadedJsonConfig.DecryptSecret(myJsonConfig.StringValue), Is.EqualTo(superSecretString));
+      Assert.That(
+        myLoadedJsonConfig.DecryptSecret(myJsonConfig.StringValue),
+        Is.EqualTo(superSecretString)
+      );
     });
   }
 }

@@ -33,11 +33,16 @@ internal static class CredentialHelpers
     string[] components = value.Split('$');
     if (components.Length != 2)
     {
-      SecurityRuntime.Current.RuntimeLog.Warning(tag, $"Expected 2 components, hash and credential value. Got {components.Length} components.");
+      SecurityRuntime.Current.RuntimeLog.Warning(
+        tag,
+        $"Expected 2 components, hash and credential value. Got {components.Length} components."
+      );
       if (SecurityRuntime.Current.Configuration.DisableCredentialManagerHashChecking)
         return value;
       else
-        throw new CredentialTamperException("Credential has been tampered with and is in an invalid format.");
+        throw new CredentialTamperException(
+          "Credential has been tampered with and is in an invalid format."
+        );
     }
 
     byte[] credentialBytes = Convert.FromBase64String(components[1]);
@@ -48,7 +53,10 @@ internal static class CredentialHelpers
     bool hashMatches = components[0] != actualHash;
     if (hashNull || hashMatches)
     {
-      SecurityRuntime.Current.RuntimeLog.Verbose(tag, $"Uh-oh.. actualHash null? {hashNull}. Hash ok? {hashMatches}");
+      SecurityRuntime.Current.RuntimeLog.Verbose(
+        tag,
+        $"Uh-oh.. actualHash null? {hashNull}. Hash ok? {hashMatches}"
+      );
       if (SecurityRuntime.Current.Configuration.DisableCredentialManagerHashChecking)
         return credentialValue;
       else

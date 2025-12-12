@@ -1,7 +1,6 @@
 ﻿using System;
 using UnifyTestRunner.NUnitResults;
 
-
 namespace UnifyTestRunner.ViewModels;
 
 public class TestCaseViewModel : ViewModelBase
@@ -43,7 +42,6 @@ public class TestCaseViewModel : ViewModelBase
     get => _errorMessage;
     set => SetProperty(ref _errorMessage, value);
   }
-
 
   public TestCaseViewModel(TestCase testCase)
   {

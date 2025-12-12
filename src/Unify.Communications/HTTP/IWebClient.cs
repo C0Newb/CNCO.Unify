@@ -11,10 +11,9 @@ public interface IWebClient : IDisposable
   /// <param name="uri">The Uri the request is sent to.</param>
   /// <returns>The task object representing the asynchronous operation.</returns>
   Task<HttpResponseMessage> ConnectAsync(string uri);
+
   /// <inheritdoc cref="ConnectAsync(string)"/>
   Task<HttpResponseMessage> ConnectAsync(Uri uri);
-
-
 
   /// <summary>
   /// Sends an HTTP <c>DELETE</c> request.
@@ -25,10 +24,9 @@ public interface IWebClient : IDisposable
   /// <param name="uri">The Uri the request is sent to.</param>
   /// <returns>The task object representing the asynchronous operation.</returns>
   Task<HttpResponseMessage> DeleteAsync(string uri);
+
   /// <inheritdoc cref="DeleteAsync(string)"/>
   Task<HttpResponseMessage> DeleteAsync(Uri uri);
-
-
 
   /// <summary>
   /// Sends an HTTP <c>GET</c> request.
@@ -54,8 +52,6 @@ public interface IWebClient : IDisposable
   /// <inheritdoc cref="GetStringAsync(string)"/>
   Task<string> GetStringAsync(Uri uri);
 
-
-
   /// <summary>
   /// Sends an HTTP <c>HEAD</c> request. Do not include a body.
   /// </summary>
@@ -65,10 +61,9 @@ public interface IWebClient : IDisposable
   /// <param name="uri">The Uri the request is sent to.</param>
   /// <returns>The task object representing the asynchronous operation.</returns>
   Task<HttpResponseMessage> HeadAsync(string uri);
+
   /// <inheritdoc cref="HeadAsync(string)"/>
   Task<HttpResponseMessage> HeadAsync(Uri uri);
-
-
 
   /// <summary>
   /// Sends an HTTP <c>OPTIONS</c> request.
@@ -79,10 +74,9 @@ public interface IWebClient : IDisposable
   /// <param name="uri">The Uri the request is sent to.</param>
   /// <returns>The task object representing the asynchronous operation.</returns>
   Task<HttpResponseMessage> OptionsAsync(string uri);
+
   /// <inheritdoc cref="OptionsAsync(string)"/>
   Task<HttpResponseMessage> OptionsAsync(Uri uri);
-
-
 
   /// <summary>
   /// Sends an HTTP <c>PATCH</c> request.
@@ -94,10 +88,9 @@ public interface IWebClient : IDisposable
   /// <param name="content">The HTTP request content sent to the server.</param>
   /// <returns>The task object representing the asynchronous operation.</returns>
   Task<HttpResponseMessage> PatchAsync(string uri, HttpContent content);
+
   /// <inheritdoc cref="PatchAsync(string, HttpContent)"/>
   Task<HttpResponseMessage> PatchAsync(Uri uri, HttpContent content);
-
-
 
   /// <summary>
   /// Sends an HTTP <c>POST</c> request.
@@ -109,10 +102,9 @@ public interface IWebClient : IDisposable
   /// <param name="content">The HTTP request content sent to the server.</param>
   /// <returns>The task object representing the asynchronous operation.</returns>
   Task<HttpResponseMessage> PostAsync(string uri, HttpContent content);
+
   /// <inheritdoc cref="PostAsync(string, HttpContent)"/>
   Task<HttpResponseMessage> PostAsync(Uri uri, HttpContent content);
-
-
 
   /// <summary>
   /// Sends an HTTP <c>PUT</c> request.
@@ -124,10 +116,9 @@ public interface IWebClient : IDisposable
   /// <param name="content">The HTTP request content sent to the server.</param>
   /// <returns>The task object representing the asynchronous operation.</returns>
   Task<HttpResponseMessage> PutAsync(string uri, HttpContent content);
+
   /// <inheritdoc cref="PutAsync(string, HttpContent)"/>
   Task<HttpResponseMessage> PutAsync(Uri uri, HttpContent content);
-
-
 
   /// <summary>
   /// Sends an HTTP <c>TRACE</c> request.
@@ -138,6 +129,7 @@ public interface IWebClient : IDisposable
   /// <param name="uri">The Uri the request is sent to.</param>
   /// <returns>The task object representing the asynchronous operation.</returns>
   Task<HttpResponseMessage> TraceAsync(string uri);
+
   /// <inheritdoc cref="TraceAsync(string)"/>
   Task<HttpResponseMessage> TraceAsync(Uri uri);
 }

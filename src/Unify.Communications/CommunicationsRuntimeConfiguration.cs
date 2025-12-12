@@ -7,7 +7,6 @@ namespace CNCO.Unify.Communications;
 /// </summary>
 public sealed class CommunicationsRuntimeConfiguration : IRuntimeConfiguration
 {
-
   public CommunicationsRuntimeConfiguration() { }
 
   /// <summary>

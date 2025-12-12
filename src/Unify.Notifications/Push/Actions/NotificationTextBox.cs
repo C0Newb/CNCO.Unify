@@ -22,8 +22,13 @@ public class NotificationTextBox : NotificationAction, INotificationAction
   /// </summary>
   public string? Title { get; set; }
 
-
-  public NotificationTextBox(string id, string? contents = null, string? title = null, string? hint = null) : base(id)
+  public NotificationTextBox(
+    string id,
+    string? contents = null,
+    string? title = null,
+    string? hint = null
+  )
+    : base(id)
   {
     Contents = contents ?? string.Empty;
     Title = title;

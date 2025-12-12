@@ -7,7 +7,6 @@ public interface IPlatformNotificationManager
 {
   public PlatformID PlatformId { get; }
 
-
   /// <summary>
   /// Sets up push notification support for this operating system.
   /// </summary>

@@ -51,5 +51,6 @@ public interface IJsonConfiguration
   /// Serializes this class into a <see cref="JsonNode"/>, such as a <see cref="JsonObject"/> or <see cref="JsonArray"/>.
   /// </summary>
   /// <returns>This class's property values in the Json form.</returns>
-  JsonNode Serialize<T>() where T : JsonConfiguration;
+  JsonNode Serialize<T>()
+    where T : JsonConfiguration;
 }

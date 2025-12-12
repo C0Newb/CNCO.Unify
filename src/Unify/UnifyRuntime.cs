@@ -1,7 +1,7 @@
-﻿using CNCO.Unify.Events;
+﻿using System.Reflection;
+using CNCO.Unify.Events;
 using CNCO.Unify.Logging;
 using CNCO.Unify.Storage;
-using System.Reflection;
 
 namespace CNCO.Unify;
 
@@ -38,8 +38,8 @@ public sealed class UnifyRuntime : Runtime, IRuntime
   /// <summary>
   /// Current <see cref="UnifyRuntimeConfiguration"/>.
   /// </summary>
-  public UnifyRuntimeConfiguration Configuration { get; private set; } = new UnifyRuntimeConfiguration();
-
+  public UnifyRuntimeConfiguration Configuration { get; private set; } =
+    new UnifyRuntimeConfiguration();
 
   /// <summary>
   /// Unify's global <see cref="EventEmitter"/>.
@@ -68,7 +68,9 @@ public sealed class UnifyRuntime : Runtime, IRuntime
       {
         lock (_initializationLock)
         {
-          Current._fileStorage ??= new LocalFileStorage(Path.Combine(Platform.GetApplicationRootDirectory(), "data"));
+          Current._fileStorage ??= new LocalFileStorage(
+            Path.Combine(Platform.GetApplicationRootDirectory(), "data")
+          );
         }
       }
       return Current._fileStorage;
@@ -132,7 +134,8 @@ public sealed class UnifyRuntime : Runtime, IRuntime
   #endregion
 
   #region Constructors (private)
-  private UnifyRuntime(string applicationId) : base()
+  private UnifyRuntime(string applicationId)
+    : base()
   {
     lock (_initializationLock)
     {
@@ -141,13 +144,15 @@ public sealed class UnifyRuntime : Runtime, IRuntime
     }
   }
 
-  private UnifyRuntime(UnifyRuntimeConfiguration configuration) : base()
+  private UnifyRuntime(UnifyRuntimeConfiguration configuration)
+    : base()
   {
     lock (_initializationLock)
     {
-      ApplicationId = configuration.ApplicationId
-                      ?? Assembly.GetExecutingAssembly().FullName
-                      ?? Assembly.GetExecutingAssembly().GetName().FullName;
+      ApplicationId =
+        configuration.ApplicationId
+        ?? Assembly.GetExecutingAssembly().FullName
+        ?? Assembly.GetExecutingAssembly().GetName().FullName;
       Configuration = configuration;
       _instance = this;
 
@@ -160,7 +165,8 @@ public sealed class UnifyRuntime : Runtime, IRuntime
   #endregion
 
   #region Initialization (create and initialize)
-  public static UnifyRuntime Create(UnifyRuntimeConfiguration runtimeConfiguration) => new UnifyRuntime(runtimeConfiguration);
+  public static UnifyRuntime Create(UnifyRuntimeConfiguration runtimeConfiguration) =>
+    new UnifyRuntime(runtimeConfiguration);
 
   /// <summary>
   /// Initializes a new instance of the <see cref="UnifyRuntime"/> class.
@@ -175,7 +181,10 @@ public sealed class UnifyRuntime : Runtime, IRuntime
 
   /// <inheritdoc cref="Create(string)"/>
   /// <param name="runtimeConfiguration">Custom runtime configuration.</param>
-  public static UnifyRuntime Create(string applicationId, UnifyRuntimeConfiguration runtimeConfiguration)
+  public static UnifyRuntime Create(
+    string applicationId,
+    UnifyRuntimeConfiguration runtimeConfiguration
+  )
   {
     if (_instance != null)
       return _instance;

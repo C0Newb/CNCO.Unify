@@ -11,11 +11,16 @@ public class ServiceProfile
   private string _instanceName;
   private ushort _port;
 
-
   /// <summary>
   /// Creates a new instance of the <see cref="ServiceProfile"/> class.
   /// </summary>
-  public ServiceProfile(string instanceName, string serviceType, ushort port, string protocol = "tcp", IEnumerable<IPAddress>? addresses = null)
+  public ServiceProfile(
+    string instanceName,
+    string serviceType,
+    ushort port,
+    string protocol = "tcp",
+    IEnumerable<IPAddress>? addresses = null
+  )
   {
     _port = port;
     _addresses = addresses ?? InterfaceHelpers.GetLocalIPAddresses();
@@ -51,7 +56,6 @@ public class ServiceProfile
       if (_instanceName == value)
         return;
       _instanceName = value;
-
     }
   }
 

@@ -18,9 +18,15 @@ public struct PROPERTYKEY
 
   // DO NOT touch!
   /// <summary>PKEY_AppUserModel_ID</summary>
-  public static readonly PROPERTYKEY AppUserModel_ID = new PROPERTYKEY(new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3"), 5);
+  public static readonly PROPERTYKEY AppUserModel_ID = new PROPERTYKEY(
+    new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3"),
+    5
+  );
 
   /// <summary>PKEY_AppUserModel_ID</summary>
-  public static readonly PROPERTYKEY AppUserModel_ToastActivatorCLSID = new PROPERTYKEY(new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3"), 26);
+  public static readonly PROPERTYKEY AppUserModel_ToastActivatorCLSID = new PROPERTYKEY(
+    new Guid("9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3"),
+    26
+  );
 }
 #endif

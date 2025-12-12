@@ -1,7 +1,7 @@
-﻿using CNCO.Unify.Communications.Http.Routing;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Net;
 using System.Web;
+using CNCO.Unify.Communications.Http.Routing;
 
 namespace CNCO.Unify.Communications.Http;
 
@@ -76,7 +76,8 @@ public class WebRequest : IWebRequest
 
   /// <inheritdoc cref="WebRequest()"/>
   /// <param name="listenerContext">Listener context from <see cref="HttpListener.GetContext()"/>.</param>
-  public WebRequest(HttpListenerContext listenerContext) : this(listenerContext.Request) => _listenerContext = listenerContext;
+  public WebRequest(HttpListenerContext listenerContext)
+    : this(listenerContext.Request) => _listenerContext = listenerContext;
 
   internal WebRequest(HttpListenerRequest request)
   {
@@ -96,7 +97,6 @@ public class WebRequest : IWebRequest
     BodyStream = request.InputStream;
   }
 
-
   /// <inheritdoc cref="WebRequest()"/>
   /// <param name="uri">The full URL, including the protocol, domain, path and query string.</param>
   /// <param name="cookies">Request cookies.</param>
@@ -112,7 +112,6 @@ public class WebRequest : IWebRequest
 
     Cookies = [.. cookies];
 
-
     RemoteAddress = IPAddress.Loopback;
     BodyStream = Stream.Null;
     ProtocolVersion = new Version(1, 1);
@@ -120,13 +119,28 @@ public class WebRequest : IWebRequest
   #endregion
 
   public WebSocket CreateWebSocketConnection() => CreateWebSocketConnection(null, null, null);
-  public WebSocket CreateWebSocketConnection(string? subProtocol, TimeSpan? keepAliveInterval) => CreateWebSocketConnection(subProtocol, null, keepAliveInterval);
-  public WebSocket CreateWebSocketConnection(string? subProtocol, int? receiveBufferSize, TimeSpan? keepAliveInterval)
+
+  public WebSocket CreateWebSocketConnection(string? subProtocol, TimeSpan? keepAliveInterval) =>
+    CreateWebSocketConnection(subProtocol, null, keepAliveInterval);
+
+  public WebSocket CreateWebSocketConnection(
+    string? subProtocol,
+    int? receiveBufferSize,
+    TimeSpan? keepAliveInterval
+  )
   {
     if (_listenerContext == null)
-      throw new NullReferenceException("Cannot create WebSocket connection without a HttpListenerContext.");
+      throw new NullReferenceException(
+        "Cannot create WebSocket connection without a HttpListenerContext."
+      );
 
-    WebSocket = WebSocket.CreateWebSocketConnection(_listenerContext, this, subProtocol, receiveBufferSize, keepAliveInterval);
+    WebSocket = WebSocket.CreateWebSocketConnection(
+      _listenerContext,
+      this,
+      subProtocol,
+      receiveBufferSize,
+      keepAliveInterval
+    );
     return WebSocket;
   }
 }

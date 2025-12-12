@@ -24,8 +24,8 @@ public class CredentialManagerFactory
 #pragma warning restore CA1416 // Validate platform compatibility
 
     SecurityRuntime.Current.RuntimeLog.Warning(
-        $"{nameof(CredentialManagerFactory)}::{nameof(GetPlatformCredentialManager)}()",
-        "Unknown platform, returning an unsecure FileBasedCredentialManager instance!"
+      $"{nameof(CredentialManagerFactory)}::{nameof(GetPlatformCredentialManager)}()",
+      "Unknown platform, returning an unsecure FileBasedCredentialManager instance!"
     );
     return new FileBasedCredentialManager();
   }

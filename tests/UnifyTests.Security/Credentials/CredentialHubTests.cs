@@ -10,8 +10,8 @@ internal class CredentialHubTests : BaseCredentialManagerTests
   public override ICredentialManager GetCredentialManager()
   {
     CredentialManager ??= new CredentialHub(
-        new FileBasedCredentialManager(new InMemoryFileStorage(), "Unify.TestCredentials.json"),
-        "Testing"
+      new FileBasedCredentialManager(new InMemoryFileStorage(), "Unify.TestCredentials.json"),
+      "Testing"
     );
     return CredentialManager;
   }

@@ -9,7 +9,10 @@ internal class FileBasedCredentialManagerTests : BaseCredentialManagerTests
 
   public override ICredentialManager GetCredentialManager()
   {
-    CredentialManager ??= new FileBasedCredentialManager(new InMemoryFileStorage(), "Unify.TestCredentials.json");
+    CredentialManager ??= new FileBasedCredentialManager(
+      new InMemoryFileStorage(),
+      "Unify.TestCredentials.json"
+    );
     return CredentialManager;
   }
 }

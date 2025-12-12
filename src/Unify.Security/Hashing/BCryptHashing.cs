@@ -25,8 +25,8 @@ public static class BCryptHashing
   }
 
   /// <inheritdoc cref="GenerateHash(SecureString, int)"/>
-  public static string GenerateHash(string password, int workFactor) => BCrypt.Net.BCrypt.EnhancedHashPassword(password, workFactor);
-
+  public static string GenerateHash(string password, int workFactor) =>
+    BCrypt.Net.BCrypt.EnhancedHashPassword(password, workFactor);
 
   /// <summary>
   /// Used to verify a BCrypt hash was derived from a given password
@@ -48,5 +48,6 @@ public static class BCryptHashing
   }
 
   /// <inheritdoc cref="GenerateHash(SecureString, string)"/>
-  public static bool GenerateHash(string password, string hash) => BCrypt.Net.BCrypt.EnhancedVerify(password, hash);
+  public static bool GenerateHash(string password, string hash) =>
+    BCrypt.Net.BCrypt.EnhancedVerify(password, hash);
 }

@@ -7,16 +7,17 @@ namespace CNCO.Unify.Storage;
 /// This should be used as something between the <see cref="NoopFileStorage"/> and <see cref="LocalFileStorage"/>.
 /// </summary>
 /// <remarks>
-/// The 
+/// The
 /// </remarks>
 public class InMemoryFileStorage : IFileStorage, IDisposable
 {
-  private readonly bool _throwErrors = !UnifyRuntime.Current.Configuration.SuppressFileStorageExceptions;
+  private readonly bool _throwErrors = !UnifyRuntime
+    .Current
+    .Configuration
+    .SuppressFileStorageExceptions;
   private readonly string _directory = string.Empty;
 
-
   private readonly Dictionary<string, byte[]> Files = new Dictionary<string, byte[]>();
-
 
   /// <summary>
   /// Whether file names are case sensitive. Defaults to <see langword="true"/> to force compatibility with POSIX.
@@ -28,8 +29,17 @@ public class InMemoryFileStorage : IFileStorage, IDisposable
   /// Defaults to <see langword="false"/> to force compatibility with Windows.
   /// </summary>
   public bool AllowInvalidNtfsFileNames = false;
-  private readonly char[] InvalidNtfsFileNames = new char[8] { '<', '>', ':', '"', '/', '|', '?', '*' };
-
+  private readonly char[] InvalidNtfsFileNames = new char[8]
+  {
+    '<',
+    '>',
+    ':',
+    '"',
+    '/',
+    '|',
+    '?',
+    '*',
+  };
 
   public InMemoryFileStorage(string? directory = null)
   {
@@ -259,7 +269,10 @@ public class InMemoryFileStorage : IFileStorage, IDisposable
     {
       name = NormalizeName(name);
       // This technically doesn't work for writes, if I'm not mistaken...
-      return new MemoryStream(Files[name], streamOptions?.Access.HasFlag(FileAccess.Write) ?? false);
+      return new MemoryStream(
+        Files[name],
+        streamOptions?.Access.HasFlag(FileAccess.Write) ?? false
+      );
     }
     catch
     {
@@ -269,7 +282,11 @@ public class InMemoryFileStorage : IFileStorage, IDisposable
     }
   }
 
-  public IEnumerable<string> GetFiles(string? path = null, string? searchPattern = null) => throw new NotImplementedException();
-  public IEnumerable<string> GetDirectories(string? path = null, string? searchPattern = null) => throw new NotImplementedException();
+  public IEnumerable<string> GetFiles(string? path = null, string? searchPattern = null) =>
+    throw new NotImplementedException();
+
+  public IEnumerable<string> GetDirectories(string? path = null, string? searchPattern = null) =>
+    throw new NotImplementedException();
+
   public bool IsDirectory(string path) => throw new NotImplementedException();
 }

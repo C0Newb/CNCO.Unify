@@ -44,7 +44,6 @@ public class NotificationProgressData
   /// </remarks>
   public string? DisplayedValue { get; set; }
 
-
   public NotificationProgressData(int? value = 0, int? max = 0)
   {
     Value = value ?? 0;

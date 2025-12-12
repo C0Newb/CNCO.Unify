@@ -45,7 +45,6 @@ public interface IWebServer : IDisposable
   void Use(IRouter router);
 }
 
-
 /// <summary>
 /// Protocols used by the webserver.
 /// </summary>

@@ -23,7 +23,7 @@ public interface INotificationAction
   /// <remarks>
   /// Will not fire if the action accepts user input and no user input was provided,
   /// except for text boxes if the text box button was clicked.
-  /// 
+  ///
   /// If the action represents accepts user input (such as text or selection),
   /// the input value is provided as the event argument.
   /// </remarks>

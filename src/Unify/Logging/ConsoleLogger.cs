@@ -10,21 +10,24 @@ public sealed class ConsoleLogger : Logger
   /// <summary>
   /// Initializes a new instance of the <see cref="ConsoleLogger"/> class.
   /// </summary>
-  public ConsoleLogger() : base()
+  public ConsoleLogger()
+    : base()
   {
     InitializeConsole();
   }
 
   /// <inheritdoc cref="ConsoleLogger()"/>
   /// <inheritdoc cref="Logger(string)"/>
-  public ConsoleLogger(string sectionName) : base(sectionName)
+  public ConsoleLogger(string sectionName)
+    : base(sectionName)
   {
     InitializeConsole();
   }
 
   /// <inheritdoc cref="ConsoleLogger()"/>
   /// <inheritdoc cref="Logger(ILogFormatter)"/>
-  public ConsoleLogger(ILogFormatter formatter) : base(formatter)
+  public ConsoleLogger(ILogFormatter formatter)
+    : base(formatter)
   {
     InitializeConsole();
   }
@@ -50,10 +53,7 @@ public sealed class ConsoleLogger : Logger
     try
     {
       var standardOut = Console.OpenStandardOutput();
-      var con = new StreamWriter(standardOut, Encoding.ASCII)
-      {
-        AutoFlush = true
-      };
+      var con = new StreamWriter(standardOut, Encoding.ASCII) { AutoFlush = true };
       Console.SetOut(con);
     }
     catch (Exception) { }

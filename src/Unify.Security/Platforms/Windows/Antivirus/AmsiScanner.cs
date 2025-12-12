@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
+using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
 
 namespace CNCO.Unify.Security.Platforms.Windows.Antivirus;
 
@@ -10,14 +10,15 @@ public class AmsiScanner : IDisposable
   private readonly AmsiContext amsiContext;
   private readonly AmsiSession amsiSession;
 
-
   public AmsiScanner()
   {
     try
     {
       using (var process = Process.GetCurrentProcess())
       {
-        amsiContext = AmsiContext.Create($"{AppDomain.CurrentDomain.FriendlyName} (PID: {process.Id})");
+        amsiContext = AmsiContext.Create(
+          $"{AppDomain.CurrentDomain.FriendlyName} (PID: {process.Id})"
+        );
       }
 
       amsiSession = amsiContext.CreateSession();
@@ -30,10 +31,9 @@ public class AmsiScanner : IDisposable
     // AttachmentService here...
   }
 
-
   /// <summary>
   /// Scans a string using the AMSI Win32 API.
-  /// 
+  ///
   /// Note, this has a max input restriction of 16MBs!
   /// </summary>
   /// <param name="data">String to scan.</param>
@@ -47,7 +47,8 @@ public class AmsiScanner : IDisposable
 
     var scanResult = new ScanResult()
     {
-      IsSafe = result == AmsiResult.AMSI_RESULT_CLEAN || result == AmsiResult.AMSI_RESULT_NOT_DETECTED,
+      IsSafe =
+        result == AmsiResult.AMSI_RESULT_CLEAN || result == AmsiResult.AMSI_RESULT_NOT_DETECTED,
       TimeStamp = startTime,
     };
     switch (result)

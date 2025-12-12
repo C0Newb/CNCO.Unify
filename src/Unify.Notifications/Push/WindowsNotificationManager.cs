@@ -19,14 +19,12 @@ internal class WindowsNotificationManager : INotificationManager
 
   public PlatformID PlatformId => PlatformID.Win32NT;
 
-
   public WindowsNotificationManager()
   {
 #if WINDOWS
     _manager = new Platforms.Windows.WindowsNotificationManager();
 #endif
   }
-
 
   public void Register()
   {

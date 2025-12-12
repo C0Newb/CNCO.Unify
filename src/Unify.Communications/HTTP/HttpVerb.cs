@@ -54,5 +54,5 @@ public enum HttpVerb
   /// <summary>
   /// Describes the communication options for the target resource.
   /// </summary>
-  Options
+  Options,
 }

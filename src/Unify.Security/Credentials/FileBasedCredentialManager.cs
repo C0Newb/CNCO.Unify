@@ -1,5 +1,5 @@
-﻿using CNCO.Unify.Storage;
-using System.Text.Json;
+﻿using System.Text.Json;
+using CNCO.Unify.Storage;
 
 namespace CNCO.Unify.Security.Credentials;
 
@@ -16,7 +16,6 @@ public class FileBasedCredentialManager : ICredentialManager, ICredentialManager
   private readonly string _fileName = "Unify.Credentials.json";
   private Dictionary<string, string> _credentials = new Dictionary<string, string>();
 
-
   /// <summary>
   /// Initializes a new instance of <see cref="FileBasedCredentialManager"/>.
   /// NOTE!! This will default to NO encryption. Please provide a <see cref="IEncryptionProvider"/> via a different constructor!
@@ -31,7 +30,8 @@ public class FileBasedCredentialManager : ICredentialManager, ICredentialManager
   /// NOTE!! This will default to NO encryption. Please provide a <see cref="IEncryptionProvider"/> via a different constructor!
   /// </summary>
   /// <param name="fileEncryption">File encryption scheme used when writing the credentials to the local storage.</param>
-  public FileBasedCredentialManager(IEncryptionProvider fileEncryption) : this()
+  public FileBasedCredentialManager(IEncryptionProvider fileEncryption)
+    : this()
   {
     _fileEncryption = fileEncryption;
   }
@@ -54,7 +54,11 @@ public class FileBasedCredentialManager : ICredentialManager, ICredentialManager
   /// <param name="fileStorage">File storage backing the credentials will be written to.</param>
   /// <param name="fileName">Name of the file the credentials will be written to.</param>
   /// <param name="fileEncryption">File encryption scheme used when writing the credentials to <paramref name="fileStorage"/>.</param>
-  public FileBasedCredentialManager(IFileStorage fileStorage, string fileName, IEncryptionProvider fileEncryption)
+  public FileBasedCredentialManager(
+    IFileStorage fileStorage,
+    string fileName,
+    IEncryptionProvider fileEncryption
+  )
   {
     _fileStorage = fileStorage;
     _fileName = fileName;
@@ -78,12 +82,17 @@ public class FileBasedCredentialManager : ICredentialManager, ICredentialManager
       if (_fileEncryption != null)
         credentials = _fileEncryption.DecryptString(credentials);
 
-      _credentials = JsonSerializer.Deserialize<Dictionary<string, string>>(credentials) ?? new Dictionary<string, string>();
+      _credentials =
+        JsonSerializer.Deserialize<Dictionary<string, string>>(credentials)
+        ?? new Dictionary<string, string>();
     }
     catch (Exception ex)
     {
       string tag = $"{GetType().Name}::{nameof(PullCredentials)}";
-      SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to pull JSON credentials to disk for {_fileName}.");
+      SecurityRuntime.Current.RuntimeLog.Error(
+        tag,
+        $"Failed to pull JSON credentials to disk for {_fileName}."
+      );
 
       SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
       SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
@@ -103,18 +112,22 @@ public class FileBasedCredentialManager : ICredentialManager, ICredentialManager
         credentials = _fileEncryption.EncryptString(credentials);
 
       if (!_fileStorage.Write(_fileName, credentials))
-        throw new InvalidOperationException($"Failed to write credentials to \"{_fileStorage.GetPath(_fileName)}\".");
+        throw new InvalidOperationException(
+          $"Failed to write credentials to \"{_fileStorage.GetPath(_fileName)}\"."
+        );
     }
     catch (Exception ex)
     {
       string tag = $"{GetType().Name}::{nameof(PullCredentials)}";
-      SecurityRuntime.Current.RuntimeLog.Error(tag, $"Failed to push JSON credentials to disk for {_fileName}.");
+      SecurityRuntime.Current.RuntimeLog.Error(
+        tag,
+        $"Failed to push JSON credentials to disk for {_fileName}."
+      );
 
       SecurityRuntime.Current.RuntimeLog.Error(tag, ex.Message);
       SecurityRuntime.Current.RuntimeLog.Error(tag, ex.StackTrace ?? "No stack trace available.");
     }
   }
-
 
   public bool Exists(string credentialName)
   {
@@ -155,7 +168,6 @@ public class FileBasedCredentialManager : ICredentialManager, ICredentialManager
       PushCredentials();
     }
   }
-
 
   public void SetFileEncryption(IEncryptionProvider newFileEncryption)
   {

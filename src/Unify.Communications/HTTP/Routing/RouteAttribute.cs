@@ -5,7 +5,11 @@ namespace CNCO.Unify.Communications.Http.Routing;
 /// <summary>
 /// Applies a <see cref="RouteTemplate"/> to the <see cref="Controller"/> class.
 /// </summary>
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
+[AttributeUsage(
+  AttributeTargets.Class | AttributeTargets.Method,
+  AllowMultiple = true,
+  Inherited = true
+)]
 public class RouteAttribute : Attribute, IRouteTemplate
 {
   /// <summary>
@@ -18,7 +22,11 @@ public class RouteAttribute : Attribute, IRouteTemplate
 
     template = template.TrimStart('/');
 
-    string globalPrefix = CommunicationsRuntime.Current.Configuration.Http.GlobalRouteAttributePrefix;
+    string globalPrefix = CommunicationsRuntime
+      .Current
+      .Configuration
+      .Http
+      .GlobalRouteAttributePrefix;
     if (!string.IsNullOrEmpty(globalPrefix))
     {
       Template = globalPrefix.TrimEnd('/') + '/' + template;

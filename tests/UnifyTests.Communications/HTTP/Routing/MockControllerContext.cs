@@ -37,7 +37,8 @@ internal class MockControllerContext : IControllerContext
     _webResponseMock.SetupAllProperties();
     _webSocketMock.SetupAllProperties();
 
-    _webResponseMock.Setup(m => m.Send(It.IsAny<string>()))
-        .Callback<string>(data => LastResponseData = data);
+    _webResponseMock
+      .Setup(m => m.Send(It.IsAny<string>()))
+      .Callback<string>(data => LastResponseData = data);
   }
 }

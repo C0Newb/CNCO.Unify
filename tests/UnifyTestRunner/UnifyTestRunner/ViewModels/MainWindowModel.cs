@@ -21,7 +21,6 @@ public class MainWindowModel : ViewModelBase
     TestDetailsView = testDetailsView;
   }
 
-
   internal void ShowMainView()
   {
     MainView!.IsVisible = true;

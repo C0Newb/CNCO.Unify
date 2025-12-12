@@ -1,6 +1,6 @@
-﻿using CNCO.Unify;
+﻿using System.Text;
+using CNCO.Unify;
 using CNCO.Unify.Storage;
-using System.Text;
 
 namespace UnifyTests.Storage;
 
@@ -167,7 +167,10 @@ public class InMemoryFileStorageTests
   [TestCase("my*file.txt", false)]
   [TestCase("my\0file.txt", true)]
   [TestCase("my\tfile.txt", false)]
-  public void InvalidFileNames_AllowInvalidNtfsCharacters_ThrowsIOException(string name, bool shouldThrow)
+  public void InvalidFileNames_AllowInvalidNtfsCharacters_ThrowsIOException(
+    string name,
+    bool shouldThrow
+  )
   {
     try
     {
@@ -208,7 +211,10 @@ public class InMemoryFileStorageTests
   }
 
   [TestCase("myFile.txt", "/root/path/to/myFile (1).txt")]
-  [TestCase("my/super/cool/path\\to\\myFile.txt", "my/other/kind-of/cool/path\\or\\something/I/think.txt")]
+  [TestCase(
+    "my/super/cool/path\\to\\myFile.txt",
+    "my/other/kind-of/cool/path\\or\\something/I/think.txt"
+  )]
   public void Rename_ValidNames_RenamesTheFile(string name, string newName)
   {
     // Create

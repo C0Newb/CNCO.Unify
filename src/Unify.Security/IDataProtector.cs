@@ -15,7 +15,6 @@ public interface IDataProtector : IDataProtectionProvider
   /// <inheritdoc cref="Protect(byte[])"/>
   string Protect(string plaintext);
 
-
   /// <summary>
   /// Cryptographically unprotects a piece of protected data.
   /// </summary>
@@ -25,5 +24,4 @@ public interface IDataProtector : IDataProtectionProvider
 
   /// <inheritdoc cref="Unprotect(byte[])"/>
   string Unprotect(string protectedData);
-
 }

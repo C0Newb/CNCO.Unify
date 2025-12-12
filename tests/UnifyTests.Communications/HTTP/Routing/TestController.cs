@@ -1,7 +1,7 @@
-﻿using CNCO.Unify.Communications.Http.Routing;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using CNCO.Unify.Communications.Http.Routing;
 
 namespace UnifyTests.Communications.Http.Routing;
 
@@ -9,15 +9,15 @@ internal class TestController : Controller
 {
   public static string FormatUrlParameters(string str, int id, DateTime dateTime, Guid guid)
   {
-    var json = new JsonObject {
-              { "string", str },
-              { "id", id },
-              { "date", dateTime },
-              { "guid", guid }
-          };
+    var json = new JsonObject
+    {
+      { "string", str },
+      { "id", id },
+      { "date", dateTime },
+      { "guid", guid },
+    };
     return JsonSerializer.Serialize(json);
   }
-
 
   #region Route methods
   [HttpAny("all")]
@@ -33,14 +33,12 @@ internal class TestController : Controller
     Response.Send("Connect");
   }
 
-
   [HttpDelete]
   [HttpDelete("delete")]
   public void Delete()
   {
     Response.Send("Delete");
   }
-
 
   [HttpGet]
   [HttpGet("get")]
@@ -49,14 +47,12 @@ internal class TestController : Controller
     Response.Send("Get");
   }
 
-
   [HttpHead]
   [HttpHead("head")]
   public void Head()
   {
     Response.Send("Head");
   }
-
 
   [HttpOptions]
   [HttpOptions("options")]
@@ -65,14 +61,12 @@ internal class TestController : Controller
     Response.Send("Options");
   }
 
-
   [HttpPatch]
   [HttpPatch("patch")]
   public void Patch()
   {
     Response.Send("Patch");
   }
-
 
   [HttpPost]
   [HttpPost("post")]
@@ -81,7 +75,6 @@ internal class TestController : Controller
     Response.Send("Post");
   }
 
-
   [HttpPut]
   [HttpPut("put")]
   public void Put()
@@ -89,14 +82,12 @@ internal class TestController : Controller
     Response.Send("Put");
   }
 
-
   [HttpTrace]
   [HttpTrace("trace")]
   public void Trace()
   {
     Response.Send("Trace");
   }
-
 
   #endregion
 
@@ -171,7 +162,6 @@ internal class TestController : Controller
   {
     Response.Send(id.ToString());
   }
-
 
   // Multiple
   [HttpAny(":string:/:id:/:date:/:count:")]

@@ -3,7 +3,6 @@ using System.Net;
 
 namespace CNCO.Unify.Communications.Http;
 
-
 /// <summary>
 /// Configuration settings for the <see cref="Http"/> namespace.
 /// </summary>

@@ -1,7 +1,7 @@
-﻿using CNCO.Unify.Configuration;
+﻿using System.Text;
+using CNCO.Unify.Configuration;
 using CNCO.Unify.Security;
 using CNCO.Unify.Storage;
-using System.Text;
 
 namespace UnifyTests.Configuration.Json;
 
@@ -14,8 +14,11 @@ internal class MyJsonConfig : CNCO.Unify.Configuration.Json.JsonConfiguration
 
   public MyJsonConfig() { }
 
-  public MyJsonConfig(string FilePath, IFileStorage fileStorage) : base(FilePath, fileStorage) { }
-  public MyJsonConfig(string FilePath, IFileStorage fileStorage, IEncryptionProvider fileEncryption) : base(FilePath, fileStorage, fileEncryption) { }
+  public MyJsonConfig(string FilePath, IFileStorage fileStorage)
+    : base(FilePath, fileStorage) { }
+
+  public MyJsonConfig(string FilePath, IFileStorage fileStorage, IEncryptionProvider fileEncryption)
+    : base(FilePath, fileStorage, fileEncryption) { }
 }
 
 public class MySecureJsonConfig : CNCO.Unify.Configuration.Json.SecureJsonConfiguration
@@ -23,18 +26,25 @@ public class MySecureJsonConfig : CNCO.Unify.Configuration.Json.SecureJsonConfig
   [Secure]
   public string StringValue { get; set; } = "MyStringValue";
   public bool BoolValue { get; set; } = true;
+
   [Secure]
   public Guid GuidValue { get; set; } = Guid.NewGuid();
   public int IntValue { get; set; } = 10;
 
   public MySecureJsonConfig() { }
 
-  public MySecureJsonConfig(string FilePath, IFileStorage fileStorage, IEncryptionProvider fileEncryption) : base(FilePath, fileStorage, fileEncryption) { }
+  public MySecureJsonConfig(
+    string FilePath,
+    IFileStorage fileStorage,
+    IEncryptionProvider fileEncryption
+  )
+    : base(FilePath, fileStorage, fileEncryption) { }
 }
 
 internal class MyEncryptionKeyProvider : IEncryptionKeyProvider
 {
-  public Encryption.Protections Protections = Encryption.Protections.DataProtection | Encryption.Protections.AES256_CBC;
+  public Encryption.Protections Protections =
+    Encryption.Protections.DataProtection | Encryption.Protections.AES256_CBC;
 
   private readonly byte[] _encryptionKey;
 

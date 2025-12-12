@@ -6,5 +6,5 @@ public enum RunState
   Runnable,
   Explicit,
   Skipped,
-  Ignored
+  Ignored,
 }

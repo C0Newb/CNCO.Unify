@@ -1,8 +1,8 @@
-﻿using CNCO.Unify.Storage;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using CNCO.Unify.Storage;
 
 namespace CNCO.Unify.Communications.Http;
 
@@ -95,12 +95,15 @@ public class WebResponse : IWebResponse
     ArgumentNullException.ThrowIfNull(cookie, nameof(cookie));
     _response?.AppendCookie(cookie);
   }
+
   public void AddHeader(string name, string value) => _response?.AddHeader(name, value);
+
   public void AppendHeader(string name, string value) => _response?.AppendHeader(name, value);
 
   public void Attachment(string fileName)
   {
-    Headers["Content-Disposition"] = "attachment" + (!string.IsNullOrEmpty(fileName) ? $"; filename=\"{fileName}\"" : "");
+    Headers["Content-Disposition"] =
+      "attachment" + (!string.IsNullOrEmpty(fileName) ? $"; filename=\"{fileName}\"" : "");
   }
 
   public void Redirect(string uri)
@@ -191,7 +194,9 @@ public class WebResponse : IWebResponse
       {
         if (HasEnded)
           return;
-        using (var fileStream = storage.Open(path, new FileStreamOptions { Access = FileAccess.Read }))
+        using (
+          var fileStream = storage.Open(path, new FileStreamOptions { Access = FileAccess.Read })
+        )
         {
           if (fileStream == null)
           {
@@ -209,7 +214,11 @@ public class WebResponse : IWebResponse
     });
   }
 
-  public void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null)
+  public void SendAttachment(
+    string path,
+    IFileStorage storage,
+    AttachmentOptions? attachmentOptions = null
+  )
   {
     if (_response == null)
       throw new NullReferenceException("No response available to set.");
@@ -221,7 +230,7 @@ public class WebResponse : IWebResponse
 
     MimeMapping.TryGetMimeType(path, out string? actualMimeType);
     var mimeType = attachmentOptions?.MimeType ?? actualMimeType; // ?? "text/plain;charset=UTF-8";
-                                                                  // it's better to have no mimeType and let the receiver figure it out then for us to go "yeah it's this" when we don't know :p
+    // it's better to have no mimeType and let the receiver figure it out then for us to go "yeah it's this" when we don't know :p
     Attachment(name);
     SendFile(path, storage, mimeType);
   }

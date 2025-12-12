@@ -3,7 +3,4 @@
 /// <summary>
 /// Defines methods for broadcasting a service announcement.
 /// </summary>
-public interface IServiceBroadcaster
-{
-
-}
+public interface IServiceBroadcaster { }

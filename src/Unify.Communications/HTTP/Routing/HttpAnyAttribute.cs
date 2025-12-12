@@ -6,9 +6,11 @@ public sealed class HttpAnyAttribute : HttpMethodAttribute
 {
   private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Any];
 
-  public HttpAnyAttribute() : base(_method) { }
+  public HttpAnyAttribute()
+    : base(_method) { }
 
-  public HttpAnyAttribute([StringSyntax("Route")] string template) : base(_method, template)
+  public HttpAnyAttribute([StringSyntax("Route")] string template)
+    : base(_method, template)
   {
     ArgumentNullException.ThrowIfNull(template);
   }

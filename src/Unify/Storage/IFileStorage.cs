@@ -12,7 +12,6 @@ public interface IFileStorage
   /// <returns>Full path to the given filename.</returns>
   public string GetPath(string name);
 
-
   /// <summary>
   /// Writes <paramref name="contents"/> to a file in storage.
   /// </summary>
@@ -20,11 +19,12 @@ public interface IFileStorage
   /// <param name="contents">Contents to be written.</param>
   /// <returns>Whether the file was saved or not.</returns>
   public bool Write(string name, string contents);
+
   /// <inheritdoc cref="Write(string, string)"/>
   public bool Write(string name, Stream contents);
+
   /// <inheritdoc cref="Write(string, string)"/>
   public bool WriteBytes(string name, byte[] contents);
-
 
   /// <summary>
   /// Appends <paramref name="contents"/> to a file in storage.
@@ -37,7 +37,6 @@ public interface IFileStorage
   /// <inheritdoc cref="Append"/>
   public bool AppendBytes(string name, byte[] contents);
 
-
   /// <summary>
   /// Reads the contents of a file from storage.
   /// </summary>
@@ -49,14 +48,12 @@ public interface IFileStorage
   /// <returns>Contents of the file in bytes. Null represents a read error occurred.</returns>
   public byte[]? ReadBytes(string name);
 
-
   /// <summary>
   /// Opens the file and returns the <see cref="FileStream"/>.
   /// </summary>
   /// <param name="name">Name of the file to open.</param>
   /// <returns>Stream of the file.</returns>
   public Stream? Open(string name, FileStreamOptions? streamOptions);
-
 
   /// <summary>
   /// Checks whether a file with <paramref name="name"/> exists on the storage.
@@ -65,14 +62,12 @@ public interface IFileStorage
   /// <returns>Whether the file exists on the storage.</returns>
   public bool Exists(string name);
 
-
   /// <summary>
   /// Removes a file from storage.
   /// </summary>
   /// <param name="name">Name of the file to delete.</param>
   /// <returns>Successfully deleted.</returns>
   public bool Delete(string name);
-
 
   /// <summary>
   /// Renames (moves) a file.
@@ -89,6 +84,7 @@ public interface IFileStorage
   /// <param name="searchPattern">Pattern to search using.</param>
   /// <returns>All files within a path.</returns>
   public IEnumerable<string> GetFiles(string? path = null, string? searchPattern = null);
+
   /// <summary>
   /// Gets all directories within a path.
   /// </summary>

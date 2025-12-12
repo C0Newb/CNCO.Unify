@@ -7,8 +7,8 @@ namespace CNCO.Unify.Notifications.Push;
 /// </summary>
 public class PushNotification : IPushNotification
 {
-  private static INotificationManager NotificationManager
-      => NotificationRuntime.NotificationManager;
+  private static INotificationManager NotificationManager =>
+    NotificationRuntime.NotificationManager;
 
   private readonly Guid _id = Guid.NewGuid();
 
@@ -19,7 +19,8 @@ public class PushNotification : IPushNotification
   public DateTime? Timestamp { get; set; } = DateTime.Now;
   public string Group { get; set; } = "default";
   public NotificationPriority Priority { get; set; }
-  public bool IsSilent => Priority == NotificationPriority.Low || Priority == NotificationPriority.Minimum;
+  public bool IsSilent =>
+    Priority == NotificationPriority.Low || Priority == NotificationPriority.Minimum;
 
   public NotificationCategory Category { get; set; } = NotificationCategory.Standard;
 
@@ -39,10 +40,12 @@ public class PushNotification : IPushNotification
   public event NotificationFailedEventHandler? NotificationFailed;
   public event NotificationDismissedEventHandler? NotificationDismissed;
 
-  public void OnActivated(NotificationActivationArguments args)
-      => NotificationActivated?.Invoke(this, args);
-  public void OnFailed(NotificationFailureReason reason, string? details)
-      => NotificationFailed?.Invoke(this, reason, details);
-  public void OnDimsissed(NotificationDismissalReason reason)
-      => NotificationDismissed?.Invoke(this, reason);
+  public void OnActivated(NotificationActivationArguments args) =>
+    NotificationActivated?.Invoke(this, args);
+
+  public void OnFailed(NotificationFailureReason reason, string? details) =>
+    NotificationFailed?.Invoke(this, reason, details);
+
+  public void OnDimsissed(NotificationDismissalReason reason) =>
+    NotificationDismissed?.Invoke(this, reason);
 }

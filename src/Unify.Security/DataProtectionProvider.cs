@@ -15,10 +15,8 @@ public class DataProtectionProvider : IDataProtectionProvider
     return provider.CreateProtector(purpose);
   }
 
-
   public IDataProtector CreateProtector(IEnumerable<string> purposes)
   {
-
     if (purposes == null)
       throw new ArgumentNullException(nameof(purposes));
 
@@ -32,20 +30,25 @@ public class DataProtectionProvider : IDataProtectionProvider
       createdProvider = true;
     }
     if (!createdProvider)
-      throw new ArgumentException("Purposes either all null or empty, unable to create DataProtector.");
+      throw new ArgumentException(
+        "Purposes either all null or empty, unable to create DataProtector."
+      );
 
-    return (IDataProtector)dataProtector ?? throw new ArgumentException($"Unable to create DataProtector.");
+    return (IDataProtector)dataProtector
+      ?? throw new ArgumentException($"Unable to create DataProtector.");
   }
 
   /// <inheritdoc cref="CreateProtector(IEnumerable{string})"/>
   /// <param name="provider">The <see cref="IDataProtectionProvider"/> from which to generate the purpose chain.</param>
-  public static IDataProtector CreateProtector(IDataProtectionProvider provider, IEnumerable<string> purposes)
+  public static IDataProtector CreateProtector(
+    IDataProtectionProvider provider,
+    IEnumerable<string> purposes
+  )
   {
     if (provider == null)
       throw new ArgumentNullException(nameof(provider));
     return provider.CreateProtector(purposes);
   }
-
 
   public IDataProtector CreateProtector(string purpose, params string[] subPurposes)
   {
@@ -61,7 +64,11 @@ public class DataProtectionProvider : IDataProtectionProvider
 
   /// <inheritdoc cref="CreateProtector(string, string[])"/>
   /// <param name="provider">The <see cref="IDataProtectionProvider"/> from which to generate the purpose chain.</param>
-  public static IDataProtector CreateProtector(IDataProtectionProvider provider, string purpose, params string[] subPurposes)
+  public static IDataProtector CreateProtector(
+    IDataProtectionProvider provider,
+    string purpose,
+    params string[] subPurposes
+  )
   {
     if (provider == null)
       throw new ArgumentNullException(nameof(provider));

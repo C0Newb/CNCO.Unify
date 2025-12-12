@@ -14,7 +14,8 @@ public class LogFormatter : ILogFormatter
     get => _sectionName;
   }
 
-  public LogFormatter() : this(string.Empty) { }
+  public LogFormatter()
+    : this(string.Empty) { }
 
   public LogFormatter(string? sectionName)
   {
@@ -23,7 +24,7 @@ public class LogFormatter : ILogFormatter
 
   /// <summary>
   /// Replaces places holders in a log message.
-  /// 
+  ///
   /// <c>%datetime%</c>: Current local datetime stamp.
   /// <c>%datetimeUTC%</c>: Current ISO datetime.
   /// <c>%section%</c>: Current section.
@@ -34,22 +35,40 @@ public class LogFormatter : ILogFormatter
 
   /// <inheritdoc cref="FormatMessage(string)"/>
   /// <param name="level">Event level of this message.</param>
-  public string FormatMessage(string message, LogLevel level) => FormatMessage(message, level, null);
+  public string FormatMessage(string message, LogLevel level) =>
+    FormatMessage(message, level, null);
 
   /// <inheritdoc cref="FormatMessage(string, LogLevel)"/>
   /// <param name="section">Section title override.</param>
-  public virtual string FormatMessage(string message, LogLevel? level = null, string? section = null)
-      => FormatMessagePrivate(message, level, section);
+  public virtual string FormatMessage(
+    string message,
+    LogLevel? level = null,
+    string? section = null
+  ) => FormatMessagePrivate(message, level, section);
 
-  public virtual string FormatMessageWithAnsiCodes(string message, LogLevel? level = null, string? section = null)
-      => FormatMessagePrivate(message, level, section, true);
+  public virtual string FormatMessageWithAnsiCodes(
+    string message,
+    LogLevel? level = null,
+    string? section = null
+  ) => FormatMessagePrivate(message, level, section, true);
 
-  private string FormatMessagePrivate(string message, LogLevel? level = null, string? section = null, bool insertAnsiCode = false)
+  private string FormatMessagePrivate(
+    string message,
+    LogLevel? level = null,
+    string? section = null,
+    bool insertAnsiCode = false
+  )
   {
     section ??= SectionName;
 
-    message = message.Replace("%datetime%", DateTime.Now.ToString("o", CultureInfo.InvariantCulture));
-    message = message.Replace("%dateTimeUTC%", DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture));
+    message = message.Replace(
+      "%datetime%",
+      DateTime.Now.ToString("o", CultureInfo.InvariantCulture)
+    );
+    message = message.Replace(
+      "%dateTimeUTC%",
+      DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture)
+    );
     message = message.Replace("%section%", SectionName ?? string.Empty);
 
     StringBuilder prefix = new StringBuilder();
@@ -96,7 +115,6 @@ public class LogFormatter : ILogFormatter
     }
     if (!string.IsNullOrEmpty(section))
       prefix.Append($"[{section}]");
-
 
     message = prefix + " " + message;
 

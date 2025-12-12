@@ -1,9 +1,9 @@
-﻿using CNCO.Unify.Security;
-using CNCO.Unify.Storage;
-using System.Security;
+﻿using System.Security;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
+using CNCO.Unify.Security;
+using CNCO.Unify.Storage;
 
 namespace CNCO.Unify.Configuration.Json;
 
@@ -40,7 +40,10 @@ public class SecureJsonConfiguration : JsonConfiguration
         catch (Exception ex)
         {
           string tag = $"{GetType().Name}::{nameof(SecretsKeyEncrypted)}-{GetFilePath()}";
-          UnifyRuntime.ApplicationLog.Error(tag, "Failed to decrypt secrets_key, secrets potentially lost for good!");
+          UnifyRuntime.ApplicationLog.Error(
+            tag,
+            "Failed to decrypt secrets_key, secrets potentially lost for good!"
+          );
           UnifyRuntime.ApplicationLog.Error(tag, ex.Message);
           UnifyRuntime.ApplicationLog.Error(tag, ex.StackTrace ?? "No stack trace.");
 
@@ -51,13 +54,15 @@ public class SecureJsonConfiguration : JsonConfiguration
           SecretsKey = newSecretsKey;
 
           _secretsSalt = Encryption.GenerateRandomBytes(32);
-          _secretsKeyEncrypted = Encryption.EncryptDataProtector(UnifyRuntime.Current.ApplicationId, newKey);
+          _secretsKeyEncrypted = Encryption.EncryptDataProtector(
+            UnifyRuntime.Current.ApplicationId,
+            newKey
+          );
         }
       }
     }
   }
   private string? _secretsKeyEncrypted;
-
 
   /// <summary>
   /// Encryption key for secrets stored in the configuration. Use this to set a custom secrets key.
@@ -88,6 +93,7 @@ public class SecureJsonConfiguration : JsonConfiguration
       SecretsEncryptionKey = Encryption.DeriveKey(SecretsKey, _secretsSalt);
     }
   }
+
   [JsonIgnore]
   private byte[] _secretsSalt = Encryption.GenerateRandomBytes(32);
 
@@ -95,7 +101,8 @@ public class SecureJsonConfiguration : JsonConfiguration
   /// Encryption methods (protections) applied to secrets.
   /// </summary>
   [JsonPropertyName("secrets_protections")]
-  public Encryption.Protections SecretsProtections { get; set; } = Encryption.Protections.AES128_CBC;
+  public Encryption.Protections SecretsProtections { get; set; } =
+    Encryption.Protections.AES128_CBC;
 
   /// <summary>
   /// Actual encryption key used to decrypt configuration secrets.
@@ -143,12 +150,13 @@ public class SecureJsonConfiguration : JsonConfiguration
       var encryptionFunction = new Func<string, string?>(EncryptSecret);
       var decryptionFunction = new Func<string, string?>(DecryptSecret);
 
-      var secureAttributeTypeInfoResolver = new JsonHelpers.SecureJsonTypeInfoModifier(encryptionFunction, decryptionFunction);
+      var secureAttributeTypeInfoResolver = new JsonHelpers.SecureJsonTypeInfoModifier(
+        encryptionFunction,
+        decryptionFunction
+      );
       JsonSerializerOptions.TypeInfoResolver = new DefaultJsonTypeInfoResolver()
       {
-        Modifiers = {
-                      secureAttributeTypeInfoResolver.Modify
-                  }
+        Modifiers = { secureAttributeTypeInfoResolver.Modify },
       };
 
       _secureAttributeSetupCompleted = true;
@@ -156,7 +164,7 @@ public class SecureJsonConfiguration : JsonConfiguration
     catch
     {
       string tag = $"{GetType().Name}::{nameof(Setup)}-{GetFilePath()}";
-      /*Runtime.ApplicationLog.Debug(tag, 
+      /*Runtime.ApplicationLog.Debug(tag,
           $"Failed to set JsonSerializerOptions? Possible this was already done! _secureAttributeSetupCompleted? {_secureAttributeSetupCompleted}"
           + Environment.NewLine
           + ex.Message
@@ -167,19 +175,28 @@ public class SecureJsonConfiguration : JsonConfiguration
   }
   #endregion
 
-  public SecureJsonConfiguration() : base()
+  public SecureJsonConfiguration()
+    : base()
   {
     Setup();
   }
 
-  public SecureJsonConfiguration(string filePath, IFileStorage fileStorage, IEncryptionProvider fileEncryption) : base(filePath, fileStorage, fileEncryption)
+  public SecureJsonConfiguration(
+    string filePath,
+    IFileStorage fileStorage,
+    IEncryptionProvider fileEncryption
+  )
+    : base(filePath, fileStorage, fileEncryption)
   {
     // Generates a new secrets encryption key if one is not already there.
     if (string.IsNullOrEmpty(_secretsKeyEncrypted))
     {
       string newKey = Encryption.GenerateRandomString(32);
       _secretsSalt = Encryption.GenerateRandomBytes(32);
-      SecretsKeyEncrypted = Encryption.EncryptDataProtector(UnifyRuntime.Current.ApplicationId, newKey);
+      SecretsKeyEncrypted = Encryption.EncryptDataProtector(
+        UnifyRuntime.Current.ApplicationId,
+        newKey
+      );
     }
 
     Setup();
@@ -205,6 +222,7 @@ public class SecureJsonConfiguration : JsonConfiguration
     }
     return null;
   }
+
   /// <summary>
   /// Encrypts a string using the configuration's secret key.
   /// </summary>

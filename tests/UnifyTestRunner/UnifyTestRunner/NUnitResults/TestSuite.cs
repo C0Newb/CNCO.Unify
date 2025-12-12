@@ -10,6 +10,7 @@ public class TestSuite : TestBase
 {
   [XmlAttribute("testcasecount")]
   public int TestCaseCount { get; set; }
+
   [XmlAttribute("total")]
   public int Total { get; set; }
 
@@ -31,13 +32,15 @@ public class TestSuite : TestBase
   [XmlElement("environment", typeof(TestEnvironment))]
   public TestEnvironment? Environment { get; set; }
 
-  [XmlArray(ElementName = "settings"), XmlArrayItem("setting", typeof(NameValuePair), IsNullable = false)]
+  [
+    XmlArray(ElementName = "settings"),
+    XmlArrayItem("setting", typeof(NameValuePair), IsNullable = false)
+  ]
   public List<NameValuePair> Settings { get; set; } = [];
 
   [XmlElement("test-suite", typeof(TestSuite))]
   [XmlElement("test-case", typeof(TestCase))]
   public List<TestBase> Tests { get; set; } = [];
-
 
   public TestCase[] GetTestCases()
   {

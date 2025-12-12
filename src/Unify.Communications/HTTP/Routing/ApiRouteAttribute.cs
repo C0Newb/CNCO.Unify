@@ -10,10 +10,8 @@ namespace CNCO.Unify.Communications.Http.Routing;
 /// </remarks>
 /// <param name="template">The route template. May not be null.</param>
 public class ApiRouteAttribute([StringSyntax("Route")] string template)
-    : RouteAttribute( // sorry this looks so ugly :/
-        CommunicationsRuntime.Current.Configuration.Http.ApiRouteTemplatePrefix.TrimEnd('/') +
-        '/' +
-        template.TrimStart('/')
-    )
-{
-}
+  : RouteAttribute( // sorry this looks so ugly :/
+    CommunicationsRuntime.Current.Configuration.Http.ApiRouteTemplatePrefix.TrimEnd('/')
+      + '/'
+      + template.TrimStart('/')
+  ) { }

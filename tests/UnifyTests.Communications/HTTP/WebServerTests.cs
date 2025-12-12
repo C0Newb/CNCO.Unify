@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Communications.Http;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
+using CNCO.Unify.Communications.Http;
 using HttpMethod = System.Net.Http.HttpMethod;
 
 namespace UnifyTests.Communications.Http;
@@ -17,7 +17,6 @@ public class WebServerTests
     return port;
   }
 
-
   [Test]
   public void WebServer_StartAndStop_Success()
   {
@@ -29,7 +28,6 @@ public class WebServerTests
     webServer.Stop();
     Assert.That(webServer.Running(), Is.False, "WebServer should not be running after Stop.");
   }
-
 
   [Test]
   public void WebServer_InitializeWithEndpointsOptions()
@@ -44,9 +42,19 @@ public class WebServerTests
 
     var endpoints = webServer.GetEndpoints();
     Assert.That(endpoints, Has.Length.EqualTo(4), "WebServer is listening to 4 addresses");
-    Assert.That(endpoints,
-                Is.EquivalentTo(new[] { "http://localhost:12354/", "https://example.com/", "http://127.0.0.1/", "https://*:8800/" }),
-                "WebServer is listening to the proper endpoints");
+    Assert.That(
+      endpoints,
+      Is.EquivalentTo(
+        new[]
+        {
+          "http://localhost:12354/",
+          "https://example.com/",
+          "http://127.0.0.1/",
+          "https://*:8800/",
+        }
+      ),
+      "WebServer is listening to the proper endpoints"
+    );
 
     webServer.Dispose();
   }
@@ -98,7 +106,11 @@ public class WebServerTests
       var content = await response.Content.ReadAsStringAsync();
 
       // Assert
-      Assert.That(content, Is.EqualTo(uniqueCode), "WebServer should handle the HTTP POST request.");
+      Assert.That(
+        content,
+        Is.EqualTo(uniqueCode),
+        "WebServer should handle the HTTP POST request."
+      );
     }
 
     webServer.Stop();
@@ -148,7 +160,11 @@ public class WebServerTests
       var content = await response.Content.ReadAsStringAsync();
 
       // Assert
-      Assert.That(content, Is.EqualTo(uniqueCode), "WebServer should handle the HTTP DELETE request.");
+      Assert.That(
+        content,
+        Is.EqualTo(uniqueCode),
+        "WebServer should handle the HTTP DELETE request."
+      );
     }
 
     webServer.Stop();
@@ -163,19 +179,28 @@ public class WebServerTests
 
     var webServer = new WebServer();
     webServer.Listen(address);
-    webServer.Head("/test", (request, response) =>
-    {
-      response.AddHeader("X-Test-Header", "HeadRequest");
-      response.End();
-    });
+    webServer.Head(
+      "/test",
+      (request, response) =>
+      {
+        response.AddHeader("X-Test-Header", "HeadRequest");
+        response.End();
+      }
+    );
     webServer.Start();
 
     using (var httpClient = new HttpClient())
     {
-      var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Head, $"{address}/test"));
+      var response = await httpClient.SendAsync(
+        new HttpRequestMessage(HttpMethod.Head, $"{address}/test")
+      );
 
       // Assert
-      Assert.That(response.Headers.Contains("X-Test-Header"), Is.True, "WebServer should handle the HTTP HEAD request.");
+      Assert.That(
+        response.Headers.Contains("X-Test-Header"),
+        Is.True,
+        "WebServer should handle the HTTP HEAD request."
+      );
     }
 
     webServer.Stop();
@@ -196,11 +221,17 @@ public class WebServerTests
 
     using (var httpClient = new HttpClient())
     {
-      var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Options, $"{address}/test"));
+      var response = await httpClient.SendAsync(
+        new HttpRequestMessage(HttpMethod.Options, $"{address}/test")
+      );
       var content = await response.Content.ReadAsStringAsync();
 
       // Assert
-      Assert.That(content, Is.EqualTo(uniqueCode), "WebServer should handle the HTTP OPTIONS request.");
+      Assert.That(
+        content,
+        Is.EqualTo(uniqueCode),
+        "WebServer should handle the HTTP OPTIONS request."
+      );
     }
 
     webServer.Stop();
@@ -221,11 +252,17 @@ public class WebServerTests
 
     using (var httpClient = new HttpClient())
     {
-      var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Trace, $"{address}/test"));
+      var response = await httpClient.SendAsync(
+        new HttpRequestMessage(HttpMethod.Trace, $"{address}/test")
+      );
       var content = await response.Content.ReadAsStringAsync();
 
       // Assert
-      Assert.That(content, Is.EqualTo(uniqueCode), "WebServer should handle the HTTP TRACE request.");
+      Assert.That(
+        content,
+        Is.EqualTo(uniqueCode),
+        "WebServer should handle the HTTP TRACE request."
+      );
     }
 
     webServer.Stop();
@@ -250,13 +287,16 @@ public class WebServerTests
       var content = await response.Content.ReadAsStringAsync();
 
       // Assert
-      Assert.That(content, Is.EqualTo(uniqueCode), "WebServer should handle the HTTP PATCH request.");
+      Assert.That(
+        content,
+        Is.EqualTo(uniqueCode),
+        "WebServer should handle the HTTP PATCH request."
+      );
     }
 
     webServer.Stop();
     webServer.Dispose();
   }
-
 
   /// <summary>
   /// Checks whether the "all" route works with WebServer
@@ -269,24 +309,27 @@ public class WebServerTests
     var port = GetRandomOpenPort();
     string address = $"http://127.0.0.1:{port}";
 
-    var methods = new List<HttpMethod>() {
-              HttpMethod.Get,
-              HttpMethod.Post,
-              HttpMethod.Patch,
-              HttpMethod.Delete,
-              HttpMethod.Head,
-          };
-
+    var methods = new List<HttpMethod>()
+    {
+      HttpMethod.Get,
+      HttpMethod.Post,
+      HttpMethod.Patch,
+      HttpMethod.Delete,
+      HttpMethod.Head,
+    };
 
     var webServer = new WebServer();
     webServer.Listen(address);
 
     // Register a route for all HTTP methods
-    webServer.All("/test", (request, response) =>
-    {
-      response.AddHeader("X-Test-Header", "AllRequest");
-      response.Send(uniqueCode);
-    });
+    webServer.All(
+      "/test",
+      (request, response) =>
+      {
+        response.AddHeader("X-Test-Header", "AllRequest");
+        response.Send(uniqueCode);
+      }
+    );
 
     webServer.Start();
 
@@ -300,9 +343,17 @@ public class WebServerTests
         var content = await response.Content.ReadAsStringAsync();
 
         if (method != HttpMethod.Head)
-          Assert.That(content, Is.EqualTo(uniqueCode), $"WebServer should handle the HTTP {method.Method} request.");
+          Assert.That(
+            content,
+            Is.EqualTo(uniqueCode),
+            $"WebServer should handle the HTTP {method.Method} request."
+          );
         else
-          Assert.That(response.Headers.Contains("X-Test-Header"), Is.True, $"WebServer should handle the HTTP {method.Method} request.");
+          Assert.That(
+            response.Headers.Contains("X-Test-Header"),
+            Is.True,
+            $"WebServer should handle the HTTP {method.Method} request."
+          );
       }
     }
 

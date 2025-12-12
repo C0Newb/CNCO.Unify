@@ -18,8 +18,6 @@ public interface IDataProtectionProvider
   /// <returns>An IDataProtector tied to the provided purpose.</returns>
   IDataProtector CreateProtector(string purpose);
 
-
-
   /// <summary>
   /// Creates an <see cref="IDataProtector"/> given a list of purposes.
   /// </summary>
@@ -32,8 +30,6 @@ public interface IDataProtectionProvider
   /// documentation for more information.
   /// </remarks>
   IDataProtector CreateProtector(IEnumerable<string> purposes);
-
-
 
   /// <summary>
   /// Creates an <see cref="IDataProtector"/> given a list of purposes.

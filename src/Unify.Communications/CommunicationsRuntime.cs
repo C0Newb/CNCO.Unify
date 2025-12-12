@@ -55,7 +55,8 @@ public class CommunicationsRuntime : Runtime, IRuntime
     }
   }
 
-  public CommunicationsRuntime() : this(null) { }
+  public CommunicationsRuntime()
+    : this(null) { }
 
   public CommunicationsRuntime(CommunicationsRuntimeConfiguration? runtimeConfiguration)
   {
@@ -72,6 +73,7 @@ public class CommunicationsRuntime : Runtime, IRuntime
     }
   }
 
-  public static CommunicationsRuntime Create(CommunicationsRuntimeConfiguration? runtimeConfiguration)
-      => new CommunicationsRuntime(runtimeConfiguration);
+  public static CommunicationsRuntime Create(
+    CommunicationsRuntimeConfiguration? runtimeConfiguration
+  ) => new CommunicationsRuntime(runtimeConfiguration);
 }

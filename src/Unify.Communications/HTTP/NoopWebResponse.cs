@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Storage;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json.Nodes;
+using CNCO.Unify.Storage;
 
 namespace CNCO.Unify.Communications.Http;
 
@@ -36,14 +36,29 @@ public class NoopWebResponse : IWebResponse
   }
 
   public void AddCookie(Cookie cookie) => Cookies.Add(cookie);
+
   public void AddHeader(string name, string value) => Headers.Add(name, value);
+
   public void AppendHeader(string name, string value) => Headers.Add(name, value);
+
   public void Attachment(string fileName) => throw new InvalidOperationException();
+
   public void End() => throw new InvalidOperationException();
+
   public void Redirect(string uri) => throw new InvalidOperationException();
+
   public void Send(string? data) => throw new InvalidOperationException();
-  public void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null) => throw new InvalidOperationException();
-  public void SendFile(string path, IFileStorage storage, string? fileType = null) => throw new InvalidOperationException();
+
+  public void SendAttachment(
+    string path,
+    IFileStorage storage,
+    AttachmentOptions? attachmentOptions = null
+  ) => throw new InvalidOperationException();
+
+  public void SendFile(string path, IFileStorage storage, string? fileType = null) =>
+    throw new InvalidOperationException();
+
   public void SendJson(JsonObject? data) => throw new InvalidOperationException();
+
   public void Status(int statusCode) => throw new InvalidOperationException();
 }

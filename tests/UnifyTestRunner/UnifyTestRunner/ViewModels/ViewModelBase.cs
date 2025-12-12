@@ -1,7 +1,7 @@
-﻿using ReactiveUI;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using ReactiveUI;
 
 namespace UnifyTestRunner.ViewModels;
 
@@ -18,7 +18,11 @@ public abstract class ViewModelBase : ReactiveObject, INotifyPropertyChanged
   /// <param name="propertyName">Name of the property used to notify listeners.  This
   /// value is optional and can be provided automatically when invoked from compilers
   /// that support <see cref="CallerMemberNameAttribute"/>.</param>
-  protected virtual bool SetProperty<T>(ref T member, T value, [CallerMemberName] string? propertyName = null)
+  protected virtual bool SetProperty<T>(
+    ref T member,
+    T value,
+    [CallerMemberName] string? propertyName = null
+  )
   {
     if (EqualityComparer<T>.Default.Equals(member, value))
     {
@@ -34,6 +38,6 @@ public abstract class ViewModelBase : ReactiveObject, INotifyPropertyChanged
   /// Notifies listeners that a property value has changed.
   /// </summary>
   /// <param name="propertyName">Name of the property, used to notify listeners.</param>
-  protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-      => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+  protected void OnPropertyChanged([CallerMemberName] string? propertyName = null) =>
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 }

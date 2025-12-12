@@ -4,7 +4,7 @@
     <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
     <WasmMainJSPath>AppBundle\main.js</WasmMainJSPath>
     <OutputType>Exe</OutputType>
-	<StartupObject>UnifyTestRunner.Browser.Program</StartupObject>
+    <StartupObject>UnifyTestRunner.Browser.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>

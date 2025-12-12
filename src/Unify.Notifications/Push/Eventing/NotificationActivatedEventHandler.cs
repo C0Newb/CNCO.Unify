@@ -6,6 +6,6 @@
 /// <param name="pushNotification">Push notification that was activated.</param>
 /// <param name="activationArguments">Arguments associated with the activation event.</param>
 public delegate void NotificationActivatedEventHandler(
-    IPushNotification pushNotification,
-    NotificationActivationArguments activationArguments
+  IPushNotification pushNotification,
+  NotificationActivationArguments activationArguments
 );

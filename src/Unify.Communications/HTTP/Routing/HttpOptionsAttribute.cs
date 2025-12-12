@@ -6,9 +6,11 @@ public sealed class HttpOptionsAttribute : HttpMethodAttribute
 {
   private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Options];
 
-  public HttpOptionsAttribute() : base(_method) { }
+  public HttpOptionsAttribute()
+    : base(_method) { }
 
-  public HttpOptionsAttribute([StringSyntax("Route")] string template) : base(_method, template)
+  public HttpOptionsAttribute([StringSyntax("Route")] string template)
+    : base(_method, template)
   {
     ArgumentNullException.ThrowIfNull(template);
   }

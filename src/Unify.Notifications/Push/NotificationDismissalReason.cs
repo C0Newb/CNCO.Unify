@@ -24,5 +24,5 @@ public enum NotificationDismissalReason
   /// <summary>
   /// Application dismissed the notification.
   /// </summary>
-  ApplicationHidden
+  ApplicationHidden,
 }

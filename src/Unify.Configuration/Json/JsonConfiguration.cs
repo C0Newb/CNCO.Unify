@@ -1,22 +1,21 @@
-﻿using CNCO.Unify.Security;
-using CNCO.Unify.Storage;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using CNCO.Unify.Security;
+using CNCO.Unify.Storage;
 
 namespace CNCO.Unify.Configuration.Json;
 
 /// <summary>
 /// Basic JSON configuration file.
-/// 
+///
 /// Please note, your properties must have <code>{ get; set; }</code> otherwise they will not be saved.
 /// Also, make sure you include the base constructor (no parameters)!
 /// </summary>
 public class JsonConfiguration : IJsonConfiguration
 {
   private readonly object _lock = new object();
-
 
   /// <summary>
   /// Full path, including the name, to the configuration file.
@@ -33,9 +32,7 @@ public class JsonConfiguration : IJsonConfiguration
   /// </summary>
   private readonly IEncryptionProvider _fileEncryption;
 
-
   protected JsonSerializerOptions JsonSerializerOptions { get; set; } = JsonHelpers.Options;
-
 
   public JsonConfiguration()
   {
@@ -56,7 +53,11 @@ public class JsonConfiguration : IJsonConfiguration
   /// File encryption strategy to use when reading/writing the configuration.
   /// If <see langword="null"/>, the <see cref="NoopFileEncryption"/> (no encryption) will be used.
   /// </param>
-  public JsonConfiguration(string name, IFileStorage fileStorage, IEncryptionProvider? fileEncryption = null)
+  public JsonConfiguration(
+    string name,
+    IFileStorage fileStorage,
+    IEncryptionProvider? fileEncryption = null
+  )
   {
     _filePath = name;
     if (!_filePath.ToLower().EndsWith(".json"))
@@ -71,24 +72,30 @@ public class JsonConfiguration : IJsonConfiguration
     }
   }
 
-  public JsonNode Serialize<T>() where T : JsonConfiguration
+  public JsonNode Serialize<T>()
+    where T : JsonConfiguration
   {
-    return JsonSerializer.SerializeToNode(this as T, typeof(T), JsonSerializerOptions) ?? new JsonObject();
+    return JsonSerializer.SerializeToNode(this as T, typeof(T), JsonSerializerOptions)
+      ?? new JsonObject();
   }
 
   public void Save()
   {
-    if (_filePath == null) return;
+    if (_filePath == null)
+      return;
 
     string? directory = Path.GetDirectoryName(_filePath);
     if (string.IsNullOrEmpty(_filePath))
-      throw new NullReferenceException("Configuration file path (" + nameof(_filePath) + ") is not set.");
+      throw new NullReferenceException(
+        "Configuration file path (" + nameof(_filePath) + ") is not set."
+      );
     if (!string.IsNullOrEmpty(directory) && (directory.EndsWith('/') || directory.EndsWith('\\')))
-      throw new InvalidOperationException("Invalid path to configuration file, path cannot be a directory.");
+      throw new InvalidOperationException(
+        "Invalid path to configuration file, path cannot be a directory."
+      );
 
     if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
       Directory.CreateDirectory(directory);
-
 
     string jsonString = ToString();
 
@@ -118,7 +125,8 @@ public class JsonConfiguration : IJsonConfiguration
 
   public void Load(bool allowEmpty = false)
   {
-    if (string.IsNullOrEmpty(_filePath)) return;
+    if (string.IsNullOrEmpty(_filePath))
+      return;
 
     if (!_fileStorage.Exists(_filePath) && !allowEmpty)
       throw new ConfigurationNotFoundException($"Configuration {_filePath} was not found.");
@@ -137,10 +145,7 @@ public class JsonConfiguration : IJsonConfiguration
     }
 
     JsonNode jsonNode;
-    JsonNodeOptions nodeOptions = new JsonNodeOptions
-    {
-      PropertyNameCaseInsensitive = true,
-    };
+    JsonNodeOptions nodeOptions = new JsonNodeOptions { PropertyNameCaseInsensitive = true };
     JsonDocumentOptions documentOptions = new JsonDocumentOptions { };
 
     try
@@ -151,7 +156,9 @@ public class JsonConfiguration : IJsonConfiguration
     }
     catch (Exception ex)
     {
-      UnifyRuntime.ApplicationLog.Error($"Failed to parse {_filePath} failed, renaming file to *.broken and regenerating.");
+      UnifyRuntime.ApplicationLog.Error(
+        $"Failed to parse {_filePath} failed, renaming file to *.broken and regenerating."
+      );
       UnifyRuntime.ApplicationLog.Error(ex.Message);
       UnifyRuntime.ApplicationLog.Error(ex.StackTrace ?? "No stack trace.");
       _fileStorage.Rename(_filePath, _filePath + ".broken");

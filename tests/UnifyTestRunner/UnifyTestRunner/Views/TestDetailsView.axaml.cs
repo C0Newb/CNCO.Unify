@@ -16,6 +16,7 @@ public partial class TestDetailsView : UserControl
       return _instance;
     }
   }
+
   public TestDetailsView()
   {
     InitializeComponent();
@@ -53,7 +54,16 @@ public partial class TestDetailsView : UserControl
     Dispatcher.UIThread.Invoke(() =>
     {
       txtId.Text = "No results to display!!";
-      txtResult.Text = txtClassName.Text = txtMethodName.Text = txtName.Text = txtDuration.Text = txtRunState.Text = txtAsserts.Text = txtErrorMessage.Text = txtStackTrace.Text = "";
+      txtResult.Text =
+        txtClassName.Text =
+        txtMethodName.Text =
+        txtName.Text =
+        txtDuration.Text =
+        txtRunState.Text =
+        txtAsserts.Text =
+        txtErrorMessage.Text =
+        txtStackTrace.Text =
+          "";
     });
   }
 
@@ -62,5 +72,4 @@ public partial class TestDetailsView : UserControl
     App.MainModel?.ShowMainView();
     ClearResults();
   }
-
 }

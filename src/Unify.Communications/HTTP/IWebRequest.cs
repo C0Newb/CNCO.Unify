@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Communications.Http.Routing;
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Net;
+using CNCO.Unify.Communications.Http.Routing;
 
 namespace CNCO.Unify.Communications.Http;
 
@@ -80,7 +80,6 @@ public interface IWebRequest
   /// </summary>
   WebSocket? WebSocket { get; }
 
-
   /// <summary>
   /// Completes the WebSocket handshake on this request and returns the newly created <see cref="Http.WebSocket"/>.
   /// </summary>
@@ -89,11 +88,16 @@ public interface IWebRequest
   /// </remarks>
   /// <returns>Newly created WebSocket.</returns>
   public WebSocket CreateWebSocketConnection();
+
   /// <inheritdoc cref="CreateWebSocketConnection()"/>
   /// <param name="keepAliveInterval">The WebSocket protocol keep-alive interval in milliseconds.</param>
   public WebSocket CreateWebSocketConnection(string? subProtocol, TimeSpan? keepAliveInterval);
 
   /// <inheritdoc cref="CreateWebSocketConnection(string?, TimeSpan?)"/>
   /// <param name="receiveBufferSize">The receive buffer size in bytes.</param>
-  public WebSocket CreateWebSocketConnection(string? subProtocol, int? receiveBufferSize, TimeSpan? keepAliveInterval);
+  public WebSocket CreateWebSocketConnection(
+    string? subProtocol,
+    int? receiveBufferSize,
+    TimeSpan? keepAliveInterval
+  );
 }

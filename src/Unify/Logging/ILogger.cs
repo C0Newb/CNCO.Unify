@@ -23,7 +23,6 @@ public interface ILogger
   /// <param name="logLevel">Level of the message.</param>
   void Log(LogLevel logLevel, string section, string message);
 
-
   /// <summary>
   /// Logs a message at the <see cref="LogLevel.Verbose"/> level.
   /// <inheritdoc cref="LogLevel.Verbose"/>
@@ -34,7 +33,6 @@ public interface ILogger
   /// <inheritdoc cref="Verbose(string)"/>
   /// <param name="section">Section name this message belongs to.</param>
   void Verbose(string section, string message);
-
 
   /// <summary>
   /// Logs a message at the <see cref="LogLevel.Debug"/> level.
@@ -47,7 +45,6 @@ public interface ILogger
   /// <param name="section">Section name this message belongs to.</param>
   void Debug(string section, string message);
 
-
   /// <summary>
   /// Logs a message at the <see cref="LogLevel.Info"/> level.
   /// </summary>
@@ -57,7 +54,6 @@ public interface ILogger
   /// <inheritdoc cref="Info(string)"/>
   /// <param name="section">Section name this message belongs to.</param>
   void Info(string section, string message);
-
 
   /// <summary>
   /// Logs a message at the <see cref="LogLevel.Notice"/> level.
@@ -70,7 +66,6 @@ public interface ILogger
   /// <param name="section">Section name this message belongs to.</param>
   void Notice(string section, string message);
 
-
   /// <summary>
   /// Logs a message at the <see cref="LogLevel.Warning"/> level.
   /// <inheritdoc cref="LogLevel.Warning"/>
@@ -81,7 +76,6 @@ public interface ILogger
   /// <inheritdoc cref="Warning(string)"/>
   /// <param name="section">Section name this message belongs to.</param>
   void Warning(string section, string message);
-
 
   /// <summary>
   /// Logs a message at the <see cref="LogLevel.Error"/> level.
@@ -94,7 +88,6 @@ public interface ILogger
   /// <param name="section">Section name this message belongs to.</param>
   void Error(string section, string message, Exception? exception = null);
 
-
   /// <summary>
   /// Logs a message at the <see cref="LogLevel.Alert"/> level.
   /// <inheritdoc cref="LogLevel.Alert"/>
@@ -105,7 +98,6 @@ public interface ILogger
   /// <inheritdoc cref="Alert(string)"/>
   /// <param name="section">Section name this message belongs to.</param>
   void Alert(string section, string message);
-
 
   /// <summary>
   /// Logs a message at the <see cref="LogLevel.Emergency"/> level.

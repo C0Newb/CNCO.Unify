@@ -32,8 +32,11 @@ public class EncryptionKeyProvider : IEncryptionKeyProvider
   }
 
   public byte[]? GetAssociationData() => AssociationData;
+
   public byte[] GetEncryptionKey() => Key;
+
   public byte[]? GetIV() => Iv;
+
   public byte[]? GetNonce() => Nonce ?? Encryption.GenerateRandomBytes(12);
 
   public Encryption.Protections GetProtections() => Protections;

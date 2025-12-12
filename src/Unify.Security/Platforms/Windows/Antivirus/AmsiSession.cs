@@ -1,5 +1,5 @@
-﻿using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
 
 namespace CNCO.Unify.Security.Platforms.Windows.Antivirus;
 
@@ -22,19 +22,28 @@ public sealed class AmsiSession : IDisposable
 
     return result;
   }
+
   internal AmsiResult Scan(byte[] content, string contentName)
   {
-    var returnValue = Amsi.AmsiScanBuffer(_context, content, (uint)content.Length, contentName, _session, out var result);
+    var returnValue = Amsi.AmsiScanBuffer(
+      _context,
+      content,
+      (uint)content.Length,
+      contentName,
+      _session,
+      out var result
+    );
     if (returnValue != 0)
       throw new Win32Exception(returnValue);
 
     return result;
   }
 
-  public bool IsMalware(string content, string contentName) => Amsi.AmsiResultIsMalware(Scan(content, contentName));
-  public bool IsMalware(byte[] content, string contentName) => Amsi.AmsiResultIsMalware(Scan(content, contentName));
+  public bool IsMalware(string content, string contentName) =>
+    Amsi.AmsiResultIsMalware(Scan(content, contentName));
 
-
+  public bool IsMalware(byte[] content, string contentName) =>
+    Amsi.AmsiResultIsMalware(Scan(content, contentName));
 
   public static bool IsAvailable() => Amsi.IsDllImportPossible();
 

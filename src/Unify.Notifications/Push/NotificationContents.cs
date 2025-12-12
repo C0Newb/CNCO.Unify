@@ -43,8 +43,8 @@ public class NotificationContents
   /// </summary>
   public NotificationProgressData? ProgressData { get; set; }
 
-  public INotificationAction? GetNotificationAction(string id)
-      => Actions.First(action => action.Id == id);
+  public INotificationAction? GetNotificationAction(string id) =>
+    Actions.First(action => action.Id == id);
 
   public void CleanUpImages()
   {

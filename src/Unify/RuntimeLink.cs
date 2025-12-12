@@ -6,14 +6,15 @@
 public class RuntimeLink
 {
   public readonly IRuntime Instance;
+
   public RuntimeLink(IRuntime instance) => Instance = instance;
 
   // override object.Equals
   public override bool Equals(object? obj)
   {
     return obj != null // Easy.
-        && GetType() == obj.GetType() // Same type
-        && ((RuntimeLink)obj).Instance.Equals(Instance); // Instances match
+      && GetType() == obj.GetType() // Same type
+      && ((RuntimeLink)obj).Instance.Equals(Instance); // Instances match
   }
 
   public override int GetHashCode()

@@ -23,10 +23,13 @@ internal class NotificationManagerFactory
 #pragma warning restore CA1416 // Validate platform compatibility
 
     NotificationRuntime.Current.RuntimeLog.Warning(
-        $"{nameof(NotificationManagerFactory)}::{nameof(GetPlatformNotificationManager)}()",
-        "Unsupported platform!"
+      $"{nameof(NotificationManagerFactory)}::{nameof(GetPlatformNotificationManager)}()",
+      "Unsupported platform!"
     );
 
-    throw new UnsupportedPlatformException(string.Empty, "No supported INotificationManagers found.");
+    throw new UnsupportedPlatformException(
+      string.Empty,
+      "No supported INotificationManagers found."
+    );
   }
 }

@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Security.Credentials;
+﻿using System.Text.Json.Serialization;
+using CNCO.Unify.Security.Credentials;
 using CNCO.Unify.Storage;
-using System.Text.Json.Serialization;
 
 namespace CNCO.Unify.Security;
 

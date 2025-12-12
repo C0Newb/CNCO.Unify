@@ -47,10 +47,16 @@ public class TestBase
   [XmlAttribute("asserts")]
   public int Asserts { get; set; } = 0;
 
-  [XmlArray(ElementName = "properties"), XmlArrayItem("property", typeof(NameValuePair), IsNullable = false)]
+  [
+    XmlArray(ElementName = "properties"),
+    XmlArrayItem("property", typeof(NameValuePair), IsNullable = false)
+  ]
   public List<NameValuePair> Properties { get; set; } = [];
 
-  [XmlArray(ElementName = "assertions"), XmlArrayItem("assertion", typeof(TestAssertion), IsNullable = false)]
+  [
+    XmlArray(ElementName = "assertions"),
+    XmlArrayItem("assertion", typeof(TestAssertion), IsNullable = false)
+  ]
   public List<TestAssertion> Assertions { get; set; } = [];
 
   [XmlElement("output")]

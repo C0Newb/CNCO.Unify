@@ -1,6 +1,3 @@
 ﻿namespace CNCO.Unify.Security;
 
-internal interface IHasher
-{
-
-}
+internal interface IHasher { }

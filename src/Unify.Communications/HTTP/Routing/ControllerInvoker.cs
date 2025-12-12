@@ -12,7 +12,12 @@ internal class ControllerInvoker
   public IEnumerable<WebSocketAttribute> WebSocketAttributes { get; }
   public MethodInfo MethodInfo { get; }
 
-  public ControllerInvoker(Type controller, IEnumerable<HttpMethodAttribute>? httpMethodAttributes, IEnumerable<WebSocketAttribute>? webSocketAttributes, MethodInfo methodInfo)
+  public ControllerInvoker(
+    Type controller,
+    IEnumerable<HttpMethodAttribute>? httpMethodAttributes,
+    IEnumerable<WebSocketAttribute>? webSocketAttributes,
+    MethodInfo methodInfo
+  )
   {
     ControllerType = controller;
     HttpMethodAttributes = httpMethodAttributes?.Where(x => x != null) ?? [];
@@ -38,9 +43,9 @@ internal class ControllerInvoker
     else
     {
       CommunicationsRuntime.Current.RuntimeLog.Warning(
-          GetTag(nameof(Invoke)),
-          $"{nameof(classInstance)} could not be casted to type ${ControllerType.Name}! " +
-          $"{nameof(classInstance)} type? {classInstance?.GetType().FullName} - base? {classInstance?.GetType().BaseType?.FullName ?? "UNKNOWN"}"
+        GetTag(nameof(Invoke)),
+        $"{nameof(classInstance)} could not be casted to type ${ControllerType.Name}! "
+          + $"{nameof(classInstance)} type? {classInstance?.GetType().FullName} - base? {classInstance?.GetType().BaseType?.FullName ?? "UNKNOWN"}"
       );
       return;
     }
@@ -57,11 +62,13 @@ internal class ControllerInvoker
     {
       // ? what
       CommunicationsRuntime.Current.RuntimeLog.Alert(
-          "Router::ControllerMethod::Callback",
-          $"{nameof(classInstance)}::{MethodInfo.Name}() has an incorrect parameter count for the current request template! " +
-          $"Request has {request.RouteTemplate?.RouteParameters.Count() ?? 0} parameters, but the method requires {methodParameters.Length}."
+        "Router::ControllerMethod::Callback",
+        $"{nameof(classInstance)}::{MethodInfo.Name}() has an incorrect parameter count for the current request template! "
+          + $"Request has {request.RouteTemplate?.RouteParameters.Count() ?? 0} parameters, but the method requires {methodParameters.Length}."
       );
-      throw new TargetParameterCountException($"Request has {request.RouteTemplate?.RouteParameters.Count() ?? 0} parameters, but the method requires {methodParameters.Length}.");
+      throw new TargetParameterCountException(
+        $"Request has {request.RouteTemplate?.RouteParameters.Count() ?? 0} parameters, but the method requires {methodParameters.Length}."
+      );
     }
 
     // try to inject the parameters :)
@@ -93,12 +100,13 @@ internal class ControllerInvoker
         catch (Exception e)
         {
           // nope
-          string methodTag = $"{ControllerType.FullName}::{MethodInfo.Name}({string.Join(", ", methodParameters.Select(x => x.ParameterType))})";
+          string methodTag =
+            $"{ControllerType.FullName}::{MethodInfo.Name}({string.Join(", ", methodParameters.Select(x => x.ParameterType))})";
           CommunicationsRuntime.Current.RuntimeLog.Warning(
-              "Router::ControllerMethod::Callback",
-              $"Cannot call {methodTag}) as the request parameter type {parameter?.Type.FullName ?? "NULL_PARAMETER"} " +
-              $"does not match the method parameter type {methodParameters[i].ParameterType.FullName}! " +
-              $"An attempt to convert via Convert.ChangeType() failed with the following message: {e.Message}"
+            "Router::ControllerMethod::Callback",
+            $"Cannot call {methodTag}) as the request parameter type {parameter?.Type.FullName ?? "NULL_PARAMETER"} "
+              + $"does not match the method parameter type {methodParameters[i].ParameterType.FullName}! "
+              + $"An attempt to convert via Convert.ChangeType() failed with the following message: {e.Message}"
           );
           return;
         }
@@ -111,5 +119,6 @@ internal class ControllerInvoker
     MethodInfo.Invoke(classInstance, parameters.ToArray());
   }
 
-  private string GetTag(string method) => $"{nameof(ControllerInvoker)}({ControllerType.Name})::{method}()";
+  private string GetTag(string method) =>
+    $"{nameof(ControllerInvoker)}({ControllerType.Name})::{method}()";
 }

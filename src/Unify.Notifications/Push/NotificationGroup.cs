@@ -15,7 +15,6 @@ public class NotificationGroup
   /// </summary>
   public string? Name { get; set; }
 
-
   public NotificationGroup(string id, string? name = null)
   {
     Id = id;

@@ -39,7 +39,10 @@ public class WebSocketConnectionClosedEventArgs : EventArgs
   /// </summary>
   /// <param name="webSocket">WebSocket that was closed.</param>
   /// <param name="webSocketReceiveResult">Receive results that contain the closed reasoning.</param>
-  public WebSocketConnectionClosedEventArgs(WebSocket webSocket, WebSocketReceiveResult webSocketReceiveResult)
+  public WebSocketConnectionClosedEventArgs(
+    WebSocket webSocket,
+    WebSocketReceiveResult webSocketReceiveResult
+  )
   {
     WebSocket = webSocket;
     CloseStatus = webSocketReceiveResult.CloseStatus;

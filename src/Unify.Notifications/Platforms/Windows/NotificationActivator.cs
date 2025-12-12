@@ -17,13 +17,21 @@ public class NotificationActivator : INotificationActivationCallback
   /// <summary>
   /// This is called when a notification is activated
   /// </summary>
-  public void Activate(string appUserModelId, string invokedArgs, NOTIFICATION_USER_INPUT_DATA[] data, uint dataCount)
+  public void Activate(
+    string appUserModelId,
+    string invokedArgs,
+    NOTIFICATION_USER_INPUT_DATA[] data,
+    uint dataCount
+  )
   {
-    ActivatedFunction?.Invoke(appUserModelId, new NotificationEventArgs(invokedArgs)
-    {
-      Action = NotificationEventArgs.NotificationAction.Activated,
-      COMActivated = true,
-    });
+    ActivatedFunction?.Invoke(
+      appUserModelId,
+      new NotificationEventArgs(invokedArgs)
+      {
+        Action = NotificationEventArgs.NotificationAction.Activated,
+        COMActivated = true,
+      }
+    );
   }
 
   /// <summary>

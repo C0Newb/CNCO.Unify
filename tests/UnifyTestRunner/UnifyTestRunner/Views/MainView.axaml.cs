@@ -1,3 +1,9 @@
+using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
@@ -8,12 +14,6 @@ using CNCO.Unify.Communications.Http;
 using CNCO.Unify.Security;
 using CNCO.Unify.Storage;
 using NUnit.Engine;
-using System;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Xml.Linq;
 using UnifyTestRunner.NUnitResults;
 using UnifyTestRunner.ViewModels;
 
@@ -39,29 +39,37 @@ public partial class MainView : UserControl
 
     new Task(() =>
     {
-      UnifyRuntime.Create("UnifyTestRunner")
-          .UseSecurityRuntime(new SecurityRuntimeConfiguration
+      UnifyRuntime
+        .Create("UnifyTestRunner")
+        .UseSecurityRuntime(
+          new SecurityRuntimeConfiguration
           {
             // Here you can configure the runtime.
-          })
-          .UseCommunicationsRuntime(new CommunicationsRuntimeConfiguration
+          }
+        )
+        .UseCommunicationsRuntime(
+          new CommunicationsRuntimeConfiguration
           {
             // .. same for the communications runtime.
-          });
+          }
+        );
 
       IRouter router = new Router(false);
-      WebServer server = new WebServer(router, new WebServerOptions
-      {
-        Endpoints = new[] { "http://*:25565" }
-      });
+      WebServer server = new WebServer(
+        router,
+        new WebServerOptions { Endpoints = new[] { "http://*:25565" } }
+      );
 
       server.Start();
 
-      router.Any("/heartbeat", (req, res) =>
-      {
-        res.Status(200);
-        res.Send("ok");
-      });
+      router.Any(
+        "/heartbeat",
+        (req, res) =>
+        {
+          res.Status(200);
+          res.Send("ok");
+        }
+      );
     }).Start();
   }
 
@@ -83,7 +91,6 @@ public partial class MainView : UserControl
     }
   }
 
-
   private async Task SaveResults()
   {
     if (TestResults == null)
@@ -97,11 +104,9 @@ public partial class MainView : UserControl
     }
 
     // Start async operation to open the dialog.
-    var file = await topLevel.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
-    {
-      Title = "Save Test Results XML",
-      DefaultExtension = ".xml"
-    });
+    var file = await topLevel.StorageProvider.SaveFilePickerAsync(
+      new FilePickerSaveOptions { Title = "Save Test Results XML", DefaultExtension = ".xml" }
+    );
 
     if (file is not null)
     {
@@ -124,11 +129,9 @@ public partial class MainView : UserControl
     }
 
     // Start async operation to open the dialog.
-    var files = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
-    {
-      Title = "Open Test Results XML",
-      AllowMultiple = false,
-    });
+    var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+      new FilePickerOpenOptions { Title = "Open Test Results XML", AllowMultiple = false }
+    );
 
     if (files.Count >= 1)
     {
@@ -163,6 +166,7 @@ public partial class MainView : UserControl
       }
     }).Start();
   }
+
   private void BtnLoad_Click(object? sender, RoutedEventArgs e)
   {
     if (_isDoingFileAction)
@@ -182,7 +186,6 @@ public partial class MainView : UserControl
       }
     }).Start();
   }
-
 
   private void BtnSearch_Click(object? sender, RoutedEventArgs e)
   {
@@ -224,18 +227,32 @@ public partial class MainView : UserControl
         string failedCount = "";
         string warningCount = "";
         string skippedCount = "";
-        Dispatcher.UIThread.Invoke(() => lblStatus.Content = string.Format("{0} tests loaded. {1} Passed, {2} Warnings, {3} Failed, {4} Skipped.", totalCount, passedCount, warningCount, failedCount, skippedCount));
+        Dispatcher.UIThread.Invoke(() =>
+          lblStatus.Content = string.Format(
+            "{0} tests loaded. {1} Passed, {2} Warnings, {3} Failed, {4} Skipped.",
+            totalCount,
+            passedCount,
+            warningCount,
+            failedCount,
+            skippedCount
+          )
+        );
 
         CreateTestPackage();
 
         using (ITestRunner runner = engine.GetRunner(testPackage))
         {
-          Dispatcher.UIThread.Invoke(() => lblStatus.Content = $"Running {runner.CountTestCases(TestFilter.Empty)} tests ...");
+          Dispatcher.UIThread.Invoke(() =>
+            lblStatus.Content = $"Running {runner.CountTestCases(TestFilter.Empty)} tests ..."
+          );
 
           TestResults = runner.Run(listener: null, TestFilter.Empty);
           var doc = XDocument.Parse(TestResults.OuterXml);
           var fileStorage = new LocalFileStorage();
-          fileStorage.Write($"UnifyTestRunner.tests_results_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xml", doc.ToString());
+          fileStorage.Write(
+            $"UnifyTestRunner.tests_results_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.xml",
+            doc.ToString()
+          );
 
           ShowResults();
         }
@@ -273,18 +290,42 @@ public partial class MainView : UserControl
     string failedCount = "";
     string warningCount = "";
     string skippedCount = "";
-    totalCount = TestResults.SelectSingleNode("//test-run/@total")?.Value ?? TestResults.SelectSingleNode("/@total")?.Value ?? string.Empty;
-    passedCount = TestResults.SelectSingleNode("//test-run/@passed")?.Value ?? TestResults.SelectSingleNode("/@passed")?.Value ?? string.Empty;
-    failedCount = TestResults.SelectSingleNode("//test-run/@failed")?.Value ?? TestResults.SelectSingleNode("/@failed")?.Value ?? string.Empty;
-    warningCount = TestResults.SelectSingleNode("//test-run/@warnings")?.Value ?? TestResults.SelectSingleNode("/@warnings")?.Value ?? string.Empty;
-    skippedCount = TestResults.SelectSingleNode("//test-run/@skipped")?.Value ?? TestResults.SelectSingleNode("/@skipped")?.Value ?? string.Empty;
+    totalCount =
+      TestResults.SelectSingleNode("//test-run/@total")?.Value
+      ?? TestResults.SelectSingleNode("/@total")?.Value
+      ?? string.Empty;
+    passedCount =
+      TestResults.SelectSingleNode("//test-run/@passed")?.Value
+      ?? TestResults.SelectSingleNode("/@passed")?.Value
+      ?? string.Empty;
+    failedCount =
+      TestResults.SelectSingleNode("//test-run/@failed")?.Value
+      ?? TestResults.SelectSingleNode("/@failed")?.Value
+      ?? string.Empty;
+    warningCount =
+      TestResults.SelectSingleNode("//test-run/@warnings")?.Value
+      ?? TestResults.SelectSingleNode("/@warnings")?.Value
+      ?? string.Empty;
+    skippedCount =
+      TestResults.SelectSingleNode("//test-run/@skipped")?.Value
+      ?? TestResults.SelectSingleNode("/@skipped")?.Value
+      ?? string.Empty;
 
-    TestRun testRun = TestRunDeserializer.DeserializeTestRun(TestResults) ?? throw new NullReferenceException("Failed to deserialize the test results!");
+    TestRun testRun =
+      TestRunDeserializer.DeserializeTestRun(TestResults)
+      ?? throw new NullReferenceException("Failed to deserialize the test results!");
     TestCase[] testCases = testRun.GetTestCases();
 
     Dispatcher.UIThread.Invoke(() =>
     {
-      lblStatus.Content = string.Format("{0} Tests: {1} Passed, {2} Warnings, {3} Failed, {4} Skipped.", totalCount, passedCount, warningCount, failedCount, skippedCount);
+      lblStatus.Content = string.Format(
+        "{0} Tests: {1} Passed, {2} Warnings, {3} Failed, {4} Skipped.",
+        totalCount,
+        passedCount,
+        warningCount,
+        failedCount,
+        skippedCount
+      );
 
       Results.Clear();
       foreach (TestCase testCase in testCases)

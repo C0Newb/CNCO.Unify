@@ -5,9 +5,7 @@
 /// </summary>
 public class WebClient : IWebClient
 {
-
   private HttpClient HttpClient { get; set; }
-
 
   /// <summary>
   /// How long we'll wait for a response before timing out.
@@ -18,14 +16,11 @@ public class WebClient : IWebClient
     set => HttpClient.Timeout = value;
   }
 
-
-
   public WebClient()
   {
     HttpClient = new HttpClient();
     HttpClient.Timeout = new TimeSpan(0, 0, 30);
   }
-
 
   /// <summary>
   /// Sets a header in our requests.
@@ -51,7 +46,6 @@ public class WebClient : IWebClient
     return null;
   }
 
-
   public void Dispose()
   {
     HttpClient.CancelPendingRequests();
@@ -59,18 +53,15 @@ public class WebClient : IWebClient
     GC.SuppressFinalize(this);
   }
 
-
-
-
   public Task<HttpResponseMessage> ConnectAsync(string uri)
   {
     return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Connect, uri));
   }
+
   public Task<HttpResponseMessage> ConnectAsync(Uri uri)
   {
     return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Connect, uri));
   }
-
 
   public Task<HttpResponseMessage> DeleteAsync(string uri)
   {
@@ -82,79 +73,81 @@ public class WebClient : IWebClient
     return HttpClient.DeleteAsync(uri);
   }
 
-
   public Task<HttpResponseMessage> GetAsync(string uri)
   {
     return HttpClient.GetAsync(uri);
   }
+
   public Task<HttpResponseMessage> GetAsync(Uri uri)
   {
     return HttpClient.GetAsync(uri);
   }
+
   public Task<string> GetStringAsync(string uri)
   {
     return HttpClient.GetStringAsync(uri);
   }
+
   public Task<string> GetStringAsync(Uri uri)
   {
     return HttpClient.GetStringAsync(uri);
   }
 
-
   public Task<HttpResponseMessage> HeadAsync(string uri)
   {
     return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Head, uri));
   }
+
   public Task<HttpResponseMessage> HeadAsync(Uri uri)
   {
     return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Head, uri));
   }
 
-
   public Task<HttpResponseMessage> OptionsAsync(string uri)
   {
     return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Options, uri));
   }
+
   public Task<HttpResponseMessage> OptionsAsync(Uri uri)
   {
     return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Options, uri));
   }
 
-
   public Task<HttpResponseMessage> PatchAsync(string uri, HttpContent content)
   {
     return HttpClient.PatchAsync(uri, content);
   }
+
   public Task<HttpResponseMessage> PatchAsync(Uri uri, HttpContent content)
   {
     return HttpClient.PatchAsync(uri, content);
   }
 
-
   public Task<HttpResponseMessage> PostAsync(string uri, HttpContent content)
   {
     return HttpClient.PostAsync(uri, content);
   }
+
   public Task<HttpResponseMessage> PostAsync(Uri uri, HttpContent content)
   {
     return HttpClient.PostAsync(uri, content);
   }
 
-
   public Task<HttpResponseMessage> PutAsync(string uri, HttpContent content)
   {
     return HttpClient.PutAsync(uri, content);
   }
+
   public Task<HttpResponseMessage> PutAsync(Uri uri, HttpContent content)
   {
     return HttpClient.PutAsync(uri, content);
   }
 
-
   public Task<HttpResponseMessage> TraceAsync(string uri)
   {
     return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Trace, uri));
   }
+
   public Task<HttpResponseMessage> TraceAsync(Uri uri)
   {
     return HttpClient.SendAsync(new HttpRequestMessage(System.Net.Http.HttpMethod.Trace, uri));

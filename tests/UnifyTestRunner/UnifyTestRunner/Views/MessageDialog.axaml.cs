@@ -6,6 +6,7 @@ namespace UnifyTestRunner;
 public partial class MessageDialog : UserControl
 {
   public static MessageDialog? Instance;
+
   public MessageDialog()
   {
     InitializeComponent();

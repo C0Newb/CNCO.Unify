@@ -37,11 +37,14 @@ public interface IEncryptionKeyProvider
   public byte[]? GetIV();
 }
 
-
 [Serializable]
 public class NoEncryptionKeyProvidedException : Exception
 {
   public NoEncryptionKeyProvidedException() { }
-  public NoEncryptionKeyProvidedException(string message) : base(message) { }
-  public NoEncryptionKeyProvidedException(string message, Exception inner) : base(message, inner) { }
+
+  public NoEncryptionKeyProvidedException(string message)
+    : base(message) { }
+
+  public NoEncryptionKeyProvidedException(string message, Exception inner)
+    : base(message, inner) { }
 }

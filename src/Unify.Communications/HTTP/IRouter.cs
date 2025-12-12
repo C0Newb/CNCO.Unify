@@ -5,14 +5,12 @@
 /// </summary>
 public interface IRouter
 {
-
   /// <summary>
   /// Process an incoming request, calls any listeners.
   /// </summary>
   /// <param name="request">The web request to process.</param>
   /// <param name="response">The response used for this request.</param>
   public void Process(IWebRequest request, IWebResponse response);
-
 
   /// <summary>
   /// Captures all incoming HTTP requests regardless of the request verb.
@@ -29,7 +27,6 @@ public interface IRouter
   /// <param name="path"></param>
   /// <param name="callback"></param>
   public void Remove(string path, Action<IWebRequest, IWebResponse>? callback, HttpVerb? httpVerb);
-
 
   /// <summary>
   /// Listens for incoming <c>GET</c> HTTP requests.
@@ -85,13 +82,11 @@ public interface IRouter
   /// <inheritdoc cref="Any(string, Action{IWebRequest, IWebResponse})"/>
   public void Patch(string path, Action<IWebRequest, IWebResponse> callback);
 
-
   /// <summary>
   /// Listens for incoming WebSocket connections.
   /// </summary>
   /// <inheritdoc cref="Any(string, Action{IWebRequest, IWebResponse})"/>
   public void WebSocket(string path, Action<IWebSocket> callback);
-
 
   /// <summary>
   /// Whether access logging should be enabled or not.

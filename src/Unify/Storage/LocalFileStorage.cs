@@ -1,12 +1,14 @@
-﻿
-namespace CNCO.Unify.Storage;
+﻿namespace CNCO.Unify.Storage;
 
 /// <summary>
 /// Saves/loads file from the local filesystem.
 /// </summary>
 public class LocalFileStorage : ILocalFileStorage
 {
-  private readonly bool _throwErrors = UnifyRuntime.Current.Configuration.SuppressFileStorageExceptions;
+  private readonly bool _throwErrors = UnifyRuntime
+    .Current
+    .Configuration
+    .SuppressFileStorageExceptions;
 
   private readonly string _directory = string.Empty;
 
@@ -47,14 +49,18 @@ public class LocalFileStorage : ILocalFileStorage
       return failedResponse;
     }
   }
+
   private bool Wrap(Func<bool> action) => Wrap(action, false);
-  private bool Wrap(Action action)
-      => Wrap(() =>
+
+  private bool Wrap(Action action) =>
+    Wrap(
+      () =>
       {
         action.Invoke();
         return true;
-      }, false);
-
+      },
+      false
+    );
 
   public string GetPath(string name)
   {
@@ -70,41 +76,48 @@ public class LocalFileStorage : ILocalFileStorage
       return name;
   }
 
-
   public bool Delete(string name) => Wrap(() => File.Delete(GetPath(name)));
 
   public bool Exists(string name) => Wrap(() => File.Exists(GetPath(name)));
 
   public string? Read(string name) => Wrap(() => File.ReadAllText(GetPath(name)), null);
+
   public byte[]? ReadBytes(string name) => Wrap(() => File.ReadAllBytes(GetPath(name)), null);
 
-  public bool Write(string name, string contents) => Wrap(() => File.WriteAllText(GetPath(name), contents));
-  public bool Write(string name, Stream contents)
-      => Wrap(() =>
-      {
-        using (var fileStream = File.OpenWrite(GetPath(name)))
-          contents.CopyTo(fileStream);
-      });
-  public bool WriteBytes(string name, byte[] contents) => Wrap(() => File.WriteAllBytes(GetPath(name), contents));
+  public bool Write(string name, string contents) =>
+    Wrap(() => File.WriteAllText(GetPath(name), contents));
 
-  public bool Append(string name, string contents) => Wrap(() => File.AppendAllText(GetPath(name), contents));
+  public bool Write(string name, Stream contents) =>
+    Wrap(() =>
+    {
+      using (var fileStream = File.OpenWrite(GetPath(name)))
+        contents.CopyTo(fileStream);
+    });
 
-  public bool AppendBytes(string name, byte[] contents)
-      => Wrap(() =>
-      {
-        byte[] current = ReadBytes(name) ?? Array.Empty<byte>();
-        byte[] newBytes = new byte[current.Length + contents.Length];
+  public bool WriteBytes(string name, byte[] contents) =>
+    Wrap(() => File.WriteAllBytes(GetPath(name), contents));
 
-        Buffer.BlockCopy(current, 0, newBytes, 0, current.Length);
-        Buffer.BlockCopy(contents, 0, newBytes, current.Length, contents.Length);
+  public bool Append(string name, string contents) =>
+    Wrap(() => File.AppendAllText(GetPath(name), contents));
 
-        WriteBytes(name, newBytes);
-      });
+  public bool AppendBytes(string name, byte[] contents) =>
+    Wrap(() =>
+    {
+      byte[] current = ReadBytes(name) ?? Array.Empty<byte>();
+      byte[] newBytes = new byte[current.Length + contents.Length];
 
-  public bool Rename(string name, string newName) => Wrap(() => File.Move(GetPath(name), GetPath(newName)));
+      Buffer.BlockCopy(current, 0, newBytes, 0, current.Length);
+      Buffer.BlockCopy(contents, 0, newBytes, current.Length, contents.Length);
 
-  public Stream? Open(string name, FileStreamOptions? streamOptions)
-      => Wrap(() =>
+      WriteBytes(name, newBytes);
+    });
+
+  public bool Rename(string name, string newName) =>
+    Wrap(() => File.Move(GetPath(name), GetPath(newName)));
+
+  public Stream? Open(string name, FileStreamOptions? streamOptions) =>
+    Wrap(
+      () =>
       {
         streamOptions ??= new FileStreamOptions()
         {
@@ -112,23 +125,28 @@ public class LocalFileStorage : ILocalFileStorage
           Access = FileAccess.ReadWrite,
         };
         return File.Open(GetPath(name), streamOptions);
-      }, null);
+      },
+      null
+    );
 
-  public IEnumerable<string> GetFiles(string? path = null, string? searchPattern = null)
-      => Wrap(
-          () => searchPattern == null
-              ? System.IO.Directory.EnumerateFiles(GetPath(path ?? string.Empty))
-              : System.IO.Directory.EnumerateFiles(GetPath(path ?? string.Empty), searchPattern),
-          []
-      );
+  public IEnumerable<string> GetFiles(string? path = null, string? searchPattern = null) =>
+    Wrap(
+      () =>
+        searchPattern == null
+          ? System.IO.Directory.EnumerateFiles(GetPath(path ?? string.Empty))
+          : System.IO.Directory.EnumerateFiles(GetPath(path ?? string.Empty), searchPattern),
+      []
+    );
 
-  public IEnumerable<string> GetDirectories(string? path, string? searchPattern = null)
-      => Wrap(
-          () => searchPattern == null
-              ? System.IO.Directory.EnumerateDirectories(GetPath(path ?? string.Empty))
-              : System.IO.Directory.EnumerateDirectories(GetPath(path ?? string.Empty), searchPattern),
-          []
-      );
+  public IEnumerable<string> GetDirectories(string? path, string? searchPattern = null) =>
+    Wrap(
+      () =>
+        searchPattern == null
+          ? System.IO.Directory.EnumerateDirectories(GetPath(path ?? string.Empty))
+          : System.IO.Directory.EnumerateDirectories(GetPath(path ?? string.Empty), searchPattern),
+      []
+    );
 
-  public bool IsDirectory(string path) => Wrap(() => File.GetAttributes(GetPath(path)).HasFlag(FileAttributes.Directory));
+  public bool IsDirectory(string path) =>
+    Wrap(() => File.GetAttributes(GetPath(path)).HasFlag(FileAttributes.Directory));
 }

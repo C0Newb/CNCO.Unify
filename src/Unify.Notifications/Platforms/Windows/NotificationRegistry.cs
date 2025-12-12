@@ -14,7 +14,11 @@ internal class NotificationRegistry
 {
   private static string ShortcutPath
   {
-    get => Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).TrimEnd('\\') + @"\Microsoft\Windows\Start Menu\Programs\" + UnifyRuntime.Current.ApplicationId + ".lnk";
+    get =>
+      Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData).TrimEnd('\\')
+      + @"\Microsoft\Windows\Start Menu\Programs\"
+      + UnifyRuntime.Current.ApplicationId
+      + ".lnk";
   }
 
   public static void RegisterAppForNotificationSupport(bool force)
@@ -22,7 +26,8 @@ internal class NotificationRegistry
     bool shortcutExists = File.Exists(ShortcutPath);
     if (force || !shortcutExists)
     {
-      string currentApplicationPath = Environment.ProcessPath ?? Process.GetCurrentProcess().MainModule!.FileName;
+      string currentApplicationPath =
+        Environment.ProcessPath ?? Process.GetCurrentProcess().MainModule!.FileName;
       InstallShortcut(currentApplicationPath);
     }
   }
@@ -38,7 +43,9 @@ internal class NotificationRegistry
     // the UI as needed.
     string guid = "{" + typeof(NotificationActivator).GUID + "}";
 
-    using (RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
+    using (
+      RegistryKey key = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64)
+    )
     {
       using (RegistryKey? subkey = key.OpenSubKey(@"SOFTWARE\Classes\CLSID", true))
       {
@@ -77,20 +84,19 @@ internal class NotificationRegistry
     varAppId.SetValue(UnifyRuntime.Current.ApplicationId);
     newShortcutProperties.SetValue(PROPERTYKEY.AppUserModel_ID, varAppId.Propvariant);
 
-    PropVariantHelper varToastId = new PropVariantHelper
-    {
-      VarType = VarEnum.VT_CLSID
-    };
+    PropVariantHelper varToastId = new PropVariantHelper { VarType = VarEnum.VT_CLSID };
     varToastId.SetValue(typeof(NotificationActivator).GUID);
 
-    newShortcutProperties.SetValue(PROPERTYKEY.AppUserModel_ToastActivatorCLSID, varToastId.Propvariant);
+    newShortcutProperties.SetValue(
+      PROPERTYKEY.AppUserModel_ToastActivatorCLSID,
+      varToastId.Propvariant
+    );
 
     // Commit the shortcut to disk
     IPersistFile newShortcutSave = (IPersistFile)newShortcut;
 
     newShortcutSave.Save(ShortcutPath, true);
   }
-
 
   public static void UninstallShortcut()
   {

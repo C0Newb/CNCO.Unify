@@ -10,11 +10,12 @@ namespace CNCO.Unify.Communications.Http.Routing;
 /// </remarks>
 /// <param name="template">The route template. May not be null.</param>
 public class ApiVersionedRouteAttribute([StringSyntax("Route")] string template, int version = -1)
-    : RouteAttribute( // sorry this looks so ugly :/
-        string.Format( // puts the actual version (either the fallback or valid) into the template prefix from the config.
-            CommunicationsRuntime.Current.Configuration.Http.ApiVersionedRouteTemplatePrefix,
-            version < 1 ? CommunicationsRuntime.Current.Configuration.Http.FallbackApiVersion : version
-        ).TrimEnd('/') + '/' + template.TrimStart('/')
-    )
-{
-}
+  : RouteAttribute( // sorry this looks so ugly :/
+    string.Format( // puts the actual version (either the fallback or valid) into the template prefix from the config.
+        CommunicationsRuntime.Current.Configuration.Http.ApiVersionedRouteTemplatePrefix,
+        version < 1 ? CommunicationsRuntime.Current.Configuration.Http.FallbackApiVersion : version
+      )
+      .TrimEnd('/')
+      + '/'
+      + template.TrimStart('/')
+  ) { }

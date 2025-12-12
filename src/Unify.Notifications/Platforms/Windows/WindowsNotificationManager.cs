@@ -27,7 +27,8 @@ public partial class WindowsNotificationManager : INotificationManager
   public PlatformID PlatformId => PlatformID.Win32NT;
 
   private static ToastNotifierCompat? _toastNotifier;
-  private static readonly ConcurrentDictionary<string, IPushNotification> _activeNotifications = new();
+  private static readonly ConcurrentDictionary<string, IPushNotification> _activeNotifications =
+    new();
 
   [GeneratedRegex("(?:action=)(?<id>[^&]+)")]
   private static partial Regex ActivatedNotificationArgumentsButtonIdRegex();
@@ -35,7 +36,9 @@ public partial class WindowsNotificationManager : INotificationManager
   [GeneratedRegex(@"\b(reply|send|respond)\b", RegexOptions.IgnoreCase, "en-US")]
   private static partial Regex ReplyWordRegex();
 
-  private static void ToastNotificationManagerCompat_OnActivated(ToastNotificationActivatedEventArgsCompat e)
+  private static void ToastNotificationManagerCompat_OnActivated(
+    ToastNotificationActivatedEventArgsCompat e
+  )
   {
     // Why is this being called when the app is open!!??
     var args = ToastArguments.Parse(e.Argument);
@@ -64,7 +67,7 @@ public partial class WindowsNotificationManager : INotificationManager
     try
     {
       NotificationRegistry.RegisterAppForNotificationSupport(true); // Setup notification support
-                                                                    //Notifications.NotificationActivator.Initialize(ToastActivated); // Initialize
+      //Notifications.NotificationActivator.Initialize(ToastActivated); // Initialize
 
       ToastNotificationManagerCompat.OnActivated += ToastNotificationManagerCompat_OnActivated;
       //Notifications.NotificationActivator.Initialize(ToastActivated);
@@ -74,7 +77,10 @@ public partial class WindowsNotificationManager : INotificationManager
     {
       try
       {
-        NotificationRuntime.Current.RuntimeLog.Error("Failed to register ToastNotifier into Windows (1)", e);
+        NotificationRuntime.Current.RuntimeLog.Error(
+          "Failed to register ToastNotifier into Windows (1)",
+          e
+        );
         ToastNotificationManagerCompat.Uninstall();
         NotificationRegistry.UninstallShortcut();
 
@@ -83,7 +89,11 @@ public partial class WindowsNotificationManager : INotificationManager
       }
       catch (Exception e2)
       {
-        NotificationRuntime.Current.RuntimeLog.Error($"{GetType().Name}::{nameof(Register)}", "Unable to register the ToastNotifier into Windows (2, forced)", e2);
+        NotificationRuntime.Current.RuntimeLog.Error(
+          $"{GetType().Name}::{nameof(Register)}",
+          "Unable to register the ToastNotifier into Windows (2, forced)",
+          e2
+        );
       }
     }
   }
@@ -98,9 +108,9 @@ public partial class WindowsNotificationManager : INotificationManager
     catch (Exception e)
     {
       NotificationRuntime.Current.RuntimeLog.Error(
-           $"{GetType().Name}::{nameof(Unregister)}",
-          "Unable to unregister the ToastNotifier on Windows. This is mostly fine, but there may be a lingering Start Menu shortcut.",
-          e
+        $"{GetType().Name}::{nameof(Unregister)}",
+        "Unable to unregister the ToastNotifier on Windows. This is mostly fine, but there may be a lingering Start Menu shortcut.",
+        e
       );
     }
   }
@@ -110,7 +120,10 @@ public partial class WindowsNotificationManager : INotificationManager
     _toastNotifier ??= ToastNotificationManagerCompat.CreateToastNotifier();
     ToastNotification toastNotification = GetToastNotification(pushNotification);
     _toastNotifier.Show(toastNotification);
-    _activeNotifications.TryAdd($"{pushNotification.Group}_{GetTag(pushNotification)}", pushNotification);
+    _activeNotifications.TryAdd(
+      $"{pushNotification.Group}_{GetTag(pushNotification)}",
+      pushNotification
+    );
   }
 
   public void Update(IPushNotification pushNotification)
@@ -131,13 +144,12 @@ public partial class WindowsNotificationManager : INotificationManager
         }
         else
         {
-          var data = new NotificationData
-          {
-            SequenceNumber = 1,
-          };
+          var data = new NotificationData { SequenceNumber = 1 };
           //_updateIncrementor++;
 
-          data.Values["progressValue"] = pushNotification.Contents.ProgressData?.GetPercentage().ToString();
+          data.Values["progressValue"] = pushNotification
+            .Contents.ProgressData?.GetPercentage()
+            .ToString();
           _toastNotifier.Update(data, tag, group);
         }
       }
@@ -155,7 +167,10 @@ public partial class WindowsNotificationManager : INotificationManager
 
   public void Cancel(IPushNotification pushNotification)
   {
-    ToastNotificationManagerCompat.History.Remove(GetTag(pushNotification.Id), pushNotification.Group ?? string.Empty);
+    ToastNotificationManagerCompat.History.Remove(
+      GetTag(pushNotification.Id),
+      pushNotification.Group ?? string.Empty
+    );
     pushNotification.Contents.CleanUpImages();
   }
 
@@ -164,8 +179,6 @@ public partial class WindowsNotificationManager : INotificationManager
     ToastNotificationManagerCompat.History.Clear();
     UnifyRuntime.FileStorage.Delete(NotificationRuntime.ImageFileStore.Directory);
   }
-
-
 
   #region Helpers
   private static ToastNotification GetToastNotification(IPushNotification pushNotification)
@@ -202,9 +215,13 @@ public partial class WindowsNotificationManager : INotificationManager
     if (pushNotification.Contents.ProgressData != null)
     {
       toast.Data = new NotificationData(
-          new KeyValuePair<string, string>[] {
-                      new KeyValuePair<string, string>("progressValue", pushNotification.Contents.ProgressData.GetPercentage().ToString())
-          }
+        new KeyValuePair<string, string>[]
+        {
+          new KeyValuePair<string, string>(
+            "progressValue",
+            pushNotification.Contents.ProgressData.GetPercentage().ToString()
+          ),
+        }
       );
     }
 
@@ -213,12 +230,20 @@ public partial class WindowsNotificationManager : INotificationManager
     return toast;
   }
 
-  internal static string GetTag(Guid id) => Convert.ToBase64String(Encoding.UTF8.GetBytes(id.ToString()));
+  internal static string GetTag(Guid id) =>
+    Convert.ToBase64String(Encoding.UTF8.GetBytes(id.ToString()));
+
   internal static string GetTag(IPushNotification pushNotification) => GetTag(pushNotification.Id);
-  internal static string GetId(string base64Tag)
-      => Encoding.UTF8.GetString(Convert.FromBase64String(base64Tag));
-  internal static string GetActionId(string base64Tag)
-      => GetId(Encoding.UTF8.GetString(Convert.FromBase64String(base64Tag)).Split(INotificationActionExtensions.ActionDelimiter)[1]);
+
+  internal static string GetId(string base64Tag) =>
+    Encoding.UTF8.GetString(Convert.FromBase64String(base64Tag));
+
+  internal static string GetActionId(string base64Tag) =>
+    GetId(
+      Encoding
+        .UTF8.GetString(Convert.FromBase64String(base64Tag))
+        .Split(INotificationActionExtensions.ActionDelimiter)[1]
+    );
 
   internal static XmlDocument GetToastXml(IPushNotification pushNotification)
   {
@@ -240,14 +265,16 @@ public partial class WindowsNotificationManager : INotificationManager
     }
 
     if (
-        !string.IsNullOrWhiteSpace(pushNotification.Contents.Text)
-        && pushNotification.Contents.ConversationData == null
-        && (pushNotification.Contents.ProgressData == null || pushNotification.Contents.ProgressData?.GetPercentage() == 1)
+      !string.IsNullOrWhiteSpace(pushNotification.Contents.Text)
+      && pushNotification.Contents.ConversationData == null
+      && (
+        pushNotification.Contents.ProgressData == null
+        || pushNotification.Contents.ProgressData?.GetPercentage() == 1
+      )
     )
     {
       builder.AddText(pushNotification.Contents.Text, AdaptiveTextStyle.Caption);
     }
-
 
     // Add message data to the toast
     if (pushNotification.Contents.ConversationData != null)
@@ -267,7 +294,11 @@ public partial class WindowsNotificationManager : INotificationManager
           if (!setUserIcon && conversation.Icon != null && conversation.Icon.WriteImage())
           { // Profile picture set?
             // Add profile picture (override icon)
-            builder.AddAppLogoOverride(conversation.Icon.Uri, ToastGenericAppLogoCrop.Circle, conversation.Icon.AlternativeText ?? (conversation.Name + "'s profile picture."));
+            builder.AddAppLogoOverride(
+              conversation.Icon.Uri,
+              ToastGenericAppLogoCrop.Circle,
+              conversation.Icon.AlternativeText ?? (conversation.Name + "'s profile picture.")
+            );
             setUserIcon = iconSet = true;
           }
 
@@ -301,7 +332,8 @@ public partial class WindowsNotificationManager : INotificationManager
     ToastSelectionBox? comboBox = null;
     var comboBoxItems = new List<ToastSelectionBoxItem>();
 
-    static string ToBase64(string? data) => Convert.ToBase64String(Encoding.UTF8.GetBytes(data ?? string.Empty));
+    static string ToBase64(string? data) =>
+      Convert.ToBase64String(Encoding.UTF8.GetBytes(data ?? string.Empty));
 
     if (pushNotification.Contents.Actions != null)
     {
@@ -309,13 +341,15 @@ public partial class WindowsNotificationManager : INotificationManager
       {
         if (action is NotificationButton actionButton)
         {
-          ToastButton button = new ToastButton(actionButton.Contents, $"action={ToBase64(actionButton.GetWindowsComponentId())}");
+          ToastButton button = new ToastButton(
+            actionButton.Contents,
+            $"action={ToBase64(actionButton.GetWindowsComponentId())}"
+          );
           if (actionButton.TextBox != null)
           {
             button.TextBoxId = actionButton.TextBox.GetWindowsComponentId();
           }
           buttons.Add(button);
-
         }
         else if (action is NotificationTextBox actionTextBox)
         {
@@ -327,7 +361,6 @@ public partial class WindowsNotificationManager : INotificationManager
             textBox.DefaultInput = actionTextBox.Contents;
           if (!string.IsNullOrEmpty(actionTextBox.Title))
             textBox.Title = actionTextBox.Title;
-
         }
         else if (action is NotificationComboBox actionComboBox)
         {
@@ -352,7 +385,6 @@ public partial class WindowsNotificationManager : INotificationManager
           }
 
           comboBox.DefaultSelectionBoxItemId = actionComboBox.SelectedItem;
-
         }
       }
     }
@@ -391,9 +423,17 @@ public partial class WindowsNotificationManager : INotificationManager
         choicesTuple[i] = new ValueTuple<string, string>(choices[i], choices[i]);
       }
 
-      if (!string.IsNullOrEmpty(comboBox.DefaultSelectionBoxItemId) || !string.IsNullOrEmpty(comboBox.Title))
+      if (
+        !string.IsNullOrEmpty(comboBox.DefaultSelectionBoxItemId)
+        || !string.IsNullOrEmpty(comboBox.Title)
+      )
       {
-        builder.AddComboBox(comboBox.Id, comboBox.Title, comboBox.DefaultSelectionBoxItemId, choicesTuple);
+        builder.AddComboBox(
+          comboBox.Id,
+          comboBox.Title,
+          comboBox.DefaultSelectionBoxItemId,
+          choicesTuple
+        );
       }
       else if (!string.IsNullOrEmpty(comboBox.DefaultSelectionBoxItemId))
       {
@@ -406,7 +446,10 @@ public partial class WindowsNotificationManager : INotificationManager
     }
 
     // Progress bar?
-    if (pushNotification.Contents.ProgressData != null && pushNotification.Contents.ProgressData.GetPercentage() != 1)
+    if (
+      pushNotification.Contents.ProgressData != null
+      && pushNotification.Contents.ProgressData.GetPercentage() != 1
+    )
     {
       //AdaptiveProgressBar progressBar = pushNotification.Contents.ProgressData.BuildProgressBar();
       //builder.AddVisualChild(progressBar);
@@ -417,16 +460,14 @@ public partial class WindowsNotificationManager : INotificationManager
         Value = progressBarValue,
         Status = pushNotification.Contents.ProgressData.Status ?? string.Empty,
         Title = pushNotification.Contents.ProgressData.Title,
-        ValueStringOverride = pushNotification.Contents.ProgressData.DisplayedValue
+        ValueStringOverride = pushNotification.Contents.ProgressData.DisplayedValue,
       };
 
       builder.AddVisualChild(progressBar);
     }
 
-
     if (pushNotification.Timestamp != null && pushNotification.Timestamp != DateTime.MinValue)
       builder.AddCustomTimeStamp(pushNotification.Timestamp ?? DateTime.Now);
-
 
     switch (pushNotification.Category)
     {
@@ -439,17 +480,31 @@ public partial class WindowsNotificationManager : INotificationManager
         break;
     }
 
-
     // Add the application icon
-    if (!iconSet && pushNotification.Contents.Icon != null && pushNotification.Contents.Icon.WriteImage())
+    if (
+      !iconSet
+      && pushNotification.Contents.Icon != null
+      && pushNotification.Contents.Icon.WriteImage()
+    )
     {
-      builder.AddAppLogoOverride(pushNotification.Contents.Icon.Uri, ToastGenericAppLogoCrop.Circle, pushNotification.Contents.Icon.AlternativeText);
+      builder.AddAppLogoOverride(
+        pushNotification.Contents.Icon.Uri,
+        ToastGenericAppLogoCrop.Circle,
+        pushNotification.Contents.Icon.AlternativeText
+      );
     }
 
     // Add notification image
-    if (!addedImage && pushNotification.Contents.Image != null && pushNotification.Contents.Image.WriteImage())
+    if (
+      !addedImage
+      && pushNotification.Contents.Image != null
+      && pushNotification.Contents.Image.WriteImage()
+    )
     {
-      builder.AddInlineImage(pushNotification.Contents.Image.Uri, pushNotification.Contents.Image.AlternativeText);
+      builder.AddInlineImage(
+        pushNotification.Contents.Image.Uri,
+        pushNotification.Contents.Image.AlternativeText
+      );
     }
 
     if (!string.IsNullOrEmpty(pushNotification.Contents.AttributionText))
@@ -459,7 +514,6 @@ public partial class WindowsNotificationManager : INotificationManager
 
     return builder.GetXml();
   }
-
 
   #endregion
 
@@ -495,31 +549,39 @@ public partial class WindowsNotificationManager : INotificationManager
     {
       case NotificationSetting.Enabled:
         reason = NotificationFailureReason.Exception;
-        NotificationRuntime.Current.RuntimeLog.Error($"Notification ${tag} failed to send.", args.ErrorCode);
+        NotificationRuntime.Current.RuntimeLog.Error(
+          $"Notification ${tag} failed to send.",
+          args.ErrorCode
+        );
         break;
 
       case NotificationSetting.DisabledForApplication:
         reason = NotificationFailureReason.DisabledForApplication;
-        details = "Enable notifications for " + UnifyRuntime.Current.ApplicationId + " inside the Settings app -> System -> Notifications & actions -> Get notifications from these senders.";
+        details =
+          "Enable notifications for "
+          + UnifyRuntime.Current.ApplicationId
+          + " inside the Settings app -> System -> Notifications & actions -> Get notifications from these senders.";
         NotificationRuntime.Current.RuntimeLog.Warning(
-            "Failed to send push notification, notifications are disabled for this application."
+          "Failed to send push notification, notifications are disabled for this application."
         );
         break;
 
       case NotificationSetting.DisabledForUser:
         reason = NotificationFailureReason.DisabledForUser;
         NotificationRuntime.Current.RuntimeLog.Warning(
-            "Failed to send push notification, notifications are disabled for this user."
+          "Failed to send push notification, notifications are disabled for this user."
         );
-        details = "Notifications are disabled for your user account. Enable them inside the Settings app -> System -> Notifications & actions -> Enable \"Get notifications from apps and other senders.\"";
+        details =
+          "Notifications are disabled for your user account. Enable them inside the Settings app -> System -> Notifications & actions -> Enable \"Get notifications from apps and other senders.\"";
         break;
 
       case NotificationSetting.DisabledByGroupPolicy:
         reason = NotificationFailureReason.DisabledForDevice;
         NotificationRuntime.Current.RuntimeLog.Warning(
-            "Failed to send push notification, notifications are disabled by group policy."
+          "Failed to send push notification, notifications are disabled by group policy."
         );
-        details = "Notifications are disabled by your organization (via group policy). View more information inside the Settings app -> System -> Notifications & actions";
+        details =
+          "Notifications are disabled by your organization (via group policy). View more information inside the Settings app -> System -> Notifications & actions";
         // Can check registry here...
         break;
 
@@ -527,7 +589,7 @@ public partial class WindowsNotificationManager : INotificationManager
         reason = NotificationFailureReason.DisabledForApplication;
         details = "Notifications are disabled for this application by the developer.";
         NotificationRuntime.Current.RuntimeLog.Warning(
-            "Failed to send push notification, notifications are disabled via the application manifest yet you tried anyways?"
+          "Failed to send push notification, notifications are disabled via the application manifest yet you tried anyways?"
         );
         break;
     }
@@ -541,8 +603,8 @@ public partial class WindowsNotificationManager : INotificationManager
     string tag = GetId(sender.Tag);
 
     NotificationRuntime.Current.RuntimeLog.Debug(
-        $"{nameof(WindowsNotificationManager)}#{nameof(Notification_Activated)}",
-        $"Notification {tag} (group: {sender.Group}) activated!"
+      $"{nameof(WindowsNotificationManager)}#{nameof(Notification_Activated)}",
+      $"Notification {tag} (group: {sender.Group}) activated!"
     );
 
     // Remove from active list
@@ -558,7 +620,8 @@ public partial class WindowsNotificationManager : INotificationManager
       {
         // Found our button
         var buttonId = GetActionId(match.Groups["id"].Value);
-        activatedButton = pushNotification?.Contents.GetNotificationAction(buttonId) as NotificationButton;
+        activatedButton =
+          pushNotification?.Contents.GetNotificationAction(buttonId) as NotificationButton;
       }
     }
 
@@ -604,7 +667,7 @@ public partial class WindowsNotificationManager : INotificationManager
     activatedButton?.OnActivated();
 
     pushNotification?.OnActivated(
-        new NotificationActivationArguments(activatedActions, activatedButton)
+      new NotificationActivationArguments(activatedActions, activatedButton)
     );
   }
 
@@ -622,9 +685,9 @@ public partial class WindowsNotificationManager : INotificationManager
     catch (Exception exception)
     {
       NotificationRuntime.Current.RuntimeLog.Error(
-          $"{nameof(WindowsNotificationManager)}#{nameof(RemoveAndCancelNotification)}",
-          $"Failed to remove and cancel {sender.Tag} (group: {sender.Group})!",
-          exception
+        $"{nameof(WindowsNotificationManager)}#{nameof(RemoveAndCancelNotification)}",
+        $"Failed to remove and cancel {sender.Tag} (group: {sender.Group})!",
+        exception
       );
     }
     return null;

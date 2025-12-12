@@ -13,7 +13,11 @@ public class ControllerAttribute : Attribute, IRouteTemplate
 
     template = template.TrimStart('/');
 
-    string globalPrefix = CommunicationsRuntime.Current.Configuration.Http.GlobalRouteAttributePrefix;
+    string globalPrefix = CommunicationsRuntime
+      .Current
+      .Configuration
+      .Http
+      .GlobalRouteAttributePrefix;
     if (!string.IsNullOrEmpty(globalPrefix))
     {
       Template = globalPrefix.TrimEnd('/') + '/' + template;

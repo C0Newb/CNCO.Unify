@@ -7,5 +7,5 @@ public enum TestResult
   Warning,
   Skipped,
   Failed,
-  Error
+  Error,
 }

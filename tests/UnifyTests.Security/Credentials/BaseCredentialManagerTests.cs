@@ -11,10 +11,7 @@ internal abstract class BaseCredentialManagerTests
   public abstract ICredentialManager GetCredentialManager();
 
   [SetUp]
-  public void SetUp()
-  {
-
-  }
+  public void SetUp() { }
 
   [TearDown]
   public void TearDown()
@@ -22,7 +19,6 @@ internal abstract class BaseCredentialManagerTests
     if (GetCredentialManager().Exists(CredentialName))
       GetCredentialManager().Remove(CredentialName);
   }
-
 
   [Test]
   public void SetAndGet_New_CanAddCredential()
@@ -32,6 +28,7 @@ internal abstract class BaseCredentialManagerTests
     string? value = GetCredentialManager().Get(CredentialName);
     Assert.That(value, Is.EqualTo(CredentialValue), "Failed to add or retrieve credential.");
   }
+
   [Test]
   public void SetAndGet_Update_CanUpdateCredential()
   {
@@ -39,9 +36,12 @@ internal abstract class BaseCredentialManagerTests
     GetCredentialManager().Set(CredentialName, CredentialValue + "-123456");
     // Verify value
     string? value = GetCredentialManager().Get(CredentialName);
-    Assert.That(value, Is.EqualTo(CredentialValue + "-123456"), "Failed to either add or update credential.");
+    Assert.That(
+      value,
+      Is.EqualTo(CredentialValue + "-123456"),
+      "Failed to either add or update credential."
+    );
   }
-
 
   [Test]
   public void Remove_NoCredential_DoNothing()
@@ -49,6 +49,7 @@ internal abstract class BaseCredentialManagerTests
     GetCredentialManager().Remove(CredentialName);
     Assert.Pass();
   }
+
   [Test]
   public void Remove_ExistingCredential_Removes()
   {
@@ -59,9 +60,12 @@ internal abstract class BaseCredentialManagerTests
     GetCredentialManager().Remove(CredentialName);
     bool existsPostRemove = GetCredentialManager().Exists(CredentialName);
 
-    Assert.That(existsPostRemove, Is.False, "Credential was NOT removed, still exists in the credential manager!");
+    Assert.That(
+      existsPostRemove,
+      Is.False,
+      "Credential was NOT removed, still exists in the credential manager!"
+    );
   }
-
 
   [Test]
   public void Exists_NoCredential_ReturnsFalse()
@@ -69,6 +73,7 @@ internal abstract class BaseCredentialManagerTests
     bool exists = GetCredentialManager().Exists(CredentialName);
     Assert.That(exists, Is.False, "Credential does not exist.");
   }
+
   [Test]
   public void Exists_ExistingCredential_ReturnsTrue()
   {

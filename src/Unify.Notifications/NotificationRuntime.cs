@@ -48,7 +48,9 @@ public class NotificationRuntime : Runtime, IRuntime
       {
         lock (_initializationLock)
         {
-          _imageFileStore ??= new LocalFileStorage(Path.Combine(UnifyRuntime.FileStorage.Directory, "notification_images"));
+          _imageFileStore ??= new LocalFileStorage(
+            Path.Combine(UnifyRuntime.FileStorage.Directory, "notification_images")
+          );
         }
       }
       return _imageFileStore;
@@ -69,7 +71,6 @@ public class NotificationRuntime : Runtime, IRuntime
       return _instance;
     }
   }
-
 
   public NotificationRuntime()
   {
@@ -103,13 +104,16 @@ public class NotificationRuntime : Runtime, IRuntime
         catch (Exception ex)
         {
           Current.RuntimeLog.Error(
-              $"{nameof(NotificationRuntime)}::{nameof(NotificationManager)}::{nameof(NotificationManager.Register)}()",
-              "Unable to register platform notification manager!",
-              ex
+            $"{nameof(NotificationRuntime)}::{nameof(NotificationManager)}::{nameof(NotificationManager.Register)}()",
+            "Unable to register platform notification manager!",
+            ex
           );
         }
       });
-      RuntimeHook notificationRegisterHook = new RuntimeHook($"{GetType().Name}${nameof(NotificationManager)}-Register", hookAction);
+      RuntimeHook notificationRegisterHook = new RuntimeHook(
+        $"{GetType().Name}${nameof(NotificationManager)}-Register",
+        hookAction
+      );
       AddHook(notificationRegisterHook);
       _hookedAdded = true;
     }

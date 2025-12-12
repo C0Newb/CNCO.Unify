@@ -17,7 +17,8 @@ public sealed class RouteTemplate : IRouteTemplate
     RequestRoute = template;
   }
 
-  public RouteTemplate([StringSyntax("Route")] string template, string requestRoute) : this(template)
+  public RouteTemplate([StringSyntax("Route")] string template, string requestRoute)
+    : this(template)
   {
     RequestRoute = requestRoute ?? throw new ArgumentNullException(nameof(requestRoute));
 
@@ -70,8 +71,8 @@ public sealed class RouteTemplate : IRouteTemplate
     {
       var part = originalPathParts[i];
       if (
-          !(part.StartsWith(':') && part.EndsWith(':')) &&
-          !(part.StartsWith('{') && part.EndsWith('}'))
+        !(part.StartsWith(':') && part.EndsWith(':'))
+        && !(part.StartsWith('{') && part.EndsWith('}'))
       )
       {
         continue;

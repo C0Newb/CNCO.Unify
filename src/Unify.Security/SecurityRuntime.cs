@@ -1,7 +1,7 @@
-﻿using CNCO.Unify.Logging;
+﻿using System.Text;
+using CNCO.Unify.Logging;
 using CNCO.Unify.Security.Credentials;
 using CNCO.Unify.Storage;
-using System.Text;
 
 namespace CNCO.Unify.Security;
 
@@ -11,7 +11,8 @@ public class SecurityRuntime : Runtime, IRuntime
   private static SecurityRuntime? _instance;
 
   // What in ?
-  private readonly ICredentialManagerEndpoint _platformCredentialManager = CredentialManagerFactory.GetPlatformCredentialManager();
+  private readonly ICredentialManagerEndpoint _platformCredentialManager =
+    CredentialManagerFactory.GetPlatformCredentialManager();
   private readonly IEncryptionKeyProvider? _encryptionKeyProvider;
   private readonly IEncryptionProvider? _encryptionProvider;
   private readonly IFileStorage? _fileStorage;
@@ -66,7 +67,9 @@ public class SecurityRuntime : Runtime, IRuntime
     {
       if (_instance?._credentialManager == null)
       {
-        RuntimeLog.Error($"{nameof(_credentialManager)} has not been initialized, but should have been in the runtime constructor.");
+        RuntimeLog.Error(
+          $"{nameof(_credentialManager)} has not been initialized, but should have been in the runtime constructor."
+        );
         throw new NullReferenceException("The credential manager has not been initialized.");
       }
 
@@ -75,7 +78,8 @@ public class SecurityRuntime : Runtime, IRuntime
   }
   #endregion
 
-  public SecurityRuntime() : this(null) { }
+  public SecurityRuntime()
+    : this(null) { }
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
   public SecurityRuntime(SecurityRuntimeConfiguration? runtimeConfiguration = null)
@@ -92,12 +96,12 @@ public class SecurityRuntime : Runtime, IRuntime
 
       _instance = this;
 
-      _platformCredentialManager = runtimeConfiguration?.PlatformCredentialManager ?? _platformCredentialManager;
+      _platformCredentialManager =
+        runtimeConfiguration?.PlatformCredentialManager ?? _platformCredentialManager;
       _encryptionKeyProvider = runtimeConfiguration?.KeyProvider;
       _encryptionProvider = runtimeConfiguration?.EncryptionProvider;
       _fileStorage = runtimeConfiguration?.FileStorage;
       _credentialManager = runtimeConfiguration?.CredentialManager;
-
 
       // Initialize up to a credential manager. Use as much of the runtime configuration as we can
       if (_credentialManager != null) // Well..
@@ -111,29 +115,36 @@ public class SecurityRuntime : Runtime, IRuntime
         _encryptionProvider ??= new EncryptionProvider(_encryptionKeyProvider);
       }
 
-      _fileStorage ??= new LocalFileStorage(runtimeConfiguration?.CredentialFileParentDirectoryName);
-      string credentialsPath = runtimeConfiguration?.CredentialsFileName ?? UnifyRuntime.Current.ApplicationId + ".ucred.json";
+      _fileStorage ??= new LocalFileStorage(
+        runtimeConfiguration?.CredentialFileParentDirectoryName
+      );
+      string credentialsPath =
+        runtimeConfiguration?.CredentialsFileName
+        ?? UnifyRuntime.Current.ApplicationId + ".ucred.json";
 
       RuntimeLog.Log($"Initialized {nameof(CredentialManager)}.");
       RuntimeLog.Debug(
-          $"{nameof(_platformCredentialManager)}<?>: {_platformCredentialManager.GetType().FullName}" + Environment.NewLine +
-          $"{nameof(_encryptionKeyProvider)}<?>: {_encryptionKeyProvider?.GetType().FullName ?? "none!"}" + Environment.NewLine +
-          $"{nameof(_encryptionProvider)}<?>: {_encryptionProvider.GetType().FullName}" + Environment.NewLine +
-          $"{nameof(_fileStorage)}<?>: {_fileStorage.GetType().FullName}" + Environment.NewLine +
-          $"Path: {credentialsPath}"
+        $"{nameof(_platformCredentialManager)}<?>: {_platformCredentialManager.GetType().FullName}"
+          + Environment.NewLine
+          + $"{nameof(_encryptionKeyProvider)}<?>: {_encryptionKeyProvider?.GetType().FullName ?? "none!"}"
+          + Environment.NewLine
+          + $"{nameof(_encryptionProvider)}<?>: {_encryptionProvider.GetType().FullName}"
+          + Environment.NewLine
+          + $"{nameof(_fileStorage)}<?>: {_fileStorage.GetType().FullName}"
+          + Environment.NewLine
+          + $"Path: {credentialsPath}"
       );
       _credentialManager = new FileBasedCredentialManager(
-          _fileStorage,
-          credentialsPath,
-          _encryptionProvider
+        _fileStorage,
+        credentialsPath,
+        _encryptionProvider
       );
     }
   }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-  public static SecurityRuntime Create(SecurityRuntimeConfiguration? runtimeConfiguration)
-      => new SecurityRuntime(runtimeConfiguration);
-
+  public static SecurityRuntime Create(SecurityRuntimeConfiguration? runtimeConfiguration) =>
+    new SecurityRuntime(runtimeConfiguration);
 
   #region Key generation
   private byte[] GenerateNewMasterKey()
@@ -147,7 +158,9 @@ public class SecurityRuntime : Runtime, IRuntime
 
   private byte[] GetEncryptionKey()
   {
-    string? masterKey = _platformCredentialManager.Get($"{UnifyRuntime.Current.ApplicationId}::Key");
+    string? masterKey = _platformCredentialManager.Get(
+      $"{UnifyRuntime.Current.ApplicationId}::Key"
+    );
     if (masterKey != null)
       return Convert.FromBase64String(masterKey);
     else

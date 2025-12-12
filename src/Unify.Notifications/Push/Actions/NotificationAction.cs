@@ -25,6 +25,5 @@ public abstract class NotificationAction : INotificationAction
     Id = id;
   }
 
-  public void OnActivated(string? value = null)
-      => ActionActivated?.Invoke(this, value);
+  public void OnActivated(string? value = null) => ActionActivated?.Invoke(this, value);
 }

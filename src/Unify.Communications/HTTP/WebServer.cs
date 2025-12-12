@@ -19,7 +19,6 @@ public class WebServer : IWebServer
     }
   }
 
-
   private bool _logAccess = false;
 
   public WebServer()
@@ -36,7 +35,6 @@ public class WebServer : IWebServer
           // listen
           var context = _httpListener.GetContext();
           Task.Run(() => HandleRequest(context));
-
         }
         catch (Exception ex)
         {
@@ -46,35 +44,48 @@ public class WebServer : IWebServer
             return;
           }
 
-          CommunicationsRuntime.Current.RuntimeLog.Alert(tag,
-              $"HTTP webserver listener thread exception: {ex.Message}"
-              + Environment.NewLine + "\t"
-              + ex.StackTrace ?? "No stack trace available.");
+          CommunicationsRuntime.Current.RuntimeLog.Alert(
+            tag,
+            $"HTTP webserver listener thread exception: {ex.Message}"
+              + Environment.NewLine
+              + "\t"
+              + ex.StackTrace
+              ?? "No stack trace available."
+          );
 
           // restart the thread
           _listenerThreadRestart++;
           if (_listenerThreadRestart > 5)
           {
-            CommunicationsRuntime.Current.RuntimeLog.Emergency($"Listener thread has restarted too many times ({_listenerThreadRestart}). HTTP listener is disabled until the application restarts."); // sorta a lie.. but eh
+            CommunicationsRuntime.Current.RuntimeLog.Emergency(
+              $"Listener thread has restarted too many times ({_listenerThreadRestart}). HTTP listener is disabled until the application restarts."
+            ); // sorta a lie.. but eh
             break;
           }
 
           Thread.Sleep(1000 * _listenerThreadRestart);
-          CommunicationsRuntime.Current.RuntimeLog.Warning($"Attempting listener thread restart #{_listenerThreadRestart}"); // sorta a lie.. but eh
+          CommunicationsRuntime.Current.RuntimeLog.Warning(
+            $"Attempting listener thread restart #{_listenerThreadRestart}"
+          ); // sorta a lie.. but eh
         }
       }
     })
     {
-      Name = UnifyRuntime.Current.ApplicationId + "-WebServer#" + GetHashCode()
+      Name = UnifyRuntime.Current.ApplicationId + "-WebServer#" + GetHashCode(),
     };
   }
 
-  public WebServer(WebServerOptions options) : this()
+  public WebServer(WebServerOptions options)
+    : this()
   {
     SetOptions(options);
   }
-  public WebServer(IRouter router) : this() => _router = router;
-  public WebServer(IRouter router, WebServerOptions options) : this(router)
+
+  public WebServer(IRouter router)
+    : this() => _router = router;
+
+  public WebServer(IRouter router, WebServerOptions options)
+    : this(router)
   {
     SetOptions(options);
   }
@@ -115,25 +126,35 @@ public class WebServer : IWebServer
   }
 
   #region Router method proxies
-  public void All(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Any(path, callback);
+  public void All(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Any(path, callback);
 
-  public void Connect(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Connect(path, callback);
+  public void Connect(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Connect(path, callback);
 
-  public void Delete(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Delete(path, callback);
+  public void Delete(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Delete(path, callback);
 
-  public void Get(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Get(path, callback);
+  public void Get(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Get(path, callback);
 
-  public void Head(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Head(path, callback);
+  public void Head(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Head(path, callback);
 
-  public void Options(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Options(path, callback);
+  public void Options(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Options(path, callback);
 
-  public void Patch(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Patch(path, callback);
+  public void Patch(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Patch(path, callback);
 
-  public void Post(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Post(path, callback);
+  public void Post(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Post(path, callback);
 
-  public void Put(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Put(path, callback);
+  public void Put(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Put(path, callback);
 
-  public void Trace(string path, Action<IWebRequest, IWebResponse> callback) => Router!.Trace(path, callback);
+  public void Trace(string path, Action<IWebRequest, IWebResponse> callback) =>
+    Router!.Trace(path, callback);
   #endregion
 
   private void HandleRequest(HttpListenerContext context)
@@ -145,7 +166,11 @@ public class WebServer : IWebServer
 
       try
       {
-        var defaultHeaders = CommunicationsRuntime.Current.Configuration.Http.DefaultWebServerResponseHeaders;
+        var defaultHeaders = CommunicationsRuntime
+          .Current
+          .Configuration
+          .Http
+          .DefaultWebServerResponseHeaders;
         if (defaultHeaders != null)
         {
           foreach (var header in defaultHeaders.AllKeys)
@@ -161,21 +186,21 @@ public class WebServer : IWebServer
       {
         // Failed to apply default headers
         CommunicationsRuntime.Current.RuntimeLog.Warning(
-            $"{GetType().Name}::{nameof(HandleRequest)}",
-            "Failed to apply default headers. Error: " +
-            ex.Message +
-            "Stack: " + ex.StackTrace
-         );
+          $"{GetType().Name}::{nameof(HandleRequest)}",
+          "Failed to apply default headers. Error: " + ex.Message + "Stack: " + ex.StackTrace
+        );
       }
 
       WebRequest request = new WebRequest(context);
       WebResponse response = new WebResponse(context.Response);
 
       if (_logAccess)
-        CommunicationsRuntime.Current.RuntimeLog.Debug($"{GetType().Name}::{nameof(HandleRequest)}", $"HTTP-{request.Verb} {request.Path}");
+        CommunicationsRuntime.Current.RuntimeLog.Debug(
+          $"{GetType().Name}::{nameof(HandleRequest)}",
+          $"HTTP-{request.Verb} {request.Path}"
+        );
 
       Router.Process(request, response);
-
     }
     catch (Exception e)
     {
@@ -192,7 +217,10 @@ public class WebServer : IWebServer
       catch { }
       string tag = $"{GetType().Name}::{nameof(HandleRequest)}";
 
-      CommunicationsRuntime.Current.RuntimeLog.Error(tag, $"Failed to process HTTP request {path}: {e}");
+      CommunicationsRuntime.Current.RuntimeLog.Error(
+        tag,
+        $"Failed to process HTTP request {path}: {e}"
+      );
       if (!string.IsNullOrEmpty(e.StackTrace))
         CommunicationsRuntime.Current.RuntimeLog.Error(tag, e.StackTrace);
     }
@@ -203,6 +231,7 @@ public class WebServer : IWebServer
     _runListenerThread = false;
     _httpListener.Abort();
   }
+
   public void Dispose()
   {
     string tag = $"{GetType().Name}::{nameof(Dispose)}";

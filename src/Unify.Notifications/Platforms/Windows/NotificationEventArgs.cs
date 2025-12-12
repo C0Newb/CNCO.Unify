@@ -25,7 +25,6 @@ public class NotificationEventArgs
   public string? Group;
   public string? LaunchArguments;
 
-
   public NotificationEventArgs() { }
 
   public NotificationEventArgs(ToastNotification sender, string arguments)
@@ -37,6 +36,7 @@ public class NotificationEventArgs
     Action = NotificationAction.Activated;
     LaunchArguments = arguments;
   }
+
   public NotificationEventArgs(ToastNotification sender, ToastActivatedEventArgs arguments)
   {
     GetId(arguments.Arguments?.ToString());
@@ -65,9 +65,17 @@ public class NotificationEventArgs
     DismissalReason = args.Reason;
   }
 
-  public NotificationEventArgs(ToastNotification sender, string reason = "", string moreDetails = "")
+  public NotificationEventArgs(
+    ToastNotification sender,
+    string reason = "",
+    string moreDetails = ""
+  )
   {
-    string arguments = sender?.Content?.GetElementsByTagName("toast")[0]?.Attributes?.GetNamedItem("launch")?.ToString() ?? "";
+    string arguments =
+      sender
+        ?.Content?.GetElementsByTagName("toast")[0]
+        ?.Attributes?.GetNamedItem("launch")
+        ?.ToString() ?? "";
     GetId(arguments);
     Tag = sender?.Tag ?? string.Empty;
     Group = sender?.Group ?? string.Empty;
@@ -89,7 +97,6 @@ public class NotificationEventArgs
   {
     GetId(arguments);
   }
-
 
   private void GetId(string? arguments)
   {
@@ -113,7 +120,6 @@ public class NotificationEventArgs
     }
     catch (Exception) { }
   }
-
 
   /// <summary>
   /// How the notification was activated

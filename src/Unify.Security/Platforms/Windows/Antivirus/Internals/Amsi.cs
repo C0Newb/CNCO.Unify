@@ -1,6 +1,6 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
 
@@ -8,33 +8,75 @@ internal static class Amsi
 {
   internal const string AmsiDllName = "Amsi.dll";
 
-
-  internal static bool AmsiResultIsMalware(AmsiResult result) => result >= AmsiResult.AMSI_RESULT_DETECTED;
-
-  [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-  [DllImport(AmsiDllName, EntryPoint = "AmsiInitialize", CallingConvention = CallingConvention.StdCall)]
-  internal static extern int AmsiInitialize([MarshalAs(UnmanagedType.LPWStr)] string appName, out AmsiContextSafeHandle amsiContext);
+  internal static bool AmsiResultIsMalware(AmsiResult result) =>
+    result >= AmsiResult.AMSI_RESULT_DETECTED;
 
   [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-  [DllImport(AmsiDllName, EntryPoint = "AmsiUninitialize", CallingConvention = CallingConvention.StdCall)]
+  [DllImport(
+    AmsiDllName,
+    EntryPoint = "AmsiInitialize",
+    CallingConvention = CallingConvention.StdCall
+  )]
+  internal static extern int AmsiInitialize(
+    [MarshalAs(UnmanagedType.LPWStr)] string appName,
+    out AmsiContextSafeHandle amsiContext
+  );
+
+  [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+  [DllImport(
+    AmsiDllName,
+    EntryPoint = "AmsiUninitialize",
+    CallingConvention = CallingConvention.StdCall
+  )]
   internal static extern void AmsiUninitialize(IntPtr amsiContext);
 
   [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-  [DllImport(AmsiDllName, EntryPoint = "AmsiOpenSession", CallingConvention = CallingConvention.StdCall)]
-  internal static extern int AmsiOpenSession(AmsiContextSafeHandle amsiContext, out AmsiSessionSafeHandle session);
+  [DllImport(
+    AmsiDllName,
+    EntryPoint = "AmsiOpenSession",
+    CallingConvention = CallingConvention.StdCall
+  )]
+  internal static extern int AmsiOpenSession(
+    AmsiContextSafeHandle amsiContext,
+    out AmsiSessionSafeHandle session
+  );
 
   [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-  [DllImport("Amsi.dll", EntryPoint = "AmsiCloseSession", CallingConvention = CallingConvention.StdCall)]
+  [DllImport(
+    "Amsi.dll",
+    EntryPoint = "AmsiCloseSession",
+    CallingConvention = CallingConvention.StdCall
+  )]
   internal static extern void AmsiCloseSession(AmsiContextSafeHandle amsiContext, IntPtr session);
 
   [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-  [DllImport(AmsiDllName, EntryPoint = "AmsiScanString", CallingConvention = CallingConvention.StdCall)]
-  internal static extern int AmsiScanString(AmsiContextSafeHandle amsiContext, [In, MarshalAs(UnmanagedType.LPWStr)] string payload, [In, MarshalAs(UnmanagedType.LPWStr)] string contentName, AmsiSessionSafeHandle session, out AmsiResult result);
+  [DllImport(
+    AmsiDllName,
+    EntryPoint = "AmsiScanString",
+    CallingConvention = CallingConvention.StdCall
+  )]
+  internal static extern int AmsiScanString(
+    AmsiContextSafeHandle amsiContext,
+    [In, MarshalAs(UnmanagedType.LPWStr)] string payload,
+    [In, MarshalAs(UnmanagedType.LPWStr)] string contentName,
+    AmsiSessionSafeHandle session,
+    out AmsiResult result
+  );
 
   [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-  [DllImport(AmsiDllName, EntryPoint = "AmsiScanBuffer", CallingConvention = CallingConvention.StdCall)]
-  internal static extern int AmsiScanBuffer(AmsiContextSafeHandle amsiContext, byte[] buffer, uint length, [In, MarshalAs(UnmanagedType.LPWStr)] string contentName, AmsiSessionSafeHandle session, out AmsiResult result);
-
+  [DllImport(
+    AmsiDllName,
+    EntryPoint = "AmsiScanBuffer",
+    CallingConvention = CallingConvention.StdCall
+  )]
+  internal static extern int AmsiScanBuffer(
+    AmsiContextSafeHandle amsiContext,
+    byte[] buffer,
+    uint length,
+    [In, MarshalAs(UnmanagedType.LPWStr)] string contentName,
+    AmsiSessionSafeHandle session,
+    out AmsiResult result
+  );
 
   internal static bool IsDllImportPossible()
   {
@@ -61,7 +103,9 @@ internal enum AmsiResult
 
 internal sealed class AmsiContextSafeHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
-  public AmsiContextSafeHandle() : base(ownsHandle: true) { }
+  public AmsiContextSafeHandle()
+    : base(ownsHandle: true) { }
+
   protected override bool ReleaseHandle()
   {
     Amsi.AmsiUninitialize(handle);
@@ -72,8 +116,12 @@ internal sealed class AmsiContextSafeHandle : SafeHandleZeroOrMinusOneIsInvalid
 internal sealed class AmsiSessionSafeHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
   internal AmsiContextSafeHandle? Context { get; set; }
-  public AmsiSessionSafeHandle() : base(ownsHandle: true) { }
+
+  public AmsiSessionSafeHandle()
+    : base(ownsHandle: true) { }
+
   public override bool IsInvalid => Context == null || Context.IsInvalid || base.IsInvalid;
+
   protected override bool ReleaseHandle()
   {
     Debug.Assert(Context != null);

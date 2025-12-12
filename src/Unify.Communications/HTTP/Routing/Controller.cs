@@ -16,7 +16,6 @@ public abstract class Controller
   /// <inheritdoc cref="ControllerContext.WebSocket"/>
   public IWebSocket? WebSocket => Context.WebSocket;
 
-
   public IControllerContext Context
   {
     get
@@ -30,7 +29,6 @@ public abstract class Controller
       }
       return _controllerContext;
     }
-
     set
     {
       ArgumentNullException.ThrowIfNull(value);

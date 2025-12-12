@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Storage;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json.Nodes;
+using CNCO.Unify.Storage;
 
 namespace CNCO.Unify.Communications.Http;
 
@@ -39,7 +39,6 @@ public interface IWebResponse
   /// is redirect to obtain the requested resource.
   /// </summary>
   string? RedirectLocation { get; set; }
-
 
   /// <summary>
   /// Adds the specified <see cref="Cookie" /> to the collection of cookies for this response.
@@ -89,7 +88,11 @@ public interface IWebResponse
   /// </summary>
   /// <param name="path">Path to the file to download.</param>
   /// <param name="attachmentOptions">Options related to the file being downloaded.</param>
-  void SendAttachment(string path, IFileStorage storage, AttachmentOptions? attachmentOptions = null);
+  void SendAttachment(
+    string path,
+    IFileStorage storage,
+    AttachmentOptions? attachmentOptions = null
+  );
 
   /// <summary>
   /// This will *serve* a file, not mark is to be downloaded by the user.

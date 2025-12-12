@@ -1,5 +1,5 @@
-﻿using CNCO.Unify.Events;
-using System.Diagnostics;
+﻿using System.Diagnostics;
+using CNCO.Unify.Events;
 
 namespace UnifyTests.Events;
 
@@ -9,12 +9,14 @@ public class EventEmitterTests
 
   private static int CallbackHitCount = 0;
   private static object?[]? CallbackOptions = null;
-  private static readonly Callback EventCallback = new Callback((options) =>
-  {
-    Debug.WriteLine(options);
-    CallbackHitCount++;
-    CallbackOptions = options;
-  });
+  private static readonly Callback EventCallback = new Callback(
+    (options) =>
+    {
+      Debug.WriteLine(options);
+      CallbackHitCount++;
+      CallbackOptions = options;
+    }
+  );
 
   private static readonly string TestEventName = "TestEvent";
 
@@ -85,9 +87,11 @@ public class EventEmitterTests
     EventEmitter.AddListener(TestEventName, new Callback((options) => { }));
 
     // Check we add N listeners for EventCallback (which should be 1 less than the total listeners for the event)
-    Assert.That(EventEmitter.ListenersCount(TestEventName, EventCallback), Is.EqualTo(numberOfListeners));
+    Assert.That(
+      EventEmitter.ListenersCount(TestEventName, EventCallback),
+      Is.EqualTo(numberOfListeners)
+    );
   }
-
 
   public enum AddMethod
   {
@@ -95,13 +99,14 @@ public class EventEmitterTests
     On,
     Once,
     PrependListener,
-    PrependOnceListener
+    PrependOnceListener,
   }
+
   public enum RemoveMethod
   {
     Off,
     RemoveListener,
-    RemoveAllListeners
+    RemoveAllListeners,
   }
 
   [TestCase("TestEvent")]
@@ -111,8 +116,13 @@ public class EventEmitterTests
   [TestCase("TestEvent", AddMethod.PrependOnceListener)]
   [TestCase("my.super<>cool!event?")]
   [TestCase("my.super<>cool!event?", AddMethod.PrependOnceListener)]
-  [TestCase("This_is_an_event_name_that_does_not_exceed_128_characters_and_should_be_considered_invalid_but_gets_very_close_to_it_0123456789")]
-  public void AddListener_ValidName_AddsEventListener(string eventName, AddMethod addMethod = AddMethod.AddListener)
+  [TestCase(
+    "This_is_an_event_name_that_does_not_exceed_128_characters_and_should_be_considered_invalid_but_gets_very_close_to_it_0123456789"
+  )]
+  public void AddListener_ValidName_AddsEventListener(
+    string eventName,
+    AddMethod addMethod = AddMethod.AddListener
+  )
   {
     bool shouldBeOnTimer = false;
     switch (addMethod)
@@ -215,7 +225,6 @@ public class EventEmitterTests
     });
   }
 
-
   // Verify case insensitivity
   [TestCase("TestEvent")]
   [TestCase("mYNotSoEASy2ReADevntNamE")]
@@ -236,10 +245,11 @@ public class EventEmitterTests
     });
   }
 
-
   // Verify thrown exceptions
   #region Check thrown exceptions
-  [TestCase("This_is_an_event_name_that_exceeds_128_characters_and_should_be_considered_invalid_1_2_3_4_5_6_7_8_9_0_or_gets_very_close_to_it_!")]
+  [TestCase(
+    "This_is_an_event_name_that_exceeds_128_characters_and_should_be_considered_invalid_1_2_3_4_5_6_7_8_9_0_or_gets_very_close_to_it_!"
+  )]
   public void AddListener_InvalidName_ThrowsInvalidNameException(string eventName)
   {
     try

@@ -1,4 +1,5 @@
-﻿#if ANDROID
+﻿using System.Runtime.Versioning;
+#if ANDROID
 using Android.Content;
 using AndroidX.Security.Crypto;
 using java.io;
@@ -8,7 +9,7 @@ using javax.crypto;
 using System.Text;
 #endif
 
-using System.Runtime.Versioning;
+
 
 namespace CNCO.Unify.Security.Credentials;
 
@@ -25,25 +26,25 @@ public class AndroidCredentialManager : ICredentialManager, ICredentialManagerEn
   private readonly ISharedPreferences _sharedPreferences;
 #endif
 
-
   public AndroidCredentialManager()
   {
 #if ANDROID
 #pragma warning disable CS8604 // Possible null reference argument.
     _sharedPreferences = EncryptedSharedPreferences.Create(
-        SHARED_PREFERENCES_FILENAME,
-        UnifyRuntime.Current.ApplicationId,
-        Application.Context,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm
+      SHARED_PREFERENCES_FILENAME,
+      UnifyRuntime.Current.ApplicationId,
+      Application.Context,
+      EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
+      EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm
     );
 #pragma warning restore CS8604 // Possible null reference argument.
 #else
-    SecurityRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::()", "You CANNOT use this class as this platform is unsupported!");
+    SecurityRuntime.Current.RuntimeLog.Warning(
+      $"{GetType().Name}::()",
+      "You CANNOT use this class as this platform is unsupported!"
+    );
 #endif
   }
-
-
 
   public bool Exists(string credentialName)
   {

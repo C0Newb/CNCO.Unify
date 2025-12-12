@@ -6,9 +6,11 @@ public sealed class HttpPutAttribute : HttpMethodAttribute
 {
   private static readonly IEnumerable<HttpVerb> _method = [HttpVerb.Put];
 
-  public HttpPutAttribute() : base(_method) { }
+  public HttpPutAttribute()
+    : base(_method) { }
 
-  public HttpPutAttribute([StringSyntax("Route")] string template) : base(_method, template)
+  public HttpPutAttribute([StringSyntax("Route")] string template)
+    : base(_method, template)
   {
     ArgumentNullException.ThrowIfNull(template);
   }

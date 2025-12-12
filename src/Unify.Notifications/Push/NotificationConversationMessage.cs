@@ -27,8 +27,12 @@ public class NotificationConversationMessage
   /// </summary>
   public INotificationImage? Image { get; set; }
 
-
-  public NotificationConversationMessage(string name, string text, INotificationImage? icon = null, INotificationImage? image = null)
+  public NotificationConversationMessage(
+    string name,
+    string text,
+    INotificationImage? icon = null,
+    INotificationImage? image = null
+  )
   {
     Name = name;
     Icon = icon;

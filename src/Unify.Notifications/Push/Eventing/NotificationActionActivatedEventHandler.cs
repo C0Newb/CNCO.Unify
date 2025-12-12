@@ -10,6 +10,6 @@ namespace CNCO.Unify.Notifications.Push.Eventing;
 /// if applicable (such as with <see cref="NotificationTextBox"/>
 /// or <see cref="NotificationComboBox"/>).</param>
 public delegate void NotificationActionActivatedEventHandler(
-    INotificationAction action,
-    string? value
+  INotificationAction action,
+  string? value
 );

@@ -21,13 +21,14 @@ public class ControllerTests
     Controller.Context = new MockControllerContext();
   }
 
-  private static WebRequest GetWebRequest(string route, HttpVerb method, System.Net.Cookie[]? cookies = null)
+  private static WebRequest GetWebRequest(
+    string route,
+    HttpVerb method,
+    System.Net.Cookie[]? cookies = null
+  )
   {
     Uri uri = new Uri($"http://localhost:1234/testcontroller/{route.TrimStart('/')}");
-    WebRequest request = new WebRequest(uri, cookies ?? [])
-    {
-      Verb = method
-    };
+    WebRequest request = new WebRequest(uri, cookies ?? []) { Verb = method };
 
     return request;
   }
@@ -36,16 +37,17 @@ public class ControllerTests
   [Test]
   public void Controller_All_IsHandled()
   {
-    IEnumerable<HttpVerb> methods = [
-        HttpVerb.Connect,
-              HttpVerb.Delete,
-              HttpVerb.Get,
-              HttpVerb.Head,
-              HttpVerb.Options,
-              HttpVerb.Patch,
-              HttpVerb.Put,
-              HttpVerb.Trace,
-          ];
+    IEnumerable<HttpVerb> methods =
+    [
+      HttpVerb.Connect,
+      HttpVerb.Delete,
+      HttpVerb.Get,
+      HttpVerb.Head,
+      HttpVerb.Options,
+      HttpVerb.Patch,
+      HttpVerb.Put,
+      HttpVerb.Trace,
+    ];
 
     var request = GetWebRequest("all", HttpVerb.Get);
     foreach (HttpVerb method in methods)
@@ -108,7 +110,10 @@ public class ControllerTests
   [TestCase(ParameterType.DateTime, true)]
   [TestCase(ParameterType.Guid)]
   [TestCase(ParameterType.Guid, true)]
-  public void RouteParameter_SingleParameter_RespondsWithParameter(ParameterType parameterType, bool useCurlyBrace = false)
+  public void RouteParameter_SingleParameter_RespondsWithParameter(
+    ParameterType parameterType,
+    bool useCurlyBrace = false
+  )
   {
     string parameterValue = "";
     string routePrefix = useCurlyBrace ? "curly/" : "";
@@ -142,7 +147,8 @@ public class ControllerTests
         routePrefix = "long/";
         break;
       case ParameterType.BigInteger:
-        parameterValue = "12345678909876543210123456789098765432101234567890987654321012345678909876543211234567890987654321012345678909876543210123456789098765432101234567890987654321";
+        parameterValue =
+          "12345678909876543210123456789098765432101234567890987654321012345678909876543211234567890987654321012345678909876543210123456789098765432101234567890987654321";
         routePrefix = "bigInteger/";
         break;
       case ParameterType.DateTime:
@@ -170,7 +176,12 @@ public class ControllerTests
     int intValue = 123456;
     DateTime dateTimeValue = DateTime.Parse("2024-01-28T15:38:20.0123000");
     Guid guidValue = Guid.NewGuid();
-    var expectedJson = TestController.FormatUrlParameters(stringValue, intValue, dateTimeValue, guidValue);
+    var expectedJson = TestController.FormatUrlParameters(
+      stringValue,
+      intValue,
+      dateTimeValue,
+      guidValue
+    );
 
     string route = $"{stringValue}/{guidValue}/2024-01-28T15:38:20.0123000/{intValue}";
     var request = GetWebRequest((useCurlyBrace ? "curly/" : "") + route, HttpVerb.Get);
@@ -191,6 +202,6 @@ public class ControllerTests
     Long,
     BigInteger,
     DateTime,
-    Guid
+    Guid,
   }
 }

@@ -19,7 +19,8 @@ public sealed class FileLogger : Logger
   /// Initializes a new instance of the <see cref="FileLogger"/> class logging to <paramref name="fileStorage"/>.
   /// </summary>
   /// <param name="fileStorage">The <see cref="IFileStorage"/> to log to.</param>
-  public FileLogger(IFileStorage fileStorage, string logFileName) : base()
+  public FileLogger(IFileStorage fileStorage, string logFileName)
+    : base()
   {
     _fileStorage = fileStorage;
     _fileName = logFileName;
@@ -30,7 +31,8 @@ public sealed class FileLogger : Logger
   /// </summary>
   /// <param name="fileStorage">The <see cref="IFileStorage"/> to log to.</param>
   /// <param name="sectionName">Name of the section.</param>
-  public FileLogger(IFileStorage fileStorage, string logFileName, string sectionName) : base(sectionName)
+  public FileLogger(IFileStorage fileStorage, string logFileName, string sectionName)
+    : base(sectionName)
   {
     _fileStorage = fileStorage;
     _fileName = logFileName;
@@ -38,12 +40,12 @@ public sealed class FileLogger : Logger
 
   /// <inheritdoc cref="FileLogger(IFileStorage, string)"/>
   /// <inheritdoc cref="Logger(ILogFormatter)"/>
-  public FileLogger(IFileStorage fileStorage, string logFileName, ILogFormatter formatter) : base(formatter)
+  public FileLogger(IFileStorage fileStorage, string logFileName, ILogFormatter formatter)
+    : base(formatter)
   {
     _fileStorage = fileStorage;
     _fileName = logFileName;
   }
-
 
   public override void Log(LogLevel logLevel, string section, string message)
   {

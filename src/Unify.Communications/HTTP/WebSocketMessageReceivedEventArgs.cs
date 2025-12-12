@@ -7,7 +7,6 @@ namespace CNCO.Unify.Communications.Http;
 /// </summary>
 public class WebSocketMessageReceivedEventArgs : EventArgs
 {
-
   /// <summary>
   /// Message received.
   /// </summary>
@@ -20,7 +19,6 @@ public class WebSocketMessageReceivedEventArgs : EventArgs
   /// WebSocket that received the message.
   /// </summary>
   public WebSocket WebSocket { get; }
-
 
   public WebSocketMessageReceivedEventArgs(WebSocket webSocket, byte[] message)
   {

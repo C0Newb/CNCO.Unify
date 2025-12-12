@@ -1,7 +1,7 @@
-﻿using Microsoft.Win32.SafeHandles;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
+using Microsoft.Win32.SafeHandles;
 
 namespace CNCO.Unify.Security.Credentials;
 
@@ -37,7 +37,11 @@ public class WindowsCredentialManager : ICredentialManager, ICredentialManagerEn
         if (!read)
           return null;
 
-        using (CriticalCredentialHandle credentialHandle = new CriticalCredentialHandle(credentialPointer))
+        using (
+          CriticalCredentialHandle credentialHandle = new CriticalCredentialHandle(
+            credentialPointer
+          )
+        )
         {
           var credential = credentialHandle.GetCredential();
           credentialHandle.Release();
@@ -50,7 +54,10 @@ public class WindowsCredentialManager : ICredentialManager, ICredentialManagerEn
 
           string? secret = null;
           if (credential.CredentialBlob != IntPtr.Zero)
-            secret = Marshal.PtrToStringUni(credential.CredentialBlob, (int)credential.CredentialBlobSize / 2);
+            secret = Marshal.PtrToStringUni(
+              credential.CredentialBlob,
+              (int)credential.CredentialBlobSize / 2
+            );
 
           if (secret == null)
             return null;
@@ -126,8 +133,10 @@ public class WindowsCredentialManager : ICredentialManager, ICredentialManagerEn
       if (Environment.OSVersion.Version < new Version(6, 1)) // <Win7
         maxLength = 512;
       if (secretLength > maxLength)
-        throw new ArgumentOutOfRangeException(nameof(value), $"The credential has exceeded {maxLength} bytes.");
-
+        throw new ArgumentOutOfRangeException(
+          nameof(value),
+          $"The credential has exceeded {maxLength} bytes."
+        );
 
       var credentialNamePtr = Marshal.StringToBSTR(credentialName);
       var valuePtr = Marshal.StringToBSTR(value);
@@ -167,18 +176,34 @@ public class WindowsCredentialManager : ICredentialManager, ICredentialManagerEn
     }
   }
 
-
-
-
-
   // PInvoke
-  [DllImport("Advapi32.dll", EntryPoint = "CredReadW", CharSet = CharSet.Unicode, SetLastError = true)]
-  static extern bool CredRead(string target, CredentialType type, int reservedFlag, out IntPtr credentialPtr);
+  [DllImport(
+    "Advapi32.dll",
+    EntryPoint = "CredReadW",
+    CharSet = CharSet.Unicode,
+    SetLastError = true
+  )]
+  static extern bool CredRead(
+    string target,
+    CredentialType type,
+    int reservedFlag,
+    out IntPtr credentialPtr
+  );
 
-  [DllImport("Advapi32.dll", EntryPoint = "CredWriteW", CharSet = CharSet.Unicode, SetLastError = true)]
+  [DllImport(
+    "Advapi32.dll",
+    EntryPoint = "CredWriteW",
+    CharSet = CharSet.Unicode,
+    SetLastError = true
+  )]
   static extern bool CredWrite([In] ref CREDENTIAL userCredential, [In] UInt32 flags);
 
-  [DllImport("Advapi32.dll", EntryPoint = "CredDeleteW", CharSet = CharSet.Unicode, SetLastError = true)]
+  [DllImport(
+    "Advapi32.dll",
+    EntryPoint = "CredDeleteW",
+    CharSet = CharSet.Unicode,
+    SetLastError = true
+  )]
   static extern bool CredDelete(string target, CredentialType type, int reservedFlag);
 
   [DllImport("advapi32", SetLastError = true, CharSet = CharSet.Unicode)]
@@ -186,8 +211,6 @@ public class WindowsCredentialManager : ICredentialManager, ICredentialManagerEn
 
   [DllImport("Advapi32.dll", EntryPoint = "CredFree", SetLastError = true)]
   static extern bool CredFree([In] IntPtr cred);
-
-
 
   /// <summary>
   /// See <see href="https://learn.microsoft.com/en-us/windows/win32/api/wincred/ns-wincred-credentiala"/>
@@ -246,7 +269,9 @@ public class WindowsCredentialManager : ICredentialManager, ICredentialManagerEn
     {
       if (!IsInvalid)
       {
-        var credential = Marshal.PtrToStructure(handle, typeof(CREDENTIAL)) ?? throw new InvalidOperationException("Invalid CriticalHandle!");
+        var credential =
+          Marshal.PtrToStructure(handle, typeof(CREDENTIAL))
+          ?? throw new InvalidOperationException("Invalid CriticalHandle!");
         return (CREDENTIAL)credential;
       }
 
@@ -294,12 +319,16 @@ public class WindowsCredentialManager : ICredentialManager, ICredentialManagerEn
 
     // No longer used.
     DomainVisiblePassword,
+
     // No longer used.
     GenericCertificate,
+
     // No longer used.
     DomainExtended,
+
     // No longer used.
     Maximum,
+
     // No longer used.
     MaximumEx = Maximum + 1000,
   }

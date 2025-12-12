@@ -32,11 +32,16 @@ public class EventEmitterListener : IEventEmitterListener
   /// <param name="eventName">The event name.</param>
   /// <param name="callback">The callback method.</param>
   /// <param name="oneTimeListener">If set to <c>true</c>, the listener will be removed after the first activation.</param>
-  public EventEmitterListener(IEventEmitter eventEmitter, string eventName, ICallback callback, bool oneTimeListener) : this(eventEmitter, eventName, callback)
+  public EventEmitterListener(
+    IEventEmitter eventEmitter,
+    string eventName,
+    ICallback callback,
+    bool oneTimeListener
+  )
+    : this(eventEmitter, eventName, callback)
   {
     _oneTimeListener = oneTimeListener;
   }
-
 
   public void Activate(params object?[]? parameters)
   {
@@ -44,7 +49,10 @@ public class EventEmitterListener : IEventEmitterListener
       _eventEmitter.RemoveListener(_event, _callback);
     _callback.Main(parameters);
   }
+
   public string GetEvent() => _event;
+
   public ICallback GetCallback() => _callback;
+
   public bool GetOneTimeListener() => _oneTimeListener;
 }

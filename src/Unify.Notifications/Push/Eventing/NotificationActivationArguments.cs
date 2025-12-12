@@ -21,8 +21,8 @@ public class NotificationActivationArguments
   public IDictionary<INotificationAction, string?> UserInput { get; private set; }
 
   public NotificationActivationArguments(
-      IDictionary<INotificationAction, string?>? userInput = null,
-      INotificationAction? action = null
+    IDictionary<INotificationAction, string?>? userInput = null,
+    INotificationAction? action = null
   )
   {
     Action = action;

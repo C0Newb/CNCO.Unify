@@ -1,15 +1,13 @@
-﻿using CNCO.Unify.Storage;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Nodes;
+using CNCO.Unify.Storage;
 
 namespace UnifyTests.Configuration.Json;
 
 public class JsonConfiguration
 {
-
   private const string TestFileName = "jsonConfigurationTest.json";
   private InMemoryFileStorage myFileStorage;
-
 
   [SetUp]
   public void Setup()
@@ -60,9 +58,8 @@ public class JsonConfiguration
       ["StringValue"] = stringValue,
       ["GuidValue"] = guid,
       ["IntValue"] = intValue,
-      ["BoolValue"] = booleanValue
+      ["BoolValue"] = booleanValue,
     };
-
 
     myFileStorage.Write(TestFileName, JsonSerializer.Serialize(sampleJson));
     var jsonObject = new MyJsonConfig(TestFileName, myFileStorage);

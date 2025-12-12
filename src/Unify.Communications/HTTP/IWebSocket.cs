@@ -85,7 +85,6 @@ public interface IWebSocket
   /// </summary>
   IWebRequest WebRequest { get; }
 
-
   #region Events
   /// <summary>
   /// Fired whenever a new WebSocket message (either text or binary) is received.

@@ -27,7 +27,9 @@ public class WebSocket : IWebSocket
   public IPrincipal? User => _webSocketContext.User;
   public System.Net.WebSockets.WebSocket Socket => _webSocketContext.WebSocket;
 
-  public bool IsOpen => Socket != null && (Socket.State == WebSocketState.Connecting || Socket.State == WebSocketState.Open);
+  public bool IsOpen =>
+    Socket != null
+    && (Socket.State == WebSocketState.Connecting || Socket.State == WebSocketState.Open);
 
   public IWebRequest WebRequest { get; }
 
@@ -61,23 +63,38 @@ public class WebSocket : IWebSocket
   /// <param name="subProtocol">The supported WebSocket sub-protocol.</param>
   /// <param name="keepAliveInterval">The WebSocket keep-alive interval in milliseconds.</param>
   /// <param name="receiveBufferSize">The receive buffer size in bytes.</param>
-  public static WebSocket CreateWebSocketConnection(HttpListenerContext httpListenerContext, IWebRequest webRequest, string? subProtocol = null, int? receiveBufferSize = null, TimeSpan? keepAliveInterval = null)
+  public static WebSocket CreateWebSocketConnection(
+    HttpListenerContext httpListenerContext,
+    IWebRequest webRequest,
+    string? subProtocol = null,
+    int? receiveBufferSize = null,
+    TimeSpan? keepAliveInterval = null
+  )
   {
     CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
     cancellationTokenSource.CancelAfter(5000); // Give it 5 seconds to connect
 
     WebSocketContext? webSocketContext = null;
-    Task.Run(async () =>
-    {
-
-      if (receiveBufferSize != null && keepAliveInterval != null)
-        webSocketContext = await httpListenerContext.AcceptWebSocketAsync(subProtocol, receiveBufferSize.Value, keepAliveInterval.Value);
-
-      else if (keepAliveInterval != null)
-        webSocketContext = await httpListenerContext.AcceptWebSocketAsync(subProtocol, keepAliveInterval.Value);
-      else
-        webSocketContext = await httpListenerContext.AcceptWebSocketAsync(subProtocol);
-    }, cancellationTokenSource.Token).Wait();
+    Task.Run(
+        async () =>
+        {
+          if (receiveBufferSize != null && keepAliveInterval != null)
+            webSocketContext = await httpListenerContext.AcceptWebSocketAsync(
+              subProtocol,
+              receiveBufferSize.Value,
+              keepAliveInterval.Value
+            );
+          else if (keepAliveInterval != null)
+            webSocketContext = await httpListenerContext.AcceptWebSocketAsync(
+              subProtocol,
+              keepAliveInterval.Value
+            );
+          else
+            webSocketContext = await httpListenerContext.AcceptWebSocketAsync(subProtocol);
+        },
+        cancellationTokenSource.Token
+      )
+      .Wait();
 
     if (webSocketContext == null)
       throw new WebSocketException("Failed to finalize WebSocket connection handshake.");
@@ -103,7 +120,6 @@ public class WebSocket : IWebSocket
         webSocketPayload.AddRange(new ArraySegment<byte>(tempMessage, 0, webSocketResponse.Count));
       } while (webSocketResponse.EndOfMessage == false);
 
-
       switch (webSocketResponse.MessageType)
       {
         case WebSocketMessageType.Binary:
@@ -116,14 +132,18 @@ public class WebSocket : IWebSocket
           connectionAlive = false;
           var closedArgs = new WebSocketConnectionClosedEventArgs(this, webSocketResponse);
           ConnectionClosed?.Invoke(this, closedArgs);
-          await Socket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "Client request closure.", CancellationToken.None);
+          await Socket.CloseOutputAsync(
+            WebSocketCloseStatus.NormalClosure,
+            "Client request closure.",
+            CancellationToken.None
+          );
           break;
       }
     }
 
     CommunicationsRuntime.Current.RuntimeLog.Debug(
-        $"{GetType().Name}::{nameof(Process)}",
-        $"Closed socket {WebRequest.RouteTemplate?.Template ?? RequestUri.PathAndQuery}"
+      $"{GetType().Name}::{nameof(Process)}",
+      $"Closed socket {WebRequest.RouteTemplate?.Template ?? RequestUri.PathAndQuery}"
     );
   }
 }

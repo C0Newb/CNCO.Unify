@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Logging;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Reflection;
+using CNCO.Unify.Logging;
 
 namespace CNCO.Unify;
 
@@ -17,6 +17,7 @@ public abstract class Runtime : IRuntime
   #region Locks
   // Lock used when adding runtime hooks or links.
   protected readonly object _addToListLock = new object();
+
   // Lock used when initializing this class.
   protected readonly object _initializationLock = new object();
   #endregion
@@ -54,7 +55,9 @@ public abstract class Runtime : IRuntime
       Version? version = Assembly.GetExecutingAssembly().GetName().Version;
       if (version != null)
         return version;
-      FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location);
+      FileVersionInfo fileVersionInfo = FileVersionInfo.GetVersionInfo(
+        Assembly.GetExecutingAssembly().Location
+      );
       return new Version(fileVersionInfo.FileVersion ?? fileVersionInfo.ProductVersion ?? "0.0.0");
     }
   }
@@ -139,8 +142,9 @@ public abstract class Runtime : IRuntime
     _runtimeLinks.RemoveAll(x => x.Equals(runtime));
   }
 
+  private static readonly string _assemblyName =
+    Assembly.GetExecutingAssembly().GetName().Name ?? "?";
 
-  private static readonly string _assemblyName = Assembly.GetExecutingAssembly().GetName().Name ?? "?";
   private bool IsLinkableRuntimePredicate(Type type)
   {
     LinkRuntimeAttribute? linkRuntimeAttribute = type.GetCustomAttribute<LinkRuntimeAttribute>();
@@ -148,9 +152,9 @@ public abstract class Runtime : IRuntime
       return false;
 
     return typeof(IRuntime).IsAssignableFrom(type) // Implements IRuntime.
-        && typeof(UnifyRuntime).IsAssignableFrom(type) // Does not extend us.
-        && linkRuntimeAttribute.RuntimeType == typeof(UnifyRuntime)
-        && !type.IsAbstract; // Not abstract.
+      && typeof(UnifyRuntime).IsAssignableFrom(type) // Does not extend us.
+      && linkRuntimeAttribute.RuntimeType == typeof(UnifyRuntime)
+      && !type.IsAbstract; // Not abstract.
   }
 
   private bool ReferencesUnify(Assembly assembly)
@@ -161,11 +165,12 @@ public abstract class Runtime : IRuntime
   // this doesn't work :)
   private void DiscoverAndLinkRuntimes()
   {
-    var runtimeTypes = AppDomain.CurrentDomain.GetAssemblies()
-        .Where(ReferencesUnify)
-        .SelectMany(assembly => assembly.GetTypes())
-        .Where(IsLinkableRuntimePredicate)
-        .ToArray();
+    var runtimeTypes = AppDomain
+      .CurrentDomain.GetAssemblies()
+      .Where(ReferencesUnify)
+      .SelectMany(assembly => assembly.GetTypes())
+      .Where(IsLinkableRuntimePredicate)
+      .ToArray();
     foreach (var runtimeType in runtimeTypes)
     {
       var runtimeInstance = (IRuntime?)Activator.CreateInstance(runtimeType);
@@ -196,7 +201,6 @@ public abstract class Runtime : IRuntime
         link.Initialize();
       }
 
-
       // run hooks
       int hooksCount = _runtimeHooks.Count;
       int failedHooks = 0;
@@ -213,7 +217,10 @@ public abstract class Runtime : IRuntime
         return;
 
       if (failedHooks > 0)
-        UnifyRuntime.ApplicationLog.Info(section, $"All hooks {hooksCount} called, {failedHooks} failed.");
+        UnifyRuntime.ApplicationLog.Info(
+          section,
+          $"All hooks {hooksCount} called, {failedHooks} failed."
+        );
       else
         UnifyRuntime.ApplicationLog.Info(section, $"All hooks {hooksCount} called, 0 failed.");
     }
@@ -222,8 +229,7 @@ public abstract class Runtime : IRuntime
 
   public override bool Equals(object? obj)
   {
-    return obj != null
-        && obj.GetType() == GetType(); // yeah probably
+    return obj != null && obj.GetType() == GetType(); // yeah probably
   }
 
   public override int GetHashCode() => base.GetHashCode();

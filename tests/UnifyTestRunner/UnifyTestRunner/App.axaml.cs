@@ -21,17 +21,11 @@ public partial class App : Application
 
     if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
     {
-      desktop.MainWindow = new MainWindow
-      {
-        DataContext = MainModel
-      };
+      desktop.MainWindow = new MainWindow { DataContext = MainModel };
     }
     else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
     {
-      singleViewPlatform.MainView = new MainWindowView
-      {
-        DataContext = MainModel
-      };
+      singleViewPlatform.MainView = new MainWindowView { DataContext = MainModel };
     }
 
     base.OnFrameworkInitializationCompleted();

@@ -1,7 +1,7 @@
-﻿using CNCO.Unify.Communications.Http.Routing;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using CNCO.Unify.Communications.Http.Routing;
 
 namespace CNCO.Unify.Communications.Http;
 
@@ -30,6 +30,7 @@ public class Router : IRouter
     public string PathRegex { get; private set; }
     public Action<IWebRequest, IWebResponse>? OnWebRequest { get; private set; }
     public Action<IWebSocket>? OnWebSocketRequest { get; private set; }
+
     //public Task? Task { get; set; }
     public bool IsWebSocket { get; set; } = false;
 
@@ -40,8 +41,11 @@ public class Router : IRouter
       PathRegex = Regex.Replace(path, @":.*?:|\{.*?\}", ".*");
     }
 
-    public Listener(HttpVerb verb, string path, Action<IWebRequest, IWebResponse> onWebRequest) : this(verb, path) => OnWebRequest = onWebRequest;
-    public Listener(string path, Action<IWebSocket> onWebSocketRequest) : this(HttpVerb.Any, path)
+    public Listener(HttpVerb verb, string path, Action<IWebRequest, IWebResponse> onWebRequest)
+      : this(verb, path) => OnWebRequest = onWebRequest;
+
+    public Listener(string path, Action<IWebSocket> onWebSocketRequest)
+      : this(HttpVerb.Any, path)
     {
       IsWebSocket = true;
       OnWebSocketRequest = onWebSocketRequest;
@@ -62,7 +66,8 @@ public class Router : IRouter
     }
   }
 
-  private readonly Dictionary<string, List<Listener>> Listeners = new Dictionary<string, List<Listener>>();
+  private readonly Dictionary<string, List<Listener>> Listeners =
+    new Dictionary<string, List<Listener>>();
 
   // Use this to go from paths to paths with parameter names (/my/path/to/blahBlah/doc -> /my/path/to/:docPath:/doc)
   private readonly Dictionary<string, string> PathRegexLookup = new Dictionary<string, string>();
@@ -80,28 +85,51 @@ public class Router : IRouter
     Listeners[listener.Path] = currentListeners;
 
     if (
-        (listener.Path != listener.PathRegex || listener.Path.EndsWith('*'))
-        && !PathRegexLookup.ContainsKey(listener.PathRegex)
+      (listener.Path != listener.PathRegex || listener.Path.EndsWith('*'))
+      && !PathRegexLookup.ContainsKey(listener.PathRegex)
     )
     {
       PathRegexLookup.Add(listener.PathRegex, listener.Path);
     }
 
-    CommunicationsRuntime.Current.RuntimeLog.Verbose($"{GetType().Name}::{nameof(AddListener)}", $"Added new {listener.Verb} route {listener.Path}");
+    CommunicationsRuntime.Current.RuntimeLog.Verbose(
+      $"{GetType().Name}::{nameof(AddListener)}",
+      $"Added new {listener.Verb} route {listener.Path}"
+    );
   }
 
-  public void Any(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Any, path, callback));
-  public void Connect(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Connect, path, callback));
-  public void Delete(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Delete, path, callback));
-  public void Get(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Get, path, callback));
-  public void Head(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Head, path, callback));
-  public void Options(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Options, path, callback));
-  public void Patch(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Patch, path, callback));
-  public void Post(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Post, path, callback));
-  public void Put(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Put, path, callback));
-  public void Trace(string path, Action<IWebRequest, IWebResponse> callback) => AddListener(new Listener(HttpVerb.Trace, path, callback));
+  public void Any(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Any, path, callback));
 
-  public void WebSocket(string path, Action<IWebSocket> callback) => AddListener(new Listener(path, callback));
+  public void Connect(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Connect, path, callback));
+
+  public void Delete(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Delete, path, callback));
+
+  public void Get(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Get, path, callback));
+
+  public void Head(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Head, path, callback));
+
+  public void Options(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Options, path, callback));
+
+  public void Patch(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Patch, path, callback));
+
+  public void Post(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Post, path, callback));
+
+  public void Put(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Put, path, callback));
+
+  public void Trace(string path, Action<IWebRequest, IWebResponse> callback) =>
+    AddListener(new Listener(HttpVerb.Trace, path, callback));
+
+  public void WebSocket(string path, Action<IWebSocket> callback) =>
+    AddListener(new Listener(path, callback));
 
   public void Remove(string path, Action<IWebRequest, IWebResponse>? callback, HttpVerb? httpVerb)
   {
@@ -142,8 +170,9 @@ public class Router : IRouter
         Regex regex = new Regex(regexString);
         var match = regex.Match(request.Path);
         if (
-            !match.Success || // does not match
-            match.Captures[0].ToString().Split('/').Length != regexString.Split('/').Length // parameter count mismatch
+          !match.Success
+          || // does not match
+          match.Captures[0].ToString().Split('/').Length != regexString.Split('/').Length // parameter count mismatch
         )
         {
           continue;
@@ -167,7 +196,10 @@ public class Router : IRouter
       response.Status(404);
       response.End();
       if (_log)
-        CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"404: no listener found for path {request.Path}!");
+        CommunicationsRuntime.Current.RuntimeLog.Warning(
+          $"{GetType().Name}::{nameof(Process)}",
+          $"404: no listener found for path {request.Path}!"
+        );
       return;
     }
 
@@ -186,9 +218,10 @@ public class Router : IRouter
         return;
       hasActivatedWebSocketWarningEmitted = true;
       CommunicationsRuntime.Current.RuntimeLog.Warning(
-          $"{GetType().Name}::{nameof(Process)}",
-          "You have a HTTP listener on the same route as a WebSocket handler! You cannot do this as once the HTTP response closes, the WebSocket will close."
-          + Environment.NewLine + "You have been warned."
+        $"{GetType().Name}::{nameof(Process)}",
+        "You have a HTTP listener on the same route as a WebSocket handler! You cannot do this as once the HTTP response closes, the WebSocket will close."
+          + Environment.NewLine
+          + "You have been warned."
       );
     }
     foreach (Listener listener in listenersForPath!)
@@ -198,8 +231,8 @@ public class Router : IRouter
         if (response.HasEnded)
         {
           CommunicationsRuntime.Current.RuntimeLog.Verbose(
-              $"{GetType().Name}::{nameof(Process)}",
-               $"Error encountered calling listener for {listener.Verb} \"{listener.Path}\" as the response has ended."
+            $"{GetType().Name}::{nameof(Process)}",
+            $"Error encountered calling listener for {listener.Verb} \"{listener.Path}\" as the response has ended."
           );
           continue;
         }
@@ -216,21 +249,26 @@ public class Router : IRouter
           }
 
           if (listener.OnWebSocketRequest == null) // What? How?
-            throw new NullReferenceException($"{nameof(listener.OnWebSocketRequest)} is null, no listener action to call!");
+            throw new NullReferenceException(
+              $"{nameof(listener.OnWebSocketRequest)} is null, no listener action to call!"
+            );
 
           if (hasActivatedHttp && !hasActivatedWebSocketWarningEmitted)
             WarnAboutMixingHttpAndWebSocketRoutes();
 
-          Task wsTask = new Task(() => listener.OnWebSocketRequest(request.CreateWebSocketConnection()));
+          Task wsTask = new Task(() =>
+            listener.OnWebSocketRequest(request.CreateWebSocketConnection())
+          );
           listenerTasks.TryAdd(listener, wsTask);
           wsTask.Start();
           listenerFired = true;
-
         }
         else if (listener.Verb == HttpVerb.Any || listener.Verb == request.Verb)
         {
           if (listener.OnWebRequest == null) // What? How?
-            throw new NullReferenceException($"{nameof(listener.OnWebRequest)} is null, no listener action to call!");
+            throw new NullReferenceException(
+              $"{nameof(listener.OnWebRequest)} is null, no listener action to call!"
+            );
 
           if (hasActivatedWebSocket && !hasActivatedWebSocketWarningEmitted)
             WarnAboutMixingHttpAndWebSocketRoutes();
@@ -246,9 +284,9 @@ public class Router : IRouter
       {
         response.Status(500);
         CommunicationsRuntime.Current.RuntimeLog.Error(
-            $"{GetType().Name}::{nameof(Process)}",
-            $"Error encountered calling listener for {listener.Verb} \"{listener.Path}\"",
-            ex
+          $"{GetType().Name}::{nameof(Process)}",
+          $"Error encountered calling listener for {listener.Verb} \"{listener.Path}\"",
+          ex
         );
       }
     }
@@ -261,22 +299,30 @@ public class Router : IRouter
         if (listener.IsWebSocket || listener.Verb == HttpVerb.Any || listener.Verb == request.Verb)
         {
           Task task = listenerTasks[listener];
-          task.Wait(CommunicationsRuntime.Current.Configuration.Http.Router.ResponseTimeoutMilliseconds); // it should be cancelling, but ...
-                                                                                                          //task.Wait();
+          task.Wait(
+            CommunicationsRuntime.Current.Configuration.Http.Router.ResponseTimeoutMilliseconds
+          ); // it should be cancelling, but ...
+          //task.Wait();
           try
           {
             task?.Dispose();
           }
           catch
           {
-            CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"Listener task hang for {request.Path}!");
+            CommunicationsRuntime.Current.RuntimeLog.Warning(
+              $"{GetType().Name}::{nameof(Process)}",
+              $"Listener task hang for {request.Path}!"
+            );
           }
         }
       }
       catch (OperationCanceledException) { }
       catch (AggregateException e)
       {
-        if (e.Message.Contains("websocket request without", StringComparison.OrdinalIgnoreCase) && e.Message.Contains("header", StringComparison.OrdinalIgnoreCase))
+        if (
+          e.Message.Contains("websocket request without", StringComparison.OrdinalIgnoreCase)
+          && e.Message.Contains("header", StringComparison.OrdinalIgnoreCase)
+        )
         {
           hasActivatedWebSocket = true;
           listenerFired = false; // forces a 400 later.
@@ -297,12 +343,17 @@ public class Router : IRouter
       if (_log)
       {
         if (hasActivatedWebSocket)
-          CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"400: invalid WebSocket connection handshake request to {request.Path}!");
+          CommunicationsRuntime.Current.RuntimeLog.Warning(
+            $"{GetType().Name}::{nameof(Process)}",
+            $"400: invalid WebSocket connection handshake request to {request.Path}!"
+          );
         else
-          CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"404: no listener found for path {request.Path}!");
+          CommunicationsRuntime.Current.RuntimeLog.Warning(
+            $"{GetType().Name}::{nameof(Process)}",
+            $"404: no listener found for path {request.Path}!"
+          );
       }
       return;
-
     }
     else if (!response.HasEnded)
     {
@@ -314,7 +365,9 @@ public class Router : IRouter
 
       if (CommunicationsRuntime.Current.Configuration.Http.Router.EnableDefaultResponses)
       {
-        response.Status(CommunicationsRuntime.Current.Configuration.Http.Router.DefaultResponseStatusCode ?? 500);
+        response.Status(
+          CommunicationsRuntime.Current.Configuration.Http.Router.DefaultResponseStatusCode ?? 500
+        );
         string? body = CommunicationsRuntime.Current.Configuration.Http.Router.DefaultResponseBody;
         if (!string.IsNullOrEmpty(body))
         {
@@ -329,22 +382,26 @@ public class Router : IRouter
       response.End();
 
       if (_log)
-        CommunicationsRuntime.Current.RuntimeLog.Warning($"{GetType().Name}::{nameof(Process)}", $"500: {listenersForPath?.Count ?? 0} listener(s) found for path {request.Path}, but none responded!");
+        CommunicationsRuntime.Current.RuntimeLog.Warning(
+          $"{GetType().Name}::{nameof(Process)}",
+          $"500: {listenersForPath?.Count ?? 0} listener(s) found for path {request.Path}, but none responded!"
+        );
     }
   }
 
   // Checks whether the request contains the headers required for a WebSocket connection handshake
   private static bool HasValidWebSocketConnectHandshakeHeaders(IWebRequest request)
   {
-    return !(string.IsNullOrEmpty(request.Headers["Connection"])
-        || string.IsNullOrEmpty(request.Headers["Upgrade"])
-        || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Version"])
-        || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Key"])
-        || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Extensions"])
-        || !request.Headers["Connection"]!.Equals("upgrade", StringComparison.OrdinalIgnoreCase)
-        || !request.Headers["Upgrade"]!.Equals("websocket", StringComparison.OrdinalIgnoreCase));
+    return !(
+      string.IsNullOrEmpty(request.Headers["Connection"])
+      || string.IsNullOrEmpty(request.Headers["Upgrade"])
+      || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Version"])
+      || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Key"])
+      || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Extensions"])
+      || !request.Headers["Connection"]!.Equals("upgrade", StringComparison.OrdinalIgnoreCase)
+      || !request.Headers["Upgrade"]!.Equals("websocket", StringComparison.OrdinalIgnoreCase)
+    );
   }
-
 
   #region Route initialization
   /// <summary>
@@ -372,9 +429,9 @@ public class Router : IRouter
   private static IEnumerable<Type> GetControllers()
   {
     return from assemblies in AppDomain.CurrentDomain.GetAssemblies()
-           from types in assemblies.GetTypes()
-           where types.IsDefined(typeof(ControllerAttribute), true)
-           select types;
+      from types in assemblies.GetTypes()
+      where types.IsDefined(typeof(ControllerAttribute), true)
+      select types;
   }
 
   private static string GetControllerRoute(Type controller)
@@ -404,7 +461,8 @@ public class Router : IRouter
   {
     try
     {
-      IRouteTemplate? methodAttribute = (IRouteTemplate)method.GetCustomAttributes(routeAttributeType, false)[0];
+      IRouteTemplate? methodAttribute = (IRouteTemplate)
+        method.GetCustomAttributes(routeAttributeType, false)[0];
 
       if (methodAttribute == null)
         return string.Empty; //'/' + method.Name.ToLower();
@@ -418,9 +476,9 @@ public class Router : IRouter
     catch (Exception e)
     {
       CommunicationsRuntime.Current.RuntimeLog.Error(
-          $"{typeof(Router).FullName}::{nameof(GetMethodRoute)}({method}, {routeAttributeType})",
-          "Failed to get method route!",
-          e
+        $"{typeof(Router).FullName}::{nameof(GetMethodRoute)}({method}, {routeAttributeType})",
+        "Failed to get method route!",
+        e
       );
       return string.Empty;
     }
@@ -429,7 +487,9 @@ public class Router : IRouter
   private static List<ControllerInvoker> GetMethods(Type controller)
   {
     var controllerMethods = new List<ControllerInvoker>();
-    var methods = controller.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+    var methods = controller.GetMethods(
+      BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly
+    );
 
     foreach (var method in methods)
     {
@@ -438,7 +498,9 @@ public class Router : IRouter
       if (httpMethodAttributes == null && webSocketMethodAttributes == null) // No listeners here!
         continue;
 
-      controllerMethods.Add(new(controller, httpMethodAttributes, webSocketMethodAttributes, method));
+      controllerMethods.Add(
+        new(controller, httpMethodAttributes, webSocketMethodAttributes, method)
+      );
     }
 
     return controllerMethods;
@@ -447,7 +509,8 @@ public class Router : IRouter
   private void AddControllerListener(string route, ControllerInvoker method)
   {
     Action<IWebRequest, IWebResponse> httpCallback = (req, res) => method.Invoke(req, res, null);
-    Action<IWebSocket> webSocketCallback = (socket) => method.Invoke(socket.WebRequest, null, socket);
+    Action<IWebSocket> webSocketCallback = (socket) =>
+      method.Invoke(socket.WebRequest, null, socket);
 
     route = '/' + route.Trim('/');
 
@@ -494,9 +557,9 @@ public class Router : IRouter
 
           default: // ? what
             CommunicationsRuntime.Current.RuntimeLog.Alert(
-                $"{GetType()}::{nameof(AddControllerListener)}",
-                $"Unknown HttpMethod was attempted to be added via a {typeof(HttpMethodAttribute).FullName}! Method: {httpMethod}. " +
-                $"Defaulting to {HttpVerb.Any}."
+              $"{GetType()}::{nameof(AddControllerListener)}",
+              $"Unknown HttpMethod was attempted to be added via a {typeof(HttpMethodAttribute).FullName}! Method: {httpMethod}. "
+                + $"Defaulting to {HttpVerb.Any}."
             );
             Any(methodRoute, httpCallback);
             break;

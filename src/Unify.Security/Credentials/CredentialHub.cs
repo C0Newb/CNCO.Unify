@@ -30,13 +30,15 @@ public class CredentialHub : ICredentialManager
         return;
       }
 
-      _credentials = JsonSerializer.Deserialize<Dictionary<string, string>>(credentials) ?? new Dictionary<string, string>();
+      _credentials =
+        JsonSerializer.Deserialize<Dictionary<string, string>>(credentials)
+        ?? new Dictionary<string, string>();
     }
     catch (Exception ex)
     {
       SecurityRuntime.Current.RuntimeLog.Error(
-          $"{GetType().Name}::{nameof(PullCredentials)}",
-          $"Failed to pull JSON credentials for {_credentialsName}."
+        $"{GetType().Name}::{nameof(PullCredentials)}",
+        $"Failed to pull JSON credentials for {_credentialsName}."
       );
 
       SecurityRuntime.Current.RuntimeLog.Error(ex.Message);
@@ -45,6 +47,7 @@ public class CredentialHub : ICredentialManager
       throw;
     }
   }
+
   private void PushCredentials()
   {
     try
@@ -56,8 +59,8 @@ public class CredentialHub : ICredentialManager
     catch (Exception ex)
     {
       SecurityRuntime.Current.RuntimeLog.Error(
-          $"{GetType().Name}::{nameof(PullCredentials)}",
-          $"Failed to push JSON credentials for {_credentialsName}."
+        $"{GetType().Name}::{nameof(PullCredentials)}",
+        $"Failed to push JSON credentials for {_credentialsName}."
       );
 
       SecurityRuntime.Current.RuntimeLog.Error(ex.Message);

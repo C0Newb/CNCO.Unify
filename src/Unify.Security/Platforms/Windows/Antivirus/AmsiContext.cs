@@ -1,5 +1,5 @@
-﻿using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using CNCO.Unify.Security.Platforms.Windows.Antivirus.Internals;
 
 namespace CNCO.Unify.Security.Platforms.Windows.Antivirus;
 

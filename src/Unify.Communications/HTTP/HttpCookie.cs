@@ -20,7 +20,6 @@ public class HttpCookie
   private SameSiteType _sameSite;
   private string? _customProperties;
 
-
   /// <summary>
   /// Gets or sets the name of the cookie.
   /// </summary>
@@ -148,21 +147,20 @@ public class HttpCookie
   {
     _name = name;
     _value = value;
-
   }
 
   /// <inheritdoc cref="HttpCookie(string, string)"/>
   /// <param name="domain">The domain of the cookie.</param>
-  public HttpCookie(string name, string value, string domain) : this(name, value)
+  public HttpCookie(string name, string value, string domain)
+    : this(name, value)
   {
     Domain = domain;
   }
 
   /// <inheritdoc cref="HttpCookie(string, string, string)"/>
   /// <param name="path">The path of the cookie.</param>
-  public HttpCookie(string name, string value, string domain, string path) : this(name, value, domain) => Path = path;
-
-
+  public HttpCookie(string name, string value, string domain, string path)
+    : this(name, value, domain) => Path = path;
 
   /// <summary>
   /// Sets the cookie as a "Session only" cookie by removing the expiration time.
@@ -175,8 +173,8 @@ public class HttpCookie
   public void MakeSecure()
   {
     SameSite = SameSiteType.Strict; // same site
-    Secure = true;      // only over HTTPS
-    HttpOnly = true;    // no JS access
+    Secure = true; // only over HTTPS
+    HttpOnly = true; // no JS access
   }
 
   /// <summary>
@@ -189,7 +187,6 @@ public class HttpCookie
   /// Marks the cookie as "clean" indicating that any changes have been pushed out.
   /// </summary>
   public void MarkAsClean() => _isDirty = false;
-
 
   /// <summary>
   /// Converts the cookie to its string representation for sending in the "Set-Cookie" header.
@@ -230,5 +227,5 @@ public enum SameSiteType
 {
   Strict,
   Lax,
-  None
+  None,
 }

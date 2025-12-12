@@ -1,6 +1,5 @@
 ﻿namespace CNCO.Unify.Communications.Http;
 
-
 /// <summary>
 /// <see cref="WebServer"/> settings.
 /// </summary>
@@ -20,7 +19,6 @@ public class WebServerOptions
   /// ~900rq/s on Windows with logging on, ~90k with it off.
   /// </remarks>
   public bool LogAccess = false;
-
 
   // HTTPS settings
   public bool UseHttps { get; set; } = false;

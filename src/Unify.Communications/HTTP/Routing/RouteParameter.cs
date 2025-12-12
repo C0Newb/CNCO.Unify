@@ -13,7 +13,6 @@ public sealed partial class RouteParameter
   /// </summary>
   private readonly string _originalStringValue;
 
-
   /// <summary>
   /// Type of <see cref="Value"/>.
   /// </summary>
@@ -33,7 +32,6 @@ public sealed partial class RouteParameter
   /// Value of the parameter.
   /// </summary>
   public object Value { get; private set; }
-
 
   /// <summary>
   /// Initializes an instance of the <see cref="RouteParameter"/> class.
@@ -65,7 +63,6 @@ public sealed partial class RouteParameter
   /// </summary>
   /// <returns>Original string representation of the value.</returns>
   internal object? ToStringValue() => _originalStringValue;
-
 
   private bool TryParsingNumeric()
   {
@@ -113,8 +110,8 @@ public sealed partial class RouteParameter
         // if it's none of those, treat the thing as a string. Something is off...
         // Go ahead and log it so someone can fix it later :)
         CommunicationsRuntime.Current.RuntimeLog.Verbose(
-            $"{nameof(RouteParameter)}::{nameof(TryParsingNumeric)}()",
-            $"Failed to parse decimal/double/float value: {value}"
+          $"{nameof(RouteParameter)}::{nameof(TryParsingNumeric)}()",
+          $"Failed to parse decimal/double/float value: {value}"
         );
       }
     }

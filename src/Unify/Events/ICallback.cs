@@ -3,7 +3,8 @@
 /// <summary>
 /// Represents a callback (method).
 /// </summary>
-public interface ICallback<T> where T : EventArgs
+public interface ICallback<T>
+  where T : EventArgs
 {
   /// <summary>
   /// The main method for the callback.

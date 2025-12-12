@@ -37,8 +37,8 @@ public class NotificationComboBox : NotificationAction, INotificationAction
     }
   }
 
-
-  public NotificationComboBox(string id, string[]? choices = null, string? hint = null) : base(id)
+  public NotificationComboBox(string id, string[]? choices = null, string? hint = null)
+    : base(id)
   {
     Choices = choices ?? [];
     Hint = hint ?? string.Empty;

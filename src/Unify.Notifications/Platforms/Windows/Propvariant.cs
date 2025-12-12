@@ -1,6 +1,7 @@
 ﻿#if WINDOWS_TOAST_NOTIFICATIONS
 using System;
 using System.Runtime.InteropServices;
+
 // DO NOT touch!
 namespace CNCO.Unify.Notifications.Platforms.Windows;
 

@@ -1,5 +1,5 @@
-﻿using CNCO.Unify.Security.Credentials;
-using System.Text;
+﻿using System.Text;
+using CNCO.Unify.Security.Credentials;
 
 namespace CNCO.Unify.Security;
 
@@ -45,7 +45,6 @@ public class DataProtector : DataProtectionProvider, IDataProtector
     }
   }
 
-
   /// <summary>
   /// Key used to protect/unprotect
   /// </summary>
@@ -80,8 +79,8 @@ public class DataProtector : DataProtectionProvider, IDataProtector
     _purpose = purpose;
   }
 
-  public override IDataProtector CreateProtector(string purpose) => base.CreateProtector($"{_purpose}:{purpose}");
-
+  public override IDataProtector CreateProtector(string purpose) =>
+    base.CreateProtector($"{_purpose}:{purpose}");
 
   public virtual byte[] Protect(byte[] plaintext) => Encryption.EncryptAes256_Cbc(plaintext, Key);
 
@@ -103,8 +102,9 @@ public class DataProtector : DataProtectionProvider, IDataProtector
     }
   }
 
+  public virtual byte[] Unprotect(byte[] protectedData) =>
+    Encryption.DecryptAes(protectedData, Key);
 
-  public virtual byte[] Unprotect(byte[] protectedData) => Encryption.DecryptAes(protectedData, Key);
   public virtual string Unprotect(string protectedData)
   {
     string tag = $"{GetType().Name}::{nameof(Unprotect)}-{_purpose}";

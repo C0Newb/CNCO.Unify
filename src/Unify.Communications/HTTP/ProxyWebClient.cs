@@ -8,7 +8,8 @@ public class ProxyWebClient : WebClient, IWebClient
 {
   public Uri BaseUri;
 
-  public ProxyWebClient(Uri baseUri) : base()
+  public ProxyWebClient(Uri baseUri)
+    : base()
   {
     BaseUri = baseUri;
   }
@@ -24,23 +25,48 @@ public class ProxyWebClient : WebClient, IWebClient
   }
 
   public new Task<HttpResponseMessage> ConnectAsync(string uri) => ConnectAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> ConnectAsync(Uri uri) => base.ConnectAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> DeleteAsync(string uri) => DeleteAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> DeleteAsync(Uri uri) => base.DeleteAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> GetAsync(string uri) => GetAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> GetAsync(Uri uri) => base.GetAsync(CombineUri(uri));
+
   public new Task<string> GetStringAsync(string uri) => GetStringAsync(CombineUri(uri));
+
   public new Task<string> GetStringAsync(Uri uri) => base.GetStringAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> HeadAsync(string uri) => HeadAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> HeadAsync(Uri uri) => base.HeadAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> OptionsAsync(string uri) => OptionsAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> OptionsAsync(Uri uri) => base.OptionsAsync(CombineUri(uri));
-  public new Task<HttpResponseMessage> PatchAsync(string uri, HttpContent content) => PatchAsync(CombineUri(uri), content);
-  public new Task<HttpResponseMessage> PatchAsync(Uri uri, HttpContent content) => base.PatchAsync(CombineUri(uri), content);
-  public new Task<HttpResponseMessage> PostAsync(string uri, HttpContent content) => PostAsync(CombineUri(uri), content);
-  public new Task<HttpResponseMessage> PostAsync(Uri uri, HttpContent content) => base.PostAsync(CombineUri(uri), content);
-  public new Task<HttpResponseMessage> PutAsync(string uri, HttpContent content) => PutAsync(CombineUri(uri), content);
-  public new Task<HttpResponseMessage> PutAsync(Uri uri, HttpContent content) => base.PutAsync(CombineUri(uri), content);
+
+  public new Task<HttpResponseMessage> PatchAsync(string uri, HttpContent content) =>
+    PatchAsync(CombineUri(uri), content);
+
+  public new Task<HttpResponseMessage> PatchAsync(Uri uri, HttpContent content) =>
+    base.PatchAsync(CombineUri(uri), content);
+
+  public new Task<HttpResponseMessage> PostAsync(string uri, HttpContent content) =>
+    PostAsync(CombineUri(uri), content);
+
+  public new Task<HttpResponseMessage> PostAsync(Uri uri, HttpContent content) =>
+    base.PostAsync(CombineUri(uri), content);
+
+  public new Task<HttpResponseMessage> PutAsync(string uri, HttpContent content) =>
+    PutAsync(CombineUri(uri), content);
+
+  public new Task<HttpResponseMessage> PutAsync(Uri uri, HttpContent content) =>
+    base.PutAsync(CombineUri(uri), content);
+
   public new Task<HttpResponseMessage> TraceAsync(string uri) => TraceAsync(CombineUri(uri));
+
   public new Task<HttpResponseMessage> TraceAsync(Uri uri) => base.TraceAsync(CombineUri(uri));
 }

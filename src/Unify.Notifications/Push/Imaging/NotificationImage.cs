@@ -1,6 +1,6 @@
-﻿using CNCO.Unify.Storage;
+﻿using System.Text.RegularExpressions;
+using CNCO.Unify.Storage;
 using SkiaSharp;
-using System.Text.RegularExpressions;
 
 namespace CNCO.Unify.Notifications.Push.Imaging;
 
@@ -10,18 +10,15 @@ public class NotificationImage : INotificationImage
   private string? _imageString;
   private string FilePath => Id.ToString();
 
-
   public Guid Id { get; } = Guid.NewGuid();
   public string? AlternativeText { get; set; } = null;
   public bool IsWritten => _storage != null && _storage.Exists(FilePath);
   public Uri? Uri => IsWritten ? new Uri(_storage!.GetPath(FilePath)) : null;
 
-
   public NotificationImage(string? imageString)
   {
     _imageString = imageString;
   }
-
 
   public void SetImage(string imageString) => _imageString = imageString;
 
