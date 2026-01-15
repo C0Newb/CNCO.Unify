@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using Makaretu.Dns;
 
 namespace CNCO.Unify.Communications.Mdns;
 
@@ -7,9 +8,9 @@ namespace CNCO.Unify.Communications.Mdns;
 /// </summary>
 public class ServiceProfile
 {
-  private IEnumerable<IPAddress> _addresses;
+  private readonly IEnumerable<IPAddress> _addresses;
   private string _instanceName;
-  private ushort _port;
+  private readonly ushort _port;
 
   /// <summary>
   /// Creates a new instance of the <see cref="ServiceProfile"/> class.
@@ -23,7 +24,7 @@ public class ServiceProfile
   )
   {
     _port = port;
-    _addresses = addresses ?? InterfaceHelpers.GetLocalIPAddresses();
+    _addresses = addresses ?? NetworkInterfaces.GetSystemIPAddresses(true, false);
     _instanceName = instanceName;
 
     ServiceType = serviceType;
@@ -54,7 +55,9 @@ public class ServiceProfile
     set
     {
       if (_instanceName == value)
+      {
         return;
+      }
       _instanceName = value;
     }
   }
@@ -65,19 +68,17 @@ public class ServiceProfile
   /// <remarks>
   /// The underscore character (<c>_</c>) is handled automatically, do not include it.
   /// </remarks>
-  public string Protocol { get; set; } = "tcp";
+  public string Protocol { get; set; }
 
   /// <summary>
   /// The <see cref="ServiceType"/>, <see cref="Protocol"/> and <see cref="Domain"/> joined and separated by a period, such as <c>_service._tcp.local</c>
   /// </summary>
   public string QualifiedServiceName => $"_{ServiceType}._{Protocol}.{Domain}";
 
-#if false
-      /// <summary>
-      /// DNS resource records that are used to locate the service instance.
-      /// </summary>
-      //public List<ResourceRecord> Resources { get; set; } = new List<ResourceRecord>();
-#endif
+  /// <summary>
+  /// DNS resource records that are used to locate the service instance.
+  /// </summary>
+  public List<ResourceRecord> Resources { get; set; } = new List<ResourceRecord>();
 
   /// <summary>
   /// Name of your service, such as <c>http</c> or <c>printer</c>.
@@ -94,5 +95,5 @@ public class ServiceProfile
   /// The default is an empty list.
   /// </value>
   /// <seealso href="https://tools.ietf.org/html/rfc6763#section-7.1"/>
-  public List<string> SubTypes { get; set; } = new List<string>();
+  public List<string> SubTypes { get; set; } = [];
 }
