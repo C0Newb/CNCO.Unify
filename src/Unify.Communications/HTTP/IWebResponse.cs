@@ -84,6 +84,12 @@ public interface IWebResponse
   void Send(string? data);
 
   /// <summary>
+  /// Sends the contents of a stream back as the response. Ends the response.
+  /// </summary>
+  /// <param name="stream">Data to response with.</param>
+  void Send(Stream stream);
+
+  /// <summary>
   /// Sends a file to the user that will be downloaded.
   /// </summary>
   /// <param name="path">Path to the file to download.</param>

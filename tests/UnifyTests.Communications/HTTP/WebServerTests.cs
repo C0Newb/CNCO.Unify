@@ -38,9 +38,9 @@ public class WebServerTests
     };
 
     var webServer = new WebServer(options);
-    webServer.Listen("https://*:8800");
+    webServer.AddEndpoint("https://*:8800");
 
-    var endpoints = webServer.GetEndpoints();
+    var endpoints = webServer.GetEndpoints().ToArray();
     Assert.That(endpoints, Has.Length.EqualTo(4), "WebServer is listening to 4 addresses");
     Assert.That(
       endpoints,
@@ -71,7 +71,7 @@ public class WebServerTests
     string address = $"http://127.0.0.1:{port}";
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
     webServer.Get("/test", (request, response) => response.Send(uniqueCode));
     webServer.Start();
 
@@ -96,7 +96,7 @@ public class WebServerTests
     string address = $"http://127.0.0.1:{port}";
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
     webServer.Post("/test", (request, response) => response.Send(uniqueCode));
     webServer.Start();
 
@@ -125,7 +125,7 @@ public class WebServerTests
     string address = $"http://127.0.0.1:{port}";
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
     webServer.Put("/test", (request, response) => response.Send(uniqueCode));
     webServer.Start();
 
@@ -150,7 +150,7 @@ public class WebServerTests
     string address = $"http://127.0.0.1:{port}";
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
     webServer.Delete("/test", (request, response) => response.Send(uniqueCode));
     webServer.Start();
 
@@ -178,7 +178,7 @@ public class WebServerTests
     string address = $"http://127.0.0.1:{port}";
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
     webServer.Head(
       "/test",
       (request, response) =>
@@ -215,7 +215,7 @@ public class WebServerTests
     string address = $"http://127.0.0.1:{port}";
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
     webServer.Options("/test", (request, response) => response.Send(uniqueCode));
     webServer.Start();
 
@@ -246,7 +246,7 @@ public class WebServerTests
     string address = $"http://127.0.0.1:{port}";
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
     webServer.Trace("/test", (request, response) => response.Send(uniqueCode));
     webServer.Start();
 
@@ -277,7 +277,7 @@ public class WebServerTests
     string address = $"http://127.0.0.1:{port}";
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
     webServer.Patch("/test", (request, response) => response.Send(uniqueCode));
     webServer.Start();
 
@@ -319,10 +319,10 @@ public class WebServerTests
     };
 
     var webServer = new WebServer();
-    webServer.Listen(address);
+    webServer.AddEndpoint(address);
 
     // Register a route for all HTTP methods
-    webServer.All(
+    webServer.Any(
       "/test",
       (request, response) =>
       {

@@ -3,12 +3,19 @@
 /// <summary>
 /// <see cref="WebServer"/> settings.
 /// </summary>
-public class WebServerOptions
+public record WebServerOptions
 {
   /// <summary>
   /// The base URL where the server will listen.
   /// </summary>
-  public string[]? Endpoints { get; set; } = new string[1] { "http://*:8008" };
+  public string[]? Endpoints { get; init; }
+
+  /// <summary>
+  /// Port to listen on. Will bind on all available network interfaces.
+  /// </summary>
+  public int? Port { get; init; } = 8080;
+
+  public bool BindToIPv6 { get; init; } = false;
 
   /// <summary>
   /// Log accesses, not only errors (500).
@@ -18,10 +25,10 @@ public class WebServerOptions
   /// Since every log entry is instantly flushed to disk, this murders performance.
   /// ~900rq/s on Windows with logging on, ~90k with it off.
   /// </remarks>
-  public bool LogAccess = false;
+  public bool LogAccess { get; init; } = false;
 
   // HTTPS settings
-  public bool UseHttps { get; set; } = false;
-  public string? CertificatePath { get; set; }
-  public string? CertificatePassword { get; set; }
+  public bool UseHttps { get; init; } = false;
+  public string? CertificatePath { get; init; }
+  public string? CertificatePassword { get; init; }
 }
