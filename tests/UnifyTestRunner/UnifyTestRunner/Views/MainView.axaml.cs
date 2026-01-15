@@ -40,7 +40,7 @@ public partial class MainView : UserControl
     new Task(() =>
     {
       UnifyRuntime
-        .Create("UnifyTestRunner")
+        .Create("Unify.TestRunner")
         .UseSecurityRuntime(
           new SecurityRuntimeConfiguration
           {

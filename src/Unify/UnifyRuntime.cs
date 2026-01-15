@@ -25,10 +25,7 @@ public sealed class UnifyRuntime : Runtime, IRuntime
   /// <summary>
   /// Internal <see cref="ILogger"/> for this runtime.
   /// </summary>
-  internal new ILogger RuntimeLog
-  {
-    get => base.RuntimeLog;
-  }
+  internal new ILogger RuntimeLog => base.RuntimeLog;
 
   /// <summary>
   /// Your application's id.

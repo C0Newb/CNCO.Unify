@@ -10,7 +10,7 @@ namespace CNCO.Unify;
 public abstract class Runtime : IRuntime
 {
   protected readonly List<RuntimeHook> _runtimeHooks = new List<RuntimeHook>();
-  protected readonly List<IRuntime> _runtimeLinks = new List<IRuntime>();
+  protected readonly List<IRuntime> _runtimeLinks = [];
   private bool _initialized = false;
   private SectionLogger? _runtimeLogger;
 
