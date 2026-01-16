@@ -8,6 +8,7 @@
 		<RootNamespace>CNCO.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<!-- Windows Toast Notifications -->
@@ -28,6 +29,7 @@
 	<ItemGroup>
 		<!-- For NotificationImages -->
 		<PackageReference Include="SkiaSharp" Version="3.119.1" />
+		<PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.1" />
 	</ItemGroup>
 	
 	<ItemGroup>

@@ -16,10 +16,10 @@ public abstract class Runtime : IRuntime
 
   #region Locks
   // Lock used when adding runtime hooks or links.
-  protected readonly object _addToListLock = new object();
+  protected readonly Lock _addToListLock = new();
 
   // Lock used when initializing this class.
-  protected readonly object _initializationLock = new object();
+  protected readonly Lock _initializationLock = new();
   #endregion
 
   #region Properties

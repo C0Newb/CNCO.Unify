@@ -3,6 +3,7 @@
 		<TargetFramework>$(UnifyAndroidTargetFramework)</TargetFramework>
 		<Platforms>$(UnifyTargetPlatforms)</Platforms>
 		<OutputType>Exe</OutputType>
+		<SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
 	<PropertyGroup>
