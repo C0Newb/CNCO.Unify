@@ -6,10 +6,8 @@ public class MainViewModel : ViewModelBase
 {
   public ObservableCollection<TestCaseViewModel> Results { get; }
 
-  public MainViewModel()
-  {
-    Results = new ObservableCollection<TestCaseViewModel>
-    {
+  public MainViewModel() =>
+    Results = [
       new TestCaseViewModel(
         new NUnitResults.TestCase
         {
@@ -38,6 +36,5 @@ public class MainViewModel : ViewModelBase
           },
         }
       ),
-    };
-  }
+    ];
 }

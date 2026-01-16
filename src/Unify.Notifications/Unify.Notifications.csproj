@@ -1,61 +1,36 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFrameworks>net10.0;net10.0-android;net10.0-ios</TargetFrameworks>
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))"
-      >$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks
-    >
+	<PropertyGroup>
+		<TargetFrameworks>$(UnifyTargetFrameworks)</TargetFrameworks>
+		<Platforms>$(UnifyTargetPlatforms)</Platforms>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<RootNamespace>CNCO.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
-    <SupportedOSPlatformVersion
-      Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'"
-      >12.2</SupportedOSPlatformVersion
-    >
-    <SupportedOSPlatformVersion
-      Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'"
-      >14.0</SupportedOSPlatformVersion
-    >
-    <SupportedOSPlatformVersion
-      Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'"
-      >21.0</SupportedOSPlatformVersion
-    >
-    <SupportedOSPlatformVersion
-      Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'"
-      >7.0</SupportedOSPlatformVersion
-    >
-    <TargetPlatformMinVersion
-      Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'"
-      >7.0</TargetPlatformMinVersion
-    >
-    <SupportedOSPlatformVersion
-      Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'"
-      >6.5</SupportedOSPlatformVersion
-    >
+	<!-- Windows Toast Notifications -->
+	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
+		<DefineConstants>WINDOWS_TOAST_NOTIFICATIONS</DefineConstants>
+	</PropertyGroup>
 
-    <RootNamespace>CNCO.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
-    <Nullable>enable</Nullable>
-    <SingleProject>true</SingleProject>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Platforms>AnyCPU;ARM64</Platforms>
-  </PropertyGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
+		<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+	</ItemGroup>
 
-  <PropertyGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">
-    <DefineConstants>WINDOWS_TOAST_NOTIFICATIONS</DefineConstants>
-  </PropertyGroup>
+	<ItemGroup>
+		<Folder Include="Platforms\Android\" />
+		<Folder Include="Platforms\iOS\" />
+		<Folder Include="Platforms\MacCatalyst\" />
+	</ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">
-    <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Platforms\Android\" />
-    <Folder Include="Platforms\iOS\" />
-    <Folder Include="Platforms\MacCatalyst\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SkiaSharp" Version="3.119.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Unify\Unify.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<!-- For NotificationImages -->
+		<PackageReference Include="SkiaSharp" Version="3.119.1" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<ProjectReference Include="..\Unify\Unify.csproj" />
+	</ItemGroup>
 </Project>

@@ -16,6 +16,6 @@ public partial class MessageDialog : UserControl
   {
     Instance ??= new MessageDialog();
     Instance.mainLabel.Content = message;
-    DialogHost.Show(Instance);
+    using var _ = DialogHost.Show(Instance);
   }
 }

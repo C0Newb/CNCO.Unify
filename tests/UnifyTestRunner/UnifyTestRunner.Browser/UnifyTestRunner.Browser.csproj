@@ -1,21 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
-    <WasmMainJSPath>AppBundle\main.js</WasmMainJSPath>
-    <OutputType>Exe</OutputType>
-    <StartupObject>UnifyTestRunner.Browser.Program</StartupObject>
-  </PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
+	<PropertyGroup>
+		<TargetFramework>$(UnifyBrowserTargetFramework)</TargetFramework>
+		<OutputType>Exe</OutputType>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<UserSecretsId>46623f7d-a960-4655-bf47-ca5a085816ce</UserSecretsId>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <WasmExtraFilesToDeploy Include="AppBundle\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<TestingPlatformBuilderHook Include="8E680F4D-E423-415A-9566-855439363BC0">
+			<DisplayName>MyBuilderHook</DisplayName>
+			<TypeFullName>UnifyTestRunner.Browser.BuilderHook</TypeFullName>
+		</TestingPlatformBuilderHook>
+	</ItemGroup>
+	
+	<ItemGroup>
+        <PackageReference Include="Microsoft.Testing.Platform.MSBuild" />
+		<PackageReference Include="Avalonia.Browser" />
+		<PackageReference Include="NUnit" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Browser" Version="11.3.6" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\UnifyTestRunner\UnifyTestRunner.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\UnifyTestRunner\UnifyTestRunner.csproj" />
+	</ItemGroup>
 </Project>

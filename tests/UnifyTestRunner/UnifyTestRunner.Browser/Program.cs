@@ -2,18 +2,9 @@
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Browser;
-using Avalonia.ReactiveUI;
 using UnifyTestRunner;
 
-[assembly: SupportedOSPlatform("browser")]
-
-namespace UnifyTestRunner.Browser
+internal sealed partial class Program
 {
-  public class Program
-  {
-    public static async Task Main(string[] args)
-    {
-      await AppBuilder.Configure<App>().WithInterFont().UseReactiveUI().StartBrowserAppAsync("out");
-    }
-  }
+  public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<App>();
 }

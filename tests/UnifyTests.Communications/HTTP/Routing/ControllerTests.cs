@@ -49,12 +49,11 @@ public class ControllerTests
       HttpVerb.Trace,
     ];
 
-    var request = GetWebRequest("all", HttpVerb.Get);
     foreach (HttpVerb method in methods)
     {
       string expectedResponse = $"all-{method.ToString().ToLower()}";
 
-      request.Verb = method;
+      var request = GetWebRequest("all", method);
       Router.Process(request, Response);
 
       string actualResponse = Context.LastResponseData.ToLower();

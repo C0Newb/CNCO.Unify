@@ -5,7 +5,12 @@ VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4A42426B-F3C9-4B6F-A6AD-6657CB2DD738}"
 	ProjectSection(SolutionItems) = preProject
+		.csharpierignore = .csharpierignore
 		.editorconfig = .editorconfig
+		.git = .git
+		.gitignore = .gitignore
+		Directory.Build.props = Directory.Build.props
+		dotnet-tools.json = dotnet-tools.json
 		testEnvironments.json = testEnvironments.json
 	EndProjectSection
 EndProject
@@ -32,6 +37,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Unify.Notifications", "src\Unify.Notifications\Unify.Notifications.csproj", "{8C378682-A558-4289-AD32-1ECE6F7903DE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UnifyRunner", "UnifyRunner", "{625C2620-1DFC-4D55-8ACC-BF34C803D53E}"
+	ProjectSection(SolutionItems) = preProject
+		tests\UnifyTestRunner\Directory.Packages.props = tests\UnifyTestRunner\Directory.Packages.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnifyTestRunner", "tests\UnifyTestRunner\UnifyTestRunner\UnifyTestRunner.csproj", "{2A3058AE-722D-4FD6-951B-E0E89E876706}"
 EndProject
@@ -42,6 +50,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnifyTestRunner.iOS", "tests\UnifyTestRunner\UnifyTestRunner.iOS\UnifyTestRunner.iOS.csproj", "{48FA5771-A84B-48C2-B7C8-A3D311FD8DAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{9D6844F1-85F7-4C5C-9C41-8A00F7F324B4}"
+	ProjectSection(SolutionItems) = preProject
+		demo\UnifyDemo.App\Directory.Packages.props = demo\UnifyDemo.App\Directory.Packages.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifyDemo.App", "demo\UnifyDemo.App\UnifyDemo.App\UnifyDemo.App.csproj", "{8625474D-E9F9-484D-9DAD-5BAEF1DA92E2}"
 EndProject
@@ -52,6 +63,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifyDemo.App.iOS", "demo\UnifyDemo.App\UnifyDemo.App.iOS\UnifyDemo.App.iOS.csproj", "{6FA503A8-0525-4FC9-B552-F1467ACB3451}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifyDemo.App.Browser", "demo\UnifyDemo.App\UnifyDemo.App.Browser\UnifyDemo.App.Browser.csproj", "{595295E3-F203-437B-9A02-52AF2C8F1D85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnifyTestRunner.Browser", "tests\UnifyTestRunner\UnifyTestRunner.Browser\UnifyTestRunner.Browser.csproj", "{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -191,10 +204,12 @@ Global
 		{8625474D-E9F9-484D-9DAD-5BAEF1DA92E2}.Release|ARM64.Build.0 = Release|Any CPU
 		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Debug|ARM64.ActiveCfg = Debug|Any CPU
 		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Debug|ARM64.Build.0 = Debug|Any CPU
 		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Release|Any CPU.Build.0 = Release|Any CPU
+		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{492383D5-CAC3-4F09-85FC-C9A7C7699596}.Release|ARM64.Build.0 = Release|Any CPU
 		{40C72C8C-2B4A-43FF-9374-CDE3F39E0476}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -221,6 +236,14 @@ Global
 		{595295E3-F203-437B-9A02-52AF2C8F1D85}.Release|Any CPU.Build.0 = Release|Any CPU
 		{595295E3-F203-437B-9A02-52AF2C8F1D85}.Release|ARM64.ActiveCfg = Release|Any CPU
 		{595295E3-F203-437B-9A02-52AF2C8F1D85}.Release|ARM64.Build.0 = Release|Any CPU
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2}.Release|ARM64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -241,6 +264,7 @@ Global
 		{40C72C8C-2B4A-43FF-9374-CDE3F39E0476} = {9D6844F1-85F7-4C5C-9C41-8A00F7F324B4}
 		{6FA503A8-0525-4FC9-B552-F1467ACB3451} = {9D6844F1-85F7-4C5C-9C41-8A00F7F324B4}
 		{595295E3-F203-437B-9A02-52AF2C8F1D85} = {9D6844F1-85F7-4C5C-9C41-8A00F7F324B4}
+		{DCEB05FD-EBC0-53FF-9CCA-6699583C61D2} = {625C2620-1DFC-4D55-8ACC-BF34C803D53E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9E7CF8C3-6BEC-4C77-8E86-3D88923C3694}
