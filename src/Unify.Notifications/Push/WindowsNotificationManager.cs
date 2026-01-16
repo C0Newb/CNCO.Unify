@@ -13,7 +13,7 @@ namespace CNCO.Unify.Notifications.Push;
 [SupportedOSPlatform("windows")]
 internal class WindowsNotificationManager : INotificationManager
 {
-#if WINDOWS
+#if WINDOWS_TOAST_NOTIFICATIONS
   private Platforms.Windows.WindowsNotificationManager _manager;
 #endif
 
@@ -21,14 +21,14 @@ internal class WindowsNotificationManager : INotificationManager
 
   public WindowsNotificationManager()
   {
-#if WINDOWS
+#if WINDOWS_TOAST_NOTIFICATIONS
     _manager = new Platforms.Windows.WindowsNotificationManager();
 #endif
   }
 
   public void Register()
   {
-#if WINDOWS
+#if WINDOWS_TOAST_NOTIFICATIONS
     _manager.Register();
 #else
     throw new UnsupportedPlatformException($"{GetType().Name}::{nameof(Register)}");
@@ -37,7 +37,7 @@ internal class WindowsNotificationManager : INotificationManager
 
   public void Unregister()
   {
-#if WINDOWS
+#if WINDOWS_TOAST_NOTIFICATIONS
     _manager.Unregister();
 #else
     throw new UnsupportedPlatformException($"{GetType().Name}::{nameof(Unregister)}");
@@ -46,7 +46,7 @@ internal class WindowsNotificationManager : INotificationManager
 
   public void ClearAll()
   {
-#if WINDOWS
+#if WINDOWS_TOAST_NOTIFICATIONS
     _manager.ClearAll();
 #else
     throw new UnsupportedPlatformException($"{GetType().Name}::{nameof(Unregister)}");
@@ -55,7 +55,7 @@ internal class WindowsNotificationManager : INotificationManager
 
   public void Send(IPushNotification pushNotification)
   {
-#if WINDOWS
+#if WINDOWS_TOAST_NOTIFICATIONS
     _manager.Send(pushNotification);
 #else
     throw new UnsupportedPlatformException($"{GetType().Name}::{nameof(Send)}");
@@ -64,7 +64,7 @@ internal class WindowsNotificationManager : INotificationManager
 
   public void Update(IPushNotification pushNotification)
   {
-#if WINDOWS
+#if WINDOWS_TOAST_NOTIFICATIONS
     _manager.Update(pushNotification);
 #else
     throw new UnsupportedPlatformException($"{GetType().Name}::{nameof(Send)}");
@@ -73,7 +73,7 @@ internal class WindowsNotificationManager : INotificationManager
 
   public void Cancel(IPushNotification pushNotification)
   {
-#if WINDOWS
+#if WINDOWS_TOAST_NOTIFICATIONS
     _manager.Cancel(pushNotification);
 #else
     throw new UnsupportedPlatformException($"{GetType().Name}::{nameof(Send)}");

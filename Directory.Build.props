@@ -1,0 +1,80 @@
+<Project>
+	<PropertyGroup>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- .NET Version -->
+		<UnifyDotNetVersion>net10.0</UnifyDotNetVersion>
+
+		<!-- Targets (plural = multiple, singular = ONE) -->
+		<UnifyDesktopTargetFrameworks>$(UnifyDotNetVersion)</UnifyDesktopTargetFrameworks>
+		<UnifyBrowserTargetFramework>$(UnifyDotNetVersion)-browser</UnifyBrowserTargetFramework>
+		<UnifyWindowsTargetFramework>$(UnifyDotNetVersion)-windows10.0.19041.0</UnifyWindowsTargetFramework>
+		<UnifyMacosTargetFramework>$(UnifyDotNetVersion)-macos</UnifyMacosTargetFramework>
+		<UnifyAndroidTargetFramework>$(UnifyDotNetVersion)-android</UnifyAndroidTargetFramework>
+		<UnifyIosTargetFramework>$(UnifyDotNetVersion)-ios</UnifyIosTargetFramework>
+
+		<!-- Core Targets (Unify Libraries) -->
+		<UnifyTargetFrameworks>$(UnifyDotNetVersion);$(UnifyAndroidTargetFramework);$(UnifyIosTargetFramework)</UnifyTargetFrameworks>
+		<UnifyTestsTargetFrameworks>$(UnifyDotNetVersion);$(UnifyAndroidTargetFramework)</UnifyTestsTargetFrameworks>
+		
+		<!-- CPU Architecture -->
+		<UnifyTargetPlatforms>AnyCPU;ARM64</UnifyTargetPlatforms>
+	</PropertyGroup>
+
+	<!-- Build platform -->
+	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
+		<UnifyTargetFrameworks>$(UnifyTargetFrameworks);$(UnifyWindowsTargetFramework)</UnifyTargetFrameworks>
+		<UnifyDesktopTargetFrameworks>$(UnifyDesktopTargetFrameworks);$(UnifyWindowsTargetFramework)</UnifyDesktopTargetFrameworks>
+	</PropertyGroup>
+	<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('macos'))">
+		<UnifyTargetFrameworks>$(UnifyTargetFrameworks);$(UnifyMacosTargetFramework)</UnifyTargetFrameworks>
+		<UnifyDesktopTargetFrameworks>$(UnifyDesktopTargetFrameworks);$(UnifyMacosTargetFramework)</UnifyDesktopTargetFrameworks>
+	</PropertyGroup>
+	
+	<!-- Windows -->
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+		<SupportedOSPlatformVersion >7.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion>7.0</TargetPlatformMinVersion>
+	</PropertyGroup>
+
+	<!-- Android -->
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">
+		<SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
+		<TargetPlatformMinVersion>26.0</TargetPlatformMinVersion>
+	</PropertyGroup>
+
+	<!-- iOS -->
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">
+		<SupportedOSPlatformVersion >12.0</SupportedOSPlatformVersion>
+	</PropertyGroup>
+	<!-- Mac -->
+	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">
+		<SupportedOSPlatformVersion >14.0</SupportedOSPlatformVersion>
+	</PropertyGroup>
+
+
+
+	<PropertyGroup>
+		<AvaloniaVersion>11.0.2</AvaloniaVersion>
+	</PropertyGroup>
+
+	<!-- Android AoT and Optimizations -->
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Debug|$(UnifyDotNetVersion)-android'">
+		<IsTrimmable>True</IsTrimmable>
+		<IsAotCompatible>True</IsAotCompatible>
+		<TrimMode>link</TrimMode>
+		<EnableLLVM>True</EnableLLVM>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Release|$(UnifyDotNetVersion)-android'">
+		<IsTrimmable>True</IsTrimmable>
+		<IsAotCompatible>True</IsAotCompatible>
+		<Optimize>True</Optimize>
+		<RunAOTCompilation>True</RunAOTCompilation>
+		<PublishTrimmed>True</PublishTrimmed>
+		<TrimMode>link</TrimMode>
+		<EnableLLVM>True</EnableLLVM>
+	</PropertyGroup>
+</Project>
