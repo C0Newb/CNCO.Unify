@@ -13,12 +13,9 @@ public class SecurityRuntime : Runtime, IRuntime
   // What in ?
   private readonly ICredentialManagerEndpoint _platformCredentialManager =
     CredentialManagerFactory.GetPlatformCredentialManager();
-  private readonly IEncryptionKeyProvider? _encryptionKeyProvider;
-  private readonly IEncryptionProvider? _encryptionProvider;
-  private readonly IFileStorage? _fileStorage;
   private readonly ICredentialManager? _credentialManager;
 
-  protected static new readonly object _initializationLock = new object();
+  protected static readonly Lock _lock = new();
 
   #region Properties
   /// <summary>
@@ -43,7 +40,7 @@ public class SecurityRuntime : Runtime, IRuntime
     {
       if (_instance == null)
       { // Null?
-        lock (_initializationLock)
+        lock (_lock)
         { // Should only hit one time.
           _instance ??= new SecurityRuntime();
         }
@@ -70,7 +67,7 @@ public class SecurityRuntime : Runtime, IRuntime
         RuntimeLog.Error(
           $"{nameof(_credentialManager)} has not been initialized, but should have been in the runtime constructor."
         );
-        throw new NullReferenceException("The credential manager has not been initialized.");
+        throw new InvalidOperationException("The credential manager has not been initialized.");
       }
 
       return _instance._credentialManager;
@@ -78,29 +75,28 @@ public class SecurityRuntime : Runtime, IRuntime
   }
   #endregion
 
-  public SecurityRuntime()
-    : this(null) { }
-
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
   public SecurityRuntime(SecurityRuntimeConfiguration? runtimeConfiguration = null)
   {
-    if (_instance != null)
-      return;
-
     Configuration = runtimeConfiguration ?? new SecurityRuntimeConfiguration();
+    if (_instance != null)
+    {
+      return;
+    }
 
     lock (_initializationLock)
     {
       if (_instance != null)
+      {
         return;
+      }
 
       _instance = this;
 
       _platformCredentialManager =
         runtimeConfiguration?.PlatformCredentialManager ?? _platformCredentialManager;
-      _encryptionKeyProvider = runtimeConfiguration?.KeyProvider;
-      _encryptionProvider = runtimeConfiguration?.EncryptionProvider;
-      _fileStorage = runtimeConfiguration?.FileStorage;
+      var _encryptionKeyProvider = runtimeConfiguration?.KeyProvider;
+      var _encryptionProvider = runtimeConfiguration?.EncryptionProvider;
+      var _fileStorage = runtimeConfiguration?.FileStorage;
       _credentialManager = runtimeConfiguration?.CredentialManager;
 
       // Initialize up to a credential manager. Use as much of the runtime configuration as we can
@@ -141,7 +137,6 @@ public class SecurityRuntime : Runtime, IRuntime
       );
     }
   }
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
   public static SecurityRuntime Create(SecurityRuntimeConfiguration? runtimeConfiguration) =>
     new SecurityRuntime(runtimeConfiguration);

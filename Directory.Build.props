@@ -17,7 +17,7 @@
 		<UnifyIosTargetFramework>$(UnifyDotNetVersion)-ios</UnifyIosTargetFramework>
 
 		<!-- Core Targets (Unify Libraries) -->
-		<UnifyTargetFrameworks>$(UnifyDotNetVersion);$(UnifyAndroidTargetFramework);$(UnifyIosTargetFramework)</UnifyTargetFrameworks>
+		<UnifyTargetFrameworks>$(UnifyDotNetVersion);$(UnifyAndroidTargetFramework);$(UnifyIosTargetFramework);$(UnifyBrowserTargetFramework)</UnifyTargetFrameworks>
 		<UnifyTestsTargetFrameworks>$(UnifyDotNetVersion);$(UnifyAndroidTargetFramework)</UnifyTestsTargetFrameworks>
 		
 		<!-- CPU Architecture -->

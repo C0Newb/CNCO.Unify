@@ -2,7 +2,6 @@
 	<PropertyGroup>
 		<TargetFramework>$(UnifyBrowserTargetFramework)</TargetFramework>
 		<OutputType>Exe</OutputType>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<UserSecretsId>46623f7d-a960-4655-bf47-ca5a085816ce</UserSecretsId>
 	</PropertyGroup>
 
