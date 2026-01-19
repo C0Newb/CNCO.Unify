@@ -63,7 +63,7 @@ public class WebSocket : IWebSocket
   /// <param name="subProtocol">The supported WebSocket sub-protocol.</param>
   /// <param name="keepAliveInterval">The WebSocket keep-alive interval in milliseconds.</param>
   /// <param name="receiveBufferSize">The receive buffer size in bytes.</param>
-  public static WebSocket CreateWebSocketConnection(
+  public static async Task<WebSocket> CreateWebSocketConnectionAsync(
     HttpListenerContext httpListenerContext,
     IWebRequest webRequest,
     string? subProtocol = null,
@@ -71,33 +71,34 @@ public class WebSocket : IWebSocket
     TimeSpan? keepAliveInterval = null
   )
   {
-    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+    using CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
     cancellationTokenSource.CancelAfter(5000); // Give it 5 seconds to connect
 
     WebSocketContext? webSocketContext = null;
-    Task.Run(
-        async () =>
-        {
-          if (receiveBufferSize != null && keepAliveInterval != null)
-            webSocketContext = await httpListenerContext.AcceptWebSocketAsync(
-              subProtocol,
-              receiveBufferSize.Value,
-              keepAliveInterval.Value
-            );
-          else if (keepAliveInterval != null)
-            webSocketContext = await httpListenerContext.AcceptWebSocketAsync(
-              subProtocol,
-              keepAliveInterval.Value
-            );
-          else
-            webSocketContext = await httpListenerContext.AcceptWebSocketAsync(subProtocol);
-        },
-        cancellationTokenSource.Token
-      )
-      .Wait();
+    await Task.Run(
+      async () =>
+      {
+        if (receiveBufferSize != null && keepAliveInterval != null)
+          webSocketContext = await httpListenerContext.AcceptWebSocketAsync(
+            subProtocol,
+            receiveBufferSize.Value,
+            keepAliveInterval.Value
+          );
+        else if (keepAliveInterval != null)
+          webSocketContext = await httpListenerContext.AcceptWebSocketAsync(
+            subProtocol,
+            keepAliveInterval.Value
+          );
+        else
+          webSocketContext = await httpListenerContext.AcceptWebSocketAsync(subProtocol);
+      },
+      cancellationTokenSource.Token
+    );
 
     if (webSocketContext == null)
+    {
       throw new WebSocketException("Failed to finalize WebSocket connection handshake.");
+    }
 
     return new WebSocket(webRequest, webSocketContext);
   }
@@ -118,7 +119,7 @@ public class WebSocket : IWebSocket
       {
         webSocketResponse = await Socket.ReceiveAsync(tempMessage, CancellationToken.None);
         webSocketPayload.AddRange(new ArraySegment<byte>(tempMessage, 0, webSocketResponse.Count));
-      } while (webSocketResponse.EndOfMessage == false);
+      } while (!webSocketResponse.EndOfMessage);
 
       switch (webSocketResponse.MessageType)
       {

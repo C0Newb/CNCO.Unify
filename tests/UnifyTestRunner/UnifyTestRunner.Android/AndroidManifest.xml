@@ -45,5 +45,5 @@
     android:icon="@drawable/icon"
     android:usesCleartextTraffic="true"
   />
-  <uses-sdk />
+  <uses-sdk android:minSdkVersion="26" android:maxSdkVersion="26" />
 </manifest>

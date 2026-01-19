@@ -103,6 +103,11 @@ public sealed class UnifyRuntime : Runtime, IRuntime
           Current._applicationLog.AddLogger(fileLogger);
         }
 
+        if (Platform.IsBrowser())
+        {
+          Current._applicationLog.AddLogger(new ConsoleLogger());
+        }
+
         Current._applicationLog.AddLogger(new DiagnosticsLogger());
 
         Current._applicationLog.Log("Unify", "Bonjour!"); // startup message

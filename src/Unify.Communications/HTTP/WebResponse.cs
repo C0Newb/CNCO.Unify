@@ -11,16 +11,13 @@ namespace CNCO.Unify.Communications.Http;
 /// </summary>
 public class WebResponse : IWebResponse
 {
-  private readonly object _lock = new object();
+  private readonly Lock _lock = new();
   private readonly HttpListenerResponse? _response;
 
   /// <summary>
   /// Raw response output stream.
   /// </summary>
-  private Stream OutputStream
-  {
-    get => _response?.OutputStream ?? Stream.Null;
-  }
+  private Stream OutputStream => _response?.OutputStream ?? Stream.Null;
 
   public bool HasEnded { get; private set; } = false;
 
@@ -30,7 +27,9 @@ public class WebResponse : IWebResponse
     set
     {
       if (_response != null)
+      {
         _response.Cookies = value ?? [];
+      }
     }
   }
 
@@ -40,7 +39,9 @@ public class WebResponse : IWebResponse
     set
     {
       if (_response != null)
+      {
         _response.Headers = value ?? [];
+      }
     }
   }
 
@@ -50,9 +51,13 @@ public class WebResponse : IWebResponse
     set
     {
       if (string.IsNullOrEmpty(value))
+      {
         Headers.Remove(HttpResponseHeader.ContentType);
+      }
       else
+      {
         Headers.Set(HttpResponseHeader.ContentType, value);
+      }
     }
   }
 
@@ -64,9 +69,13 @@ public class WebResponse : IWebResponse
     set
     {
       if (string.IsNullOrEmpty(value))
+      {
         Headers.Remove(HttpResponseHeader.Location);
+      }
       else
+      {
         Headers.Set(HttpResponseHeader.Location, value);
+      }
     }
   }
 
@@ -81,7 +90,9 @@ public class WebResponse : IWebResponse
   public void End()
   {
     if (HasEnded)
+    {
       return;
+    }
 
     WrapWrite(() =>
     {
@@ -92,7 +103,7 @@ public class WebResponse : IWebResponse
 
   public void AddCookie(Cookie cookie)
   {
-    ArgumentNullException.ThrowIfNull(cookie, nameof(cookie));
+    ArgumentNullException.ThrowIfNull(cookie);
     _response?.AppendCookie(cookie);
   }
 
@@ -100,16 +111,16 @@ public class WebResponse : IWebResponse
 
   public void AppendHeader(string name, string value) => _response?.AppendHeader(name, value);
 
-  public void Attachment(string fileName)
-  {
+  public void Attachment(string fileName) =>
     Headers["Content-Disposition"] =
       "attachment" + (!string.IsNullOrEmpty(fileName) ? $"; filename=\"{fileName}\"" : "");
-  }
 
   public void Redirect(string uri)
   {
     if (_response == null)
-      throw new NullReferenceException("No response available to set.");
+    {
+      throw new InvalidOperationException("No response available to set.");
+    }
 
     RedirectLocation = uri;
     WrapWrite(() =>
@@ -127,7 +138,9 @@ public class WebResponse : IWebResponse
   public void Status(int statusCode)
   {
     if (_response == null)
-      throw new NullReferenceException("No response available to set.");
+    {
+      throw new InvalidOperationException("No response available to set.");
+    }
 
     lock (_lock)
     {
@@ -135,27 +148,49 @@ public class WebResponse : IWebResponse
     }
   }
 
+  public void Send(Stream stream)
+  {
+    if (_response == null)
+    {
+      throw new InvalidOperationException("No response available to set.");
+    }
+
+    lock (_lock)
+    {
+      WrapWrite(() => stream.CopyTo(OutputStream));
+      End();
+    }
+  }
+
   public void Send(string? data)
   {
     if (_response == null)
-      throw new NullReferenceException("No response available to set.");
+    {
+      throw new InvalidOperationException("No response available to set.");
+    }
 
     byte[] bytes = Encoding.UTF8.GetBytes(data ?? string.Empty);
     lock (_lock)
     {
-      WrapWrite(() => OutputStream.Write(bytes));
-      End();
+      WrapWrite(() =>
+      {
+        HasEnded = true;
+        _response.Close(bytes, true);
+        _response.Close();
+      });
     }
   }
 
   public void SendJson(JsonObject? data)
   {
     if (_response == null)
-      throw new NullReferenceException("No response available to set.");
+    {
+      throw new InvalidOperationException("No response available to set.");
+    }
 
     if (data == null)
     {
-      Send(null);
+      Send(data: null);
       return;
     }
 
@@ -171,7 +206,9 @@ public class WebResponse : IWebResponse
   public void SendFile(string path, IFileStorage storage, string? fileType = null)
   {
     if (_response == null)
-      throw new NullReferenceException("No response available to set.");
+    {
+      throw new InvalidOperationException("No response available to set.");
+    }
 
     if (!storage.Exists(path))
     {
@@ -221,14 +258,18 @@ public class WebResponse : IWebResponse
   )
   {
     if (_response == null)
-      throw new NullReferenceException("No response available to set.");
+    {
+      throw new InvalidOperationException("No response available to set.");
+    }
 
     if (!storage.Exists(path))
+    {
       throw new FileNotFoundException(path);
+    }
 
     var name = attachmentOptions?.AttachmentName ?? Path.GetFileName(path);
 
-    MimeMapping.TryGetMimeType(path, out string? actualMimeType);
+    _ = MimeMapping.TryGetMimeType(path, out string? actualMimeType);
     var mimeType = attachmentOptions?.MimeType ?? actualMimeType; // ?? "text/plain;charset=UTF-8";
     // it's better to have no mimeType and let the receiver figure it out then for us to go "yeah it's this" when we don't know :p
     Attachment(name);

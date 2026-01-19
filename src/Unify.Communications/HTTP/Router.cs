@@ -66,11 +66,10 @@ public class Router : IRouter
     }
   }
 
-  private readonly Dictionary<string, List<Listener>> Listeners =
-    new Dictionary<string, List<Listener>>();
+  private readonly Dictionary<string, List<Listener>> Listeners = [];
 
   // Use this to go from paths to paths with parameter names (/my/path/to/blahBlah/doc -> /my/path/to/:docPath:/doc)
-  private readonly Dictionary<string, string> PathRegexLookup = new Dictionary<string, string>();
+  private readonly Dictionary<string, string> PathRegexLookup = [];
   #endregion
 
   #region Listeners methods
@@ -180,7 +179,7 @@ public class Router : IRouter
 
         // yep
         var originalPath = PathRegexLookup[regexString];
-        Listeners.TryGetValue(originalPath, out List<Listener>? listenersForRegexPath);
+        _ = Listeners.TryGetValue(originalPath, out List<Listener>? listenersForRegexPath);
         if (listenersForRegexPath != null && listenersForRegexPath.Count > 0)
         {
           listenersForPath = listenersForRegexPath;
@@ -249,15 +248,15 @@ public class Router : IRouter
           }
 
           if (listener.OnWebSocketRequest == null) // What? How?
-            throw new NullReferenceException(
+            throw new InvalidOperationException(
               $"{nameof(listener.OnWebSocketRequest)} is null, no listener action to call!"
             );
 
           if (hasActivatedHttp && !hasActivatedWebSocketWarningEmitted)
             WarnAboutMixingHttpAndWebSocketRoutes();
 
-          Task wsTask = new Task(() =>
-            listener.OnWebSocketRequest(request.CreateWebSocketConnection())
+          Task wsTask = new Task(async () =>
+            listener.OnWebSocketRequest(await request.CreateWebSocketConnectionAsync())
           );
           listenerTasks.TryAdd(listener, wsTask);
           wsTask.Start();
@@ -266,7 +265,7 @@ public class Router : IRouter
         else if (listener.Verb == HttpVerb.Any || listener.Verb == request.Verb)
         {
           if (listener.OnWebRequest == null) // What? How?
-            throw new NullReferenceException(
+            throw new InvalidOperationException(
               $"{nameof(listener.OnWebRequest)} is null, no listener action to call!"
             );
 

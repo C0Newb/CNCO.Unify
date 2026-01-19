@@ -2,9 +2,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(UnifyTestsTargetFrameworks)</TargetFrameworks>
     <Platforms>$(UnifyTargetPlatforms)</Platforms>
-
-    <OutputType Condition="'$(TargetFramework)' != 'net10.0'">Exe</OutputType>
-
+	  
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>

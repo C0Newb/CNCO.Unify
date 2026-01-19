@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "UnifyDemo.App.Browser": {
+    "UnifyTestRunner.Browser": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

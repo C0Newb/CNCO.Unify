@@ -5,22 +5,37 @@
 /// </summary>
 internal class NotificationManagerFactory
 {
+  [System.Diagnostics.CodeAnalysis.SuppressMessage(
+    "Interoperability",
+    "CA1416:Validate platform compatibility",
+    Justification = "It is checked."
+  )]
   public static INotificationManager GetPlatformNotificationManager()
   {
-#pragma warning disable CA1416 // Validate platform compatibility
     if (Platform.IsWindows())
+    {
       return new WindowsNotificationManager();
+    }
 
-    /*if (Platform.IsAndroid())
-        return new AndroidNotificationManager();
+    if (Platform.IsAndroid())
+    {
+      return new AndroidNotificationManager();
+    }
 
     if (Platform.IsLinux())
-        return new LinuxNotificationManager();
+    {
+      return new LinuxNotificationManager();
+    }
 
     if (Platform.IsApple())
-        return new AppleCredentialManager();
-    */
-#pragma warning restore CA1416 // Validate platform compatibility
+    {
+      return new AppleCredentialManager();
+    }
+
+    if (Platform.IsBrowser())
+    {
+      return new BrowserNotificationManager();
+    }
 
     NotificationRuntime.Current.RuntimeLog.Warning(
       $"{nameof(NotificationManagerFactory)}::{nameof(GetPlatformNotificationManager)}()",

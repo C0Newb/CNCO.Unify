@@ -48,6 +48,8 @@ internal class MockWebResponse : IWebResponse
 
   public void Send(string? data) => throw new NotImplementedException();
 
+  public void Send(Stream data) => throw new NotImplementedException();
+
   public void SendAttachment(
     string path,
     IFileStorage storage,

@@ -9,17 +9,26 @@ public interface IWebServer : IDisposable
   /// Adds an endpoint to be listening on. Can only be done if the server is stopped.
   /// </summary>
   /// <param name="endpoint">Address to be listening on, such as <c>http://localhost:8008</c>.</param>
-  void Listen(string endpoint);
+  void AddEndpoint(string endpoint);
 
   /// <summary>
   /// Adds an endpoint to be listening on. Can only be done if the server is stopped.
   /// </summary>
   /// <param name="uri">The URI to listen on.</param>
-  void Listen(Uri uri);
+  void AddEndpoint(Uri uri);
+
+  /// <summary>
+  /// Returns all endpoints the server is listening to.
+  /// </summary>
+  /// <returns>Current listened to endpoints.</returns>
+  IEnumerable<string> GetEndpoints();
 
   /// <summary>
   /// Starts the web server.
   /// </summary>
+  /// <exception cref="System.Security.SecurityException">
+  /// Access is denied binding to an endpoint.
+  /// </exception>
   void Start();
 
   /// <summary>

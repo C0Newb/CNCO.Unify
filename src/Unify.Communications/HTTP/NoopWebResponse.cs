@@ -49,6 +49,8 @@ public class NoopWebResponse : IWebResponse
 
   public void Send(string? data) => throw new InvalidOperationException();
 
+  public void Send(Stream stream) => throw new InvalidOperationException();
+
   public void SendAttachment(
     string path,
     IFileStorage storage,
