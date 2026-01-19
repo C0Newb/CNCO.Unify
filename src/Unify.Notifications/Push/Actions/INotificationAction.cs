@@ -8,9 +8,9 @@ public interface INotificationAction
   /// Identifier of the notification action.
   /// </summary>
   /// <remarks>
-  /// Used by uderlying notification system to track events.
+  /// Used to track events and uniquely identify actions.
   /// </remarks>
-  public string Id { get; set; }
+  public string Id { get; }
 
   /// <summary>
   /// Gets the type of action this represents.

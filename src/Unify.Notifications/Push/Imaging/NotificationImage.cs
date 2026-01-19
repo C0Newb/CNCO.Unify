@@ -4,60 +4,85 @@ using SkiaSharp;
 
 namespace CNCO.Unify.Notifications.Push.Imaging;
 
-public class NotificationImage : INotificationImage
+/// <summary>
+/// Initializes a new instance of the NotificationImage class using the specified image string.
+/// </summary>
+/// <param name="imageString">
+///   <para>
+///   A string that represents the image data in the format:
+///   </para>
+///
+///   <para>
+///   <c>data:image/jpg;base64,...</c>, or
+///   </para>
+///   <para>
+///   <c>data:image/jpg;base64,...</c>, where "<c>...</c>" is the actual encoded image data.
+///   </para>
+///
+///   <remarks>
+///   If no data provide, no image will be available.
+///   </remarks>
+/// </param>
+public partial class NotificationImage(string? imageString) : INotificationImage
 {
-  private ILocalFileStorage? _storage;
-  private string? _imageString;
-  private string FilePath => Id.ToString();
+  [GeneratedRegex(@"^data:image\/(jpeg|png|gif|tiff|ico|emf|wmf|exif);(base64|hex),")]
+  private static partial Regex ImageFileTypeAndEncoding();
+
+  private static ILocalFileStorage FileStorage => NotificationRuntime.ImageFileStore;
+
+  private string FileName => Id.ToString();
 
   public Guid Id { get; } = Guid.NewGuid();
   public string? AlternativeText { get; set; } = null;
-  public bool IsWritten => _storage != null && _storage.Exists(FilePath);
-  public Uri? Uri => IsWritten ? new Uri(_storage!.GetPath(FilePath)) : null;
-
-  public NotificationImage(string? imageString)
-  {
-    _imageString = imageString;
-  }
-
-  public void SetImage(string imageString) => _imageString = imageString;
+  public bool IsWritten => FileStorage != null && FileStorage.Exists(FileName);
+  public Uri? Uri => !IsWritten && !WriteImage() ? null : new Uri(FileStorage.GetPath(FileName));
 
   public void DeleteImage()
   {
-    if (_storage == null)
-      return;
-
-    if (_storage.Exists(FilePath))
+    if (FileStorage != null && FileStorage.Exists(FileName))
     {
-      _storage.Delete(FilePath);
+      _ = FileStorage.Delete(FileName);
     }
   }
 
-  public bool WriteImage(ILocalFileStorage? fileStorage = null)
+  public void SetImage(string imageData) => imageString = imageData;
+
+  public bool WriteImage()
   {
     if (IsWritten)
-      return true;
-    if (string.IsNullOrEmpty(_imageString))
-      return false;
-
-    _storage ??= fileStorage ?? NotificationRuntime.ImageFileStore;
-
-    // Verify the data string contains image data
-    Regex regex = new Regex(@"^data:image\/(jpeg|png|gif|tiff|ico|emf|wmf|exif);(base64|hex),");
-    Match match = regex.Match(_imageString);
-
-    if (!match.Success)
     {
-      throw new ArgumentException("Invalid image data string format.");
+      return true;
+    }
+    if (string.IsNullOrEmpty(imageString))
+    {
+      return false;
+    }
+
+    // Decode the image data
+    var imageFormat = DecodeImageData(out byte[] imageBytes);
+
+    // Load the image
+    using MemoryStream imageMemoryStream = new MemoryStream(imageBytes);
+    using SKBitmap bitmap = SKBitmap.Decode(imageMemoryStream);
+    using SKImage image = SKImage.FromBitmap(bitmap);
+    var data = image.Encode(imageFormat, 75);
+    var dataStream = data.AsStream();
+    return FileStorage.Write(FileName, dataStream);
+  }
+
+  private SKEncodedImageFormat DecodeImageData(out byte[] imageData)
+  {
+    // Verify the data string contains image data
+    Match match = ImageFileTypeAndEncoding().Match(imageString ?? string.Empty);
+
+    if (string.IsNullOrEmpty(imageString) || !match.Success)
+    {
+      throw new InvalidOperationException("Invalid image data string format.");
     }
 
     // Extract information from the data string
-    string fileType = match.Groups[1].Value;
-    string encodingType = match.Groups[2].Value;
-    string encodedData = _imageString.Substring(match.Length).Trim();
-
-    // Decode the image data
-    byte[]? imageData = null;
+    var encodingType = match.Groups[2].Value;
+    var encodedData = imageString[match.Length..].Trim();
 
     if (encodingType == "base64")
     {
@@ -73,32 +98,25 @@ public class NotificationImage : INotificationImage
         imageData[i] = Convert.ToByte(encodedData.Substring(i * 2, 2), 16);
       }
     }
+    else
+    {
+      imageData = null!;
+    }
 
     if (imageData == null)
     {
-      throw new NullReferenceException("Unable to decode null image data.");
+      throw new InvalidOperationException("Unable to decode null image data.");
     }
 
-    // Load the image
-    using (MemoryStream imageMemoryStream = new MemoryStream(imageData))
-    using (SKBitmap bitmap = SKBitmap.Decode(imageMemoryStream))
-    using (SKImage image = SKImage.FromBitmap(bitmap))
+    return match.Groups[1].Value.ToLower() switch
     {
-      SKEncodedImageFormat imageFormat = SKEncodedImageFormat.Bmp;
-      imageFormat = fileType.ToLower() switch
-      {
-        "jpg" or "jpeg" => SKEncodedImageFormat.Jpeg,
-        "heif" => SKEncodedImageFormat.Heif,
-        "webp" => SKEncodedImageFormat.Webp,
-        "gif" => SKEncodedImageFormat.Gif,
-        "ico" => SKEncodedImageFormat.Ico,
-        "bmp" => SKEncodedImageFormat.Bmp,
-        _ => SKEncodedImageFormat.Png,
-      };
-
-      var data = image.Encode(imageFormat, 75);
-      var dataStream = data.AsStream();
-      return _storage.Write(FilePath, dataStream);
-    }
+      "jpg" or "jpeg" => SKEncodedImageFormat.Jpeg,
+      "heif" => SKEncodedImageFormat.Heif,
+      "webp" => SKEncodedImageFormat.Webp,
+      "gif" => SKEncodedImageFormat.Gif,
+      "ico" => SKEncodedImageFormat.Ico,
+      "png" => SKEncodedImageFormat.Png,
+      _ => SKEncodedImageFormat.Bmp, // Unsupported?
+    };
   }
 }

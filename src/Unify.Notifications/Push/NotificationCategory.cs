@@ -19,14 +19,14 @@ public enum NotificationCategory
   Standard = 1,
 
   /// <summary>
-  /// Notification contains a large image.
-  /// </summary>
-  Image = 2,
-
-  /// <summary>
   /// Notification is a timer or alarm.
   /// </summary>
-  Alarm = 3,
+  Alarm = 2,
+
+  /// <summary>
+  /// Notification is a reminder.
+  /// </summary>
+  Reminder = 3,
 
   /// <summary>
   /// Notification contains a progress bar.
@@ -42,9 +42,4 @@ public enum NotificationCategory
   /// Notification is for a full screen call.
   /// </summary>
   Call = 6,
-
-  /// <summary>
-  /// Notification is a conversation (messages).
-  /// </summary>
-  Conversation = 7,
 }

@@ -11,27 +11,17 @@ public enum NotificationPriority
   Unknown = 0,
 
   /// <summary>
-  /// Lowest priority possible.
-  /// </summary>
-  Minimum = 1,
-
-  /// <summary>
   /// Low priority.
   /// </summary>
-  Low = 2,
+  Low = 1,
 
   /// <summary>
   /// No change, default priority.
   /// </summary>
-  Default = 3,
+  Default = 2,
 
   /// <summary>
-  /// High priority.
+  /// High priority, urgent notifications.
   /// </summary>
-  High = 4,
-
-  /// <summary>
-  /// Urgent notifications.
-  /// </summary>
-  Max = 5,
+  High = 3,
 }

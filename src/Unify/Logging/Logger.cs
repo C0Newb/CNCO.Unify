@@ -5,37 +5,22 @@
 /// </summary>
 public abstract class Logger : ILogger
 {
-  private readonly ILogFormatter _formatter;
+  public string SectionName => LogFormatter.SectionName;
 
-  public string SectionName
-  {
-    get => _formatter.SectionName;
-  }
-
-  public ILogFormatter LogFormatter
-  {
-    get => _formatter;
-  }
+  public ILogFormatter LogFormatter { get; }
 
   /// <summary>
   /// Initializes a new instance of the <see cref="Logger"/> class.
   /// </summary>
-  public Logger()
-    : this(string.Empty) { }
+  protected Logger() => LogFormatter = new LogFormatter();
 
   /// <inheritdoc cref="Logger()"/>
   /// <param name="sectionName">Name of the current section being logged.</param>
-  public Logger(string? sectionName)
-  {
-    _formatter = new LogFormatter(sectionName);
-  }
+  protected Logger(string sectionName) => LogFormatter = new LogFormatter(sectionName);
 
   /// <inheritdoc cref="Logger()"/>
   /// <param name="formatter">Message formatter to use.</param>
-  public Logger(ILogFormatter formatter)
-  {
-    _formatter = formatter;
-  }
+  protected Logger(ILogFormatter formatter) => LogFormatter = formatter;
 
   private void LogException(Exception? exception = null)
   {
@@ -117,7 +102,7 @@ public abstract class Logger : ILogger
     string message,
     LogLevel? logLevel = null,
     string? section = null
-  ) => _formatter.FormatMessage(message, logLevel, section);
+  ) => LogFormatter.FormatMessage(message, logLevel, section);
 
   /// <summary>
   /// Creates a new <see cref="SectionLogger"/> that appends a new section name to this <see cref="ILogger"/>.

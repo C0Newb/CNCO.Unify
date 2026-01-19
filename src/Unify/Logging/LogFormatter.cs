@@ -5,22 +5,11 @@ namespace CNCO.Unify.Logging;
 
 public class LogFormatter : ILogFormatter
 {
-  private readonly string _sectionName;
-
   public string DateFormat { get; set; } = "s";
 
-  public string SectionName
-  {
-    get => _sectionName;
-  }
+  public string SectionName { get; private set; }
 
-  public LogFormatter()
-    : this(string.Empty) { }
-
-  public LogFormatter(string? sectionName)
-  {
-    _sectionName = sectionName ?? string.Empty;
-  }
+  public LogFormatter(string? sectionName = null) => SectionName = sectionName ?? string.Empty;
 
   /// <summary>
   /// Replaces places holders in a log message.
@@ -30,16 +19,9 @@ public class LogFormatter : ILogFormatter
   /// <c>%section%</c>: Current section.
   /// </summary>
   /// <param name="message">Message to log.</param>
-  /// <returns>Formatted message.</returns>
-  public string FormatMessage(string message) => FormatMessage(message, null, null);
-
-  /// <inheritdoc cref="FormatMessage(string)"/>
   /// <param name="level">Event level of this message.</param>
-  public string FormatMessage(string message, LogLevel level) =>
-    FormatMessage(message, level, null);
-
-  /// <inheritdoc cref="FormatMessage(string, LogLevel)"/>
   /// <param name="section">Section title override.</param>
+  /// <returns>Formatted message.</returns>
   public virtual string FormatMessage(
     string message,
     LogLevel? level = null,
@@ -69,7 +51,7 @@ public class LogFormatter : ILogFormatter
       "%dateTimeUTC%",
       DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture)
     );
-    message = message.Replace("%section%", SectionName ?? string.Empty);
+    message = message.Replace("%section%", section ?? string.Empty);
 
     StringBuilder prefix = new StringBuilder();
     prefix.Append('[');

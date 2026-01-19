@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>$(UnifyDotNetVersion)</TargetFramework>
+		<TargetFrameworks>$(UnifyDesktopTargetFrameworks)</TargetFrameworks>
 		<Platforms>$(UnifyTargetPlatforms)</Platforms>
 		<OutputType>WinExe</OutputType>
 	</PropertyGroup>

@@ -19,11 +19,12 @@ public static partial class TestApplicationBuilderExtensions
     public Task<CreateTestSessionResult> CreateTestSessionAsync(CreateTestSessionContext context)
     {
       Debugger.Break();
-      return Task.FromResult(new CreateTestSessionResult());
+      return Task.FromResult(new CreateTestSessionResult() { IsSuccess = true });
     }
 
     public Task ExecuteRequestAsync(ExecuteRequestContext context)
     {
+      context.Complete();
       Debugger.Break();
       return Task.CompletedTask;
     }
@@ -31,7 +32,7 @@ public static partial class TestApplicationBuilderExtensions
     public Task<CloseTestSessionResult> CloseTestSessionAsync(CloseTestSessionContext context)
     {
       Debugger.Break();
-      return Task.FromResult(new CloseTestSessionResult());
+      return Task.FromResult(new CloseTestSessionResult() { IsSuccess = true });
     }
   }
 }

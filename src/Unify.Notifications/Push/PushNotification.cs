@@ -5,35 +5,49 @@ namespace CNCO.Unify.Notifications.Push;
 /// <summary>
 /// Push notification.
 /// </summary>
-public class PushNotification : IPushNotification
+public class PushNotification(string title, NotificationContents? contents = null)
+  : IPushNotification
 {
-  private static INotificationManager NotificationManager =>
+  private static INotificationsManager NotificationManager =>
     NotificationRuntime.NotificationManager;
 
   private readonly Guid _id = Guid.NewGuid();
 
+  private NotificationContents _contents = contents ?? new NotificationContents();
+
   public Guid Id => _id;
-  public string Title { get; set; }
-  public List<string> Attributes { get; set; } = [];
-  public NotificationContents Contents { get; set; }
+  public string Title { get; set; } = title;
+  public IEnumerable<string>? Attributes { get; set; }
+  public NotificationContents Contents
+  {
+    get => _contents;
+    init => _contents = value;
+  }
   public DateTime? Timestamp { get; set; } = DateTime.Now;
   public string Group { get; set; } = "default";
   public NotificationPriority Priority { get; set; }
-  public bool IsSilent =>
-    Priority == NotificationPriority.Low || Priority == NotificationPriority.Minimum;
+  public bool IsSilent => Priority == NotificationPriority.Low;
 
   public NotificationCategory Category { get; set; } = NotificationCategory.Standard;
 
-  public PushNotification(string title, NotificationContents? contents = null)
+  public void Cancel()
   {
-    Title = title;
-    Contents = contents ?? new NotificationContents();
+    try
+    {
+      NotificationManager.Cancel(this);
+    }
+    finally
+    {
+      // Clear images
+      Contents.DeleteImages();
+    }
   }
 
-  public void Send() => NotificationManager.Send(this);
+  public void ClearContents() => _contents = new();
 
-  // clean up images?
-  public void Cancel() => NotificationManager.Cancel(this);
+  public void Send() => NotificationManager.SendAsync(this);
+
+  public void SetContents(NotificationContents contents) => _contents = contents;
 
   public event NotificationActivatedEventHandler? NotificationActivated;
 
@@ -46,6 +60,6 @@ public class PushNotification : IPushNotification
   public void OnFailed(NotificationFailureReason reason, string? details) =>
     NotificationFailed?.Invoke(this, reason, details);
 
-  public void OnDimsissed(NotificationDismissalReason reason) =>
+  public void OnDismissed(NotificationDismissalReason reason) =>
     NotificationDismissed?.Invoke(this, reason);
 }

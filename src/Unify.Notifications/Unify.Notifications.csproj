@@ -10,29 +10,91 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
+	
+	<ItemGroup>
+	  <None Remove="tsconfig.json" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Content Include="tsconfig.json" />
+	</ItemGroup>
+
+	<!-- For NotificationImages -->
+	<ItemGroup>
+		<PackageReference Include="SkiaSharp" Version="3.119.1" />
+	</ItemGroup>
+	
+	<!-- 
+		Notification Platform Support Flags
+		
+		NOTE:
+			These are here to easily disable support and to not include every platform specific
+			implementation in each build.
+			
+			This controls wether 
+	-->
 
 	<!-- Windows Toast Notifications -->
 	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
-		<DefineConstants>WINDOWS_TOAST_NOTIFICATIONS</DefineConstants>
+		<DefineConstants>$(DefineConstants);WINDOWS_TOAST_NOTIFICATIONS</DefineConstants>
 	</PropertyGroup>
-
 	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
 		<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Folder Include="Platforms\Android\" />
-		<Folder Include="Platforms\iOS\" />
-		<Folder Include="Platforms\MacCatalyst\" />
-	</ItemGroup>
 
-	<ItemGroup>
+	<!-- Platform specific -->
+	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyIosTargetFramework)'">
+		<DefineConstants>$(DefineConstants);IOS_PUSH_NOTIFICATIONS</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyMacTargetFramework)'">
+		<DefineConstants>$(DefineConstants);MAC_PUSH_NOTIFICATIONS</DefineConstants>
+	</PropertyGroup>
+
+	<!-- Linux (there is not target framework specifically for Linux) -->
+	<PropertyGroup>
+		<DefineConstants>$(DefineConstants);LINUX_PUSH_NOTIFICATIONS</DefineConstants>
+	</PropertyGroup>
+
+	<!-- Android -->
+	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyAndroidTargetFramework)'">
+		<DefineConstants>$(DefineConstants);ANDROID_PUSH_NOTIFICATIONS</DefineConstants>
+	</PropertyGroup>
+
+	<!-- WASM (Browser) -->
+	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
+		<DefineConstants>$(DefineConstants);WASM_PUSH_NOTIFICATIONS</DefineConstants>
+		<HeaderComment>/*! CAUTION: FILE AUTOMATICALLY GENERATED. DO NOT DIRECTLY EDIT! */</HeaderComment>
+		<JSFilePath>.\Platforms\Browser\UnifyNotifications.js</JSFilePath>
+	</PropertyGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
 		<!-- For NotificationImages -->
-		<PackageReference Include="SkiaSharp" Version="3.119.1" />
 		<PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.1" />
+		
+		<!-- For transpiling the TypeScript to JavaScript -->
+		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3" />
+
+		<!-- Foundational JS -->
+		<EmbeddedResource Include="$(JSFilePath)" />
 	</ItemGroup>
+	
+	<!-- Automated code generation warning -->
+	<Target Name="PrependJsHeader" AfterTargets="CompileTypeScript" Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
+		<WriteLinesToFile
+			File="$(JSFilePath)"
+			Lines="$(HeaderComment)
+			$([System.IO.File]::ReadAllText('$(JSFilePath)'))"
+			Overwrite="true"
+			Encoding="UTF-8"
+		/>
+	</Target>
 	
 	<ItemGroup>
 		<ProjectReference Include="..\Unify\Unify.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Folder Include="Platforms\Browser\GeneratedJS\" />
 	</ItemGroup>
 </Project>

@@ -26,15 +26,9 @@ public interface IPushNotification
   public string Title { get; set; }
 
   /// <summary>
-  /// Attributes and miscellaneous data to transmit with the notification.
-  /// This is not viewable by the user.
-  /// </summary>
-  public List<string> Attributes { get; set; }
-
-  /// <summary>
   /// Contents of the push notification.
   /// </summary>
-  public NotificationContents Contents { get; set; }
+  public NotificationContents Contents { get; init; }
 
   /// <summary>
   /// Displayed timestamp.
@@ -60,14 +54,27 @@ public interface IPushNotification
   public NotificationCategory Category { get; set; }
 
   /// <summary>
+  /// Delete the notification from the operating system.
+  /// </summary>
+  public void Cancel();
+
+  /// <summary>
+  /// Clears the contents of the notification.
+  /// </summary>
+  public void ClearContents();
+
+  /// <summary>
   /// Pushes the notification to the user via the operating system.
   /// </summary>
   public void Send();
 
   /// <summary>
-  /// Delete the notification from the operating system.
+  /// Sets the contents of the notification.
   /// </summary>
-  public void Cancel();
+  /// <param name="contents">
+  /// Contents to set the notification to.
+  /// </param>
+  public void SetContents(NotificationContents contents);
 
   #region Eventing
   /// <summary>
@@ -92,8 +99,23 @@ public interface IPushNotification
   /// </remarks>
   public event NotificationDismissedEventHandler? NotificationDismissed;
 
+  /// <summary>
+  /// Fired when the notification is activated, either via itself or a <see cref="NotificationContents.Actions"/>.
+  /// </summary>
+  /// <param name="args">Notification activation data.</param>
   void OnActivated(NotificationActivationArguments args);
+
+  /// <summary>
+  /// Fired when a notification failed to send.
+  /// </summary>
+  /// <param name="reason">Reason the notification failed.</param>
+  /// <param name="details">Detailed explaination as to why it failed to display.</param>
   void OnFailed(NotificationFailureReason reason, string? details);
-  void OnDimsissed(NotificationDismissalReason reason);
+
+  /// <summary>
+  /// Fired when a notification is dismissed (canceled).
+  /// </summary>
+  /// <param name="reason">Reason the notification was dismissed, if possible.</param>
+  void OnDismissed(NotificationDismissalReason reason);
   #endregion
 }

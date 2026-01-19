@@ -18,8 +18,11 @@ public interface INotificationImage
   public string? AlternativeText { get; set; }
 
   /// <summary>
-  /// Location of the image on the local disk
+  /// Location of the image on the local disk.
   /// </summary>
+  /// <remarks>
+  /// If not written to storage, yet, will attempt to write the image to the storage backing.
+  /// </remarks>
   public Uri? Uri { get; }
 
   /// <summary>
@@ -36,11 +39,13 @@ public interface INotificationImage
   /// <summary>
   /// Writes the image to local storage.
   /// </summary>
-  /// <param name="fileStorage">Local file storage handler.</param>
+  /// <remarks>
+  /// Uses the file storage provider defined in <see cref="NotificationRuntime.ImageFileStore"/>.
+  /// </remarks>
   /// <returns>
   /// Whether the image is/was written to disk.
   /// </returns>
-  public bool WriteImage(ILocalFileStorage? fileStorage = null);
+  public bool WriteImage();
 
   /// <summary>
   /// Deletes the image from local storage.
