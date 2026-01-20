@@ -23,7 +23,8 @@ internal class AppleNotificationManager : IPlatformPushNotificationManager
 
   public Task RegisterAsync() => throw new NotImplementedException();
 
-  public Task<bool> SendAsync(IPushNotification pushNotification) => throw new NotImplementedException();
+  public Task<bool> SendAsync(IPushNotification pushNotification) =>
+    throw new NotImplementedException();
 
   public Task UnregisterAsync() => throw new NotImplementedException();
 

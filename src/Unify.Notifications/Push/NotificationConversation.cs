@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CNCO.Unify.Notifications.Push.Imaging;
+﻿using CNCO.Unify.Notifications.Push.Imaging;
 
 namespace CNCO.Unify.Notifications.Push;
 

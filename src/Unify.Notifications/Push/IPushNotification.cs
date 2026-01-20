@@ -44,7 +44,7 @@ public interface IPushNotification
   /// Whether the notification is displayed silently or not.
   /// </summary>
   /// <remarks>
-  /// <see langword="true"/> if <see cref="Priority"/> is <see cref="NotificationPriority.Minimum"/> or <see cref="NotificationPriority.Low"/>.
+  /// <see langword="true"/> if <see cref="Priority"/> is <see cref="NotificationPriority.Low"/> or <see cref="NotificationPriority.Low"/>.
   /// </remarks>
   public bool IsSilent { get; }
 
@@ -56,7 +56,7 @@ public interface IPushNotification
   /// <summary>
   /// Delete the notification from the operating system.
   /// </summary>
-  public void Cancel();
+  public bool Cancel();
 
   /// <summary>
   /// Clears the contents of the notification.
@@ -66,7 +66,7 @@ public interface IPushNotification
   /// <summary>
   /// Pushes the notification to the user via the operating system.
   /// </summary>
-  public void Send();
+  public Task<bool> SendAsync();
 
   /// <summary>
   /// Sets the contents of the notification.
@@ -78,7 +78,7 @@ public interface IPushNotification
 
   #region Eventing
   /// <summary>
-  /// Event fired when the notification is activated by the user.
+  /// Fired when the notification is activated by the user.
   /// </summary>
   /// <remarks>
   /// This is fired after all <see cref="NotificationActionActivatedEventHandler"/> events
@@ -87,15 +87,15 @@ public interface IPushNotification
   public event NotificationActivatedEventHandler? NotificationActivated;
 
   /// <summary>
-  /// When the notification fails to be sent or displayed.
+  /// Fired when the notification fails to be sent or displayed.
   /// </summary>
   public event NotificationFailedEventHandler? NotificationFailed;
 
   /// <summary>
-  /// When the notification is dismissed and no longer visible to the user.
+  /// Fired when the notification is dismissed and no longer visible to the user.
   /// </summary>
   /// <remarks>
-  /// Includes dismassals by this application. Be sure to check the <see cref="NotificationDismissalReason"/>.
+  /// Includes dismissals by this application. Be sure to check the <see cref="NotificationDismissalReason"/>.
   /// </remarks>
   public event NotificationDismissedEventHandler? NotificationDismissed;
 
@@ -109,7 +109,7 @@ public interface IPushNotification
   /// Fired when a notification failed to send.
   /// </summary>
   /// <param name="reason">Reason the notification failed.</param>
-  /// <param name="details">Detailed explaination as to why it failed to display.</param>
+  /// <param name="details">Detailed explanation as to why it failed to display.</param>
   void OnFailed(NotificationFailureReason reason, string? details);
 
   /// <summary>

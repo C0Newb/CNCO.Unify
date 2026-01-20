@@ -10,14 +10,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
-	
-	<ItemGroup>
-	  <None Remove="tsconfig.json" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <Content Include="tsconfig.json" />
-	</ItemGroup>
 
 	<!-- For NotificationImages -->
 	<ItemGroup>
@@ -65,10 +57,16 @@
 	<!-- WASM (Browser) -->
 	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
 		<DefineConstants>$(DefineConstants);WASM_PUSH_NOTIFICATIONS</DefineConstants>
-		<HeaderComment>/*! CAUTION: FILE AUTOMATICALLY GENERATED. DO NOT DIRECTLY EDIT! */</HeaderComment>
-		<JSFilePath>.\Platforms\Browser\UnifyNotifications.js</JSFilePath>
+		<GeneratedJSFolder>Platforms\Browser\GeneratedJS</GeneratedJSFolder>
+		<_AssetsFolder>$( [System.IO.Path]::GetFullPath( $(MSBuildThisFileDirectory)/$(GeneratedJSFolder)/ ) )</_AssetsFolder>
+		<_AssetsRuntimeFolder>_cnco/Unify.Notifications</_AssetsRuntimeFolder>
 	</PropertyGroup>
+	
 	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
+		<Content Include="tsconfig.json" />
+		<None Remove="$(GeneratedJSFolder)" />
+		<Compile Remove="$(GeneratedJSFolder)" />
+
 		<!-- For NotificationImages -->
 		<PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.1" />
 		
@@ -76,25 +74,32 @@
 		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3" />
 
 		<!-- Foundational JS -->
-		<EmbeddedResource Include="$(JSFilePath)" />
+		<EmbeddedResource Include="$(GeneratedJSFolder)\*.js" />
+		<EmbeddedResource Include="$(GeneratedJSFolder)\..\*.js" />
+
+		<!-- Serve it -->
+		<WasmExtraFilesToDeploy Include="$(GeneratedJSFolder)\*.js" />
+		<WasmExtraFilesToDeploy Include="$(GeneratedJSFolder)\..\*.js" />
 	</ItemGroup>
 	
-	<!-- Automated code generation warning -->
-	<Target Name="PrependJsHeader" AfterTargets="CompileTypeScript" Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
-		<WriteLinesToFile
-			File="$(JSFilePath)"
-			Lines="$(HeaderComment)
-			$([System.IO.File]::ReadAllText('$(JSFilePath)'))"
-			Overwrite="true"
-			Encoding="UTF-8"
-		/>
-	</Target>
+	<!-- Injecting ServiceWorker code -->
+	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
+		<_WebAssets Include="$(_AssetsFolder)**/*.*" />
+		<StaticWebAsset Include="@(_WebAssets)">
+			<SourceId>Unify.Notifications</SourceId>
+			<ContentRoot>$(_AssetsFolder)</ContentRoot>
+			<BasePath>/</BasePath>
+			<RelativePath>$(_AssetsRuntimeFolder)/%(FileName)%(Extension)</RelativePath>
+			<AssetKind>All</AssetKind>
+			<AssetMode>All</AssetMode>
+			<AssetRole>Primary</AssetRole>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+			<OriginalItemSpec>$(_AssetsFolder)%(FileName)%(Extension)</OriginalItemSpec>
+		</StaticWebAsset>
+	</ItemGroup>	
 	
 	<ItemGroup>
 		<ProjectReference Include="..\Unify\Unify.csproj" />
-	</ItemGroup>
-	
-	<ItemGroup>
-	  <Folder Include="Platforms\Browser\GeneratedJS\" />
 	</ItemGroup>
 </Project>

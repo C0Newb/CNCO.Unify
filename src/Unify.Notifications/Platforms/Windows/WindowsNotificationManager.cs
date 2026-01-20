@@ -149,12 +149,12 @@ public partial class WindowsNotificationManager : IPlatformPushNotificationManag
 
   public Task RegisterAsync() => Register(null);
 
-  private Task Register(Exception? registerationException)
+  private Task Register(Exception? registrationException)
   {
     try
     {
       // First attempt?
-      if (registerationException == null)
+      if (registrationException == null)
       {
         // Setup notification support
         NotificationRegistry.RegisterAppForNotificationSupport(true);
@@ -166,7 +166,7 @@ public partial class WindowsNotificationManager : IPlatformPushNotificationManag
 
       NotificationRuntime.Current.RuntimeLog.Error(
         "Failed to register ToastNotifier into Windows (1)",
-        registerationException
+        registrationException
       );
       ToastNotificationManagerCompat.Uninstall();
       NotificationRegistry.UninstallShortcut();
@@ -177,7 +177,7 @@ public partial class WindowsNotificationManager : IPlatformPushNotificationManag
     catch (Exception exception)
     {
       // First attempt?
-      if (registerationException == null)
+      if (registrationException == null)
       {
         NotificationRuntime.Current.RuntimeLog.Error(
           "Failed to register ToastNotifier into Windows (1)",

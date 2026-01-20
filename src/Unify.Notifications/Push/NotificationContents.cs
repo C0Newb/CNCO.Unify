@@ -95,7 +95,7 @@ public class NotificationContents
   /// <param name="id">Id of the notification action to get.</param>
   /// <returns>Notification action, if found.</returns>
   public INotificationAction? GetNotificationAction(string id) =>
-    Actions.First(action => action.Id == id);
+    Actions.FirstOrDefault(action => action.Id == id);
 
   /// <summary>
   /// Deletes all the images for this notification content from the storage backing.

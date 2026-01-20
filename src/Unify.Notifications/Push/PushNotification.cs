@@ -30,11 +30,11 @@ public class PushNotification(string title, NotificationContents? contents = nul
 
   public NotificationCategory Category { get; set; } = NotificationCategory.Standard;
 
-  public void Cancel()
+  public bool Cancel()
   {
     try
     {
-      NotificationManager.Cancel(this);
+      return NotificationManager.Cancel(this);
     }
     finally
     {
@@ -45,7 +45,7 @@ public class PushNotification(string title, NotificationContents? contents = nul
 
   public void ClearContents() => _contents = new();
 
-  public void Send() => NotificationManager.SendAsync(this);
+  public Task<bool> SendAsync() => NotificationManager.SendAsync(this);
 
   public void SetContents(NotificationContents contents) => _contents = contents;
 

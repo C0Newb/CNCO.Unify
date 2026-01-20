@@ -1,6 +1,4 @@
-﻿using CNCO.Unify.Storage;
-
-namespace CNCO.Unify.Notifications.Push.Imaging;
+﻿namespace CNCO.Unify.Notifications.Push.Imaging;
 
 /// <summary>
 /// Notification image.

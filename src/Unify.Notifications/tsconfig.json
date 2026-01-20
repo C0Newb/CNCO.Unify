@@ -5,12 +5,12 @@
     "noEmitOnError": true,
     "removeComments": false,
     "sourceMap": false,
-    "target": "es2015",
-    "lib": [ "es2015", "DOM", "DOM.Iterable" ],
-    "outDir": "./Platforms/Browser/"
+    "target": "ES6",
+    "lib": [ "ES6", "DOM", "DOM.Iterable" ],
+    "outDir": "./Platforms/Browser/GeneratedJS/"
   },
   "include": [
-    "./Platforms/Browser/UnifyNotifications.ts"
+    "./Platforms/Browser/*.ts"
   ],
   "exclude": []
 }
