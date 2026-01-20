@@ -6,4 +6,9 @@ public interface IRuntime
   /// Initializes this runtime, linking into necessary <see cref="IRuntime"/>s and calling registered hooks.
   /// </summary>
   public void Initialize();
+
+  /// <summary>
+  /// Cleans up and shuts down this runtime.
+  /// </summary>
+  public Task ShutdownAsync();
 }

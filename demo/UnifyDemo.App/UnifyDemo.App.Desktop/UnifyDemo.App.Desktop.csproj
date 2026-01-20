@@ -10,6 +10,12 @@
 		<PublishAot>True</PublishAot>
 	</PropertyGroup>
 
+	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
+		<BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+		<!-- You can't for notifications, sadly. -->
+		<PublishAot>false</PublishAot>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<PackageReference Include="Avalonia.Desktop" />
 		<PackageReference Include="Avalonia.Diagnostics">

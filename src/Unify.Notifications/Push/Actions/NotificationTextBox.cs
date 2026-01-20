@@ -8,8 +8,6 @@ namespace CNCO.Unify.Notifications.Push.Actions;
 [UnsupportedOSPlatform("browser")]
 public class NotificationTextBox : NotificationAction, INotificationAction
 {
-  public override NotificationActionType Type => NotificationActionType.Textbox;
-
   /// <summary>
   /// Text inside the textbox.
   /// </summary>

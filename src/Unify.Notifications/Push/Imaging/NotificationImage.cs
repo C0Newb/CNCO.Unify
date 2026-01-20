@@ -4,29 +4,13 @@ using SkiaSharp;
 
 namespace CNCO.Unify.Notifications.Push.Imaging;
 
-/// <summary>
-/// Initializes a new instance of the NotificationImage class using the specified image string.
-/// </summary>
-/// <param name="imageString">
-///   <para>
-///   A string that represents the image data in the format:
-///   </para>
-///
-///   <para>
-///   <c>data:image/jpg;base64,...</c>, or
-///   </para>
-///   <para>
-///   <c>data:image/jpg;base64,...</c>, where "<c>...</c>" is the actual encoded image data.
-///   </para>
-///
-///   <remarks>
-///   If no data provide, no image will be available.
-///   </remarks>
-/// </param>
-public partial class NotificationImage(string? imageString) : INotificationImage
+public partial class NotificationImage : INotificationImage
 {
-  [GeneratedRegex(@"^data:image\/(jpeg|png|gif|tiff|ico|emf|wmf|exif);(base64|hex),")]
+  [GeneratedRegex(@"^data:image\/[a-zA-Z]+;(base64|hex),")]
   private static partial Regex ImageFileTypeAndEncoding();
+
+  private string? _imageString;
+  private readonly byte[]? _imageData;
 
   private static ILocalFileStorage FileStorage => NotificationRuntime.ImageFileStore;
 
@@ -35,7 +19,40 @@ public partial class NotificationImage(string? imageString) : INotificationImage
   public Guid Id { get; } = Guid.NewGuid();
   public string? AlternativeText { get; set; } = null;
   public bool IsWritten => FileStorage != null && FileStorage.Exists(FileName);
-  public Uri? Uri => !IsWritten && !WriteImage() ? null : new Uri(FileStorage.GetPath(FileName));
+  public Uri? Uri
+  {
+    get
+    {
+      if (!string.IsNullOrEmpty(_imageString) && _imageString.StartsWith("https://"))
+      {
+        return new Uri(_imageString);
+      }
+      return !IsWritten && !WriteImage() ? null : new Uri(FileStorage.GetPath(FileName));
+    }
+  }
+
+  /// <summary>
+  /// Initializes a new instance of the NotificationImage class using the specified image string.
+  /// </summary>
+  /// <param name="imageString">
+  ///   <para>
+  ///   A string that represents the image data in the format:
+  ///   </para>
+  ///
+  ///   <para>
+  ///   <c>data:image/jpg;base64,...</c>, or
+  ///   </para>
+  ///   <para>
+  ///   <c>data:image/jpg;base64,...</c>, where "<c>...</c>" is the actual encoded image data.
+  ///   </para>
+  ///
+  ///   <remarks>
+  ///   If no data provide, no image will be available.
+  ///   </remarks>
+  /// </param>
+  public NotificationImage(string? imageString) => _imageString = imageString;
+
+  public NotificationImage(byte[] imageData) => _imageData = imageData;
 
   public void DeleteImage()
   {
@@ -45,7 +62,7 @@ public partial class NotificationImage(string? imageString) : INotificationImage
     }
   }
 
-  public void SetImage(string imageData) => imageString = imageData;
+  public void SetImage(string imageData) => _imageString = imageData;
 
   public bool WriteImage()
   {
@@ -53,36 +70,39 @@ public partial class NotificationImage(string? imageString) : INotificationImage
     {
       return true;
     }
-    if (string.IsNullOrEmpty(imageString))
+    if (_imageData == null && string.IsNullOrEmpty(_imageString))
     {
       return false;
     }
 
-    // Decode the image data
-    var imageFormat = DecodeImageData(out byte[] imageBytes);
+    byte[] imageBytes = _imageData!;
+
+    if (imageBytes == null)
+    {
+      // Decode the image data
+      DecodeImageData(out imageBytes);
+    }
 
     // Load the image
-    using MemoryStream imageMemoryStream = new MemoryStream(imageBytes);
-    using SKBitmap bitmap = SKBitmap.Decode(imageMemoryStream);
-    using SKImage image = SKImage.FromBitmap(bitmap);
-    var data = image.Encode(imageFormat, 75);
+    using SKImage image = SKImage.FromEncodedData(imageBytes);
+    var data = image.Encode(SKEncodedImageFormat.Png, 75);
     var dataStream = data.AsStream();
     return FileStorage.Write(FileName, dataStream);
   }
 
-  private SKEncodedImageFormat DecodeImageData(out byte[] imageData)
+  private void DecodeImageData(out byte[] imageData)
   {
     // Verify the data string contains image data
-    Match match = ImageFileTypeAndEncoding().Match(imageString ?? string.Empty);
+    Match match = ImageFileTypeAndEncoding().Match(_imageString ?? string.Empty);
 
-    if (string.IsNullOrEmpty(imageString) || !match.Success)
+    if (string.IsNullOrEmpty(_imageString) || !match.Success)
     {
       throw new InvalidOperationException("Invalid image data string format.");
     }
 
     // Extract information from the data string
     var encodingType = match.Groups[2].Value;
-    var encodedData = imageString[match.Length..].Trim();
+    var encodedData = _imageString[match.Length..].Trim();
 
     if (encodingType == "base64")
     {
@@ -107,16 +127,5 @@ public partial class NotificationImage(string? imageString) : INotificationImage
     {
       throw new InvalidOperationException("Unable to decode null image data.");
     }
-
-    return match.Groups[1].Value.ToLower() switch
-    {
-      "jpg" or "jpeg" => SKEncodedImageFormat.Jpeg,
-      "heif" => SKEncodedImageFormat.Heif,
-      "webp" => SKEncodedImageFormat.Webp,
-      "gif" => SKEncodedImageFormat.Gif,
-      "ico" => SKEncodedImageFormat.Ico,
-      "png" => SKEncodedImageFormat.Png,
-      _ => SKEncodedImageFormat.Bmp, // Unsupported?
-    };
   }
 }

@@ -24,20 +24,29 @@ public partial class App : Application
   public static void OnExit(object? sender, ControlledApplicationLifetimeExitEventArgs e)
   {
     WebServer?.Dispose();
+    _ = UnifyRuntime.Current.ShutdownAsync().GetAwaiter();
   }
 
   public override void OnFrameworkInitializationCompleted()
   {
-    // Unify setup
-    var runtime = UnifyRuntime
-      .Create("Unify.DemoApp")
-      .UseCommunicationsRuntime()
-      .UseNotificationRuntime()
-      .UseSecurityRuntime();
-
-    if (Log is SinkLogger sink)
+    UnifyRuntime? runtime = null;
+    try
     {
-      sink.AddLogger(new EmergencyLogEventHanlder());
+      // Unify setup
+      runtime = UnifyRuntime
+        .Create("Unify.DemoApp")
+        .UseCommunicationsRuntime()
+        .UseNotificationRuntime()
+        .UseSecurityRuntime();
+
+      if (Log is SinkLogger sink)
+      {
+        sink.AddLogger(new EmergencyLogEventHanlder());
+      }
+    }
+    catch
+    {
+      // ignore for now ...
     }
 
     if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
@@ -54,7 +63,14 @@ public partial class App : Application
       singleViewPlatform.MainView = new MainView { DataContext = new MainViewModel() };
     }
 
-    runtime.Initialize();
+    try
+    {
+      runtime?.Initialize();
+    }
+    catch
+    {
+      // ignore for now ...
+    }
     base.OnFrameworkInitializationCompleted();
   }
 

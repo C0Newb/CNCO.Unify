@@ -8,8 +8,6 @@ namespace CNCO.Unify.Notifications.Push.Actions;
 [UnsupportedOSPlatform("browser")]
 public class NotificationComboBox : NotificationAction, INotificationAction
 {
-  public override NotificationActionType Type => NotificationActionType.ComboBox;
-
   /// <summary>
   /// Options shown in the combo box.
   /// </summary>

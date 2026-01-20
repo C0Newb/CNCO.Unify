@@ -7,8 +7,6 @@ namespace CNCO.Unify.Notifications.Push.Actions;
 /// </summary>
 public class NotificationButton : NotificationAction, INotificationAction
 {
-  public override NotificationActionType Type => NotificationActionType.Button;
-
   /// <summary>
   /// Text shown on the button.
   /// </summary>
@@ -37,4 +35,7 @@ public class NotificationButton : NotificationAction, INotificationAction
     Contents = contents ?? string.Empty;
     TextBox = textBox ?? null;
   }
+
+  public override void OnActivated(string? value = null) =>
+    base.OnActivated(value == null && TextBox?.Contents != null ? TextBox.Contents : value);
 }

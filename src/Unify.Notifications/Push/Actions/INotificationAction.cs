@@ -13,11 +13,6 @@ public interface INotificationAction
   public string Id { get; }
 
   /// <summary>
-  /// Gets the type of action this represents.
-  /// </summary>
-  public NotificationActionType Type { get; }
-
-  /// <summary>
   /// Fired when the action is activated by the user.
   /// </summary>
   /// <remarks>

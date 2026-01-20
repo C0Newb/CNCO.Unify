@@ -138,13 +138,30 @@ public partial class WindowsNotificationManager : IPlatformPushNotificationManag
     );
     pushNotification.Contents.DeleteImages();
 
+    pushNotification.OnDismissed(NotificationDismissalReason.ApplicationHidden);
+
     return !NotificationExists(pushNotification);
   }
 
   public void ClearAll()
   {
     ToastNotificationManagerCompat.History.Clear();
-    _ = UnifyRuntime.FileStorage.Delete(NotificationRuntime.ImageFileStore.Directory);
+    try
+    {
+      foreach (var notification in _activeNotifications.Values)
+      {
+        notification.Contents?.DeleteImages();
+      }
+      _ = UnifyRuntime.FileStorage.Delete(NotificationRuntime.ImageFileStore.Directory);
+    }
+    catch (Exception ex)
+    {
+      NotificationRuntime.Current.RuntimeLog.Error(
+        $"{GetType().Name}::{nameof(ClearAll)}",
+        "Failed to clear notification image storage.",
+        ex
+      );
+    }
   }
 
   public Task RegisterAsync() => Register(null);
@@ -202,6 +219,7 @@ public partial class WindowsNotificationManager : IPlatformPushNotificationManag
   {
     try
     {
+      ClearAll();
       ToastNotificationManagerCompat.Uninstall();
       NotificationRegistry.UninstallShortcut();
     }

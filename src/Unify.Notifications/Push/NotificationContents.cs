@@ -58,7 +58,12 @@ public class NotificationContents
   /// Progress bar properties if the notification type is <see cref="NotificationCategory.Progress"/>.
   /// </summary>
   /// <remarks>
+  /// <para>
+  /// On Windows, this will hide the contents of <see cref="Text"/>.
+  /// </para>
+  /// <para>
   /// On WASM, this is represented as text only.
+  /// </para>
   /// </remarks>
   public NotificationProgressData? ProgressData { get; set; }
 

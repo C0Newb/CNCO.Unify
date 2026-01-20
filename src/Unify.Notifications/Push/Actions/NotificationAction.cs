@@ -9,9 +9,7 @@ public abstract class NotificationAction : INotificationAction
 {
   public string Id { get; } = Guid.NewGuid().ToString();
 
-  public abstract NotificationActionType Type { get; }
-
   public event NotificationActionActivatedEventHandler? ActionActivated;
 
-  public void OnActivated(string? value = null) => ActionActivated?.Invoke(this, value);
+  public virtual void OnActivated(string? value = null) => ActionActivated?.Invoke(this, value);
 }

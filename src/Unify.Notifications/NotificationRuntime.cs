@@ -118,5 +118,14 @@ public class NotificationRuntime : Runtime
     AddHook(notificationRegisterHook);
   }
 
+  public override async Task ShutdownAsync()
+  {
+    if (_notificationManager != null)
+    {
+      await _notificationManager.UnregisterAsync();
+    }
+    await base.ShutdownAsync();
+  }
+
   public static NotificationRuntime Create() => Current;
 }

@@ -1,11 +1,13 @@
 ﻿#if WINDOWS_TOAST_NOTIFICATIONS
-using System.Diagnostics;
-using System.Runtime.Versioning;
-using System.Text;
 using CNCO.Unify.Notifications.Push;
 using CNCO.Unify.Notifications.Push.Actions;
 using CNCO.Unify.Notifications.Push.Imaging;
 using Microsoft.Toolkit.Uwp.Notifications;
+using System.Diagnostics;
+using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
+using System.Text;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
 
@@ -66,11 +68,75 @@ internal static class ToastNotificationTools
     _ = builder.AddArgument("id", GetTag(pushNotification));
     _ = builder.AddArgument("group", pushNotification.Group);
 
+    // SafeWrapToastAddAction is to ensure that if one part fails, the rest can still be added.
+
+    SafeWrapToastAddAction(() => AddTitle(pushNotification, builder));
+    SafeWrapToastAddAction(() => AddBodyText(pushNotification, builder));
+
+    // Add message data to the toast
+    SafeWrapToastAddAction(() => AddConversationData(pushNotification, builder));
+
+    // Add actions
+    SafeWrapToastAddAction(() => AddActions(pushNotification, builder));
+
+    // Progress bar?
+    SafeWrapToastAddAction(() => AddProgressBar(pushNotification, builder));
+
+    SafeWrapToastAddAction(() => AddCustomTimeStamp(pushNotification, builder));
+
+    SafeWrapToastAddAction(() => AddNotificationCategory(pushNotification, builder));
+
+    // Add the application (or conversation) icon
+    SafeWrapToastAddAction(() => AddApplicationIcon(pushNotification, builder));
+
+    // Add primary image
+    SafeWrapToastAddAction(() => AddBodyImage(pushNotification, builder));
+
+    // Attribution text
+    SafeWrapToastAddAction(() => AddAttributionText(pushNotification, builder));
+
+    return builder.GetXml();
+  }
+
+  public static void SafeWrapToastAddAction(
+    Action action,
+    [CallerArgumentExpression(nameof(action))] string? expressionText = null
+  )
+  {
+    int start = expressionText?.IndexOf("Add", StringComparison.OrdinalIgnoreCase) ?? -1;
+    int end = expressionText?.IndexOf('(', start > -1 ? start : 0) ?? -1;
+
+    if (start != -1 && end != -1 && end > start)
+    {
+      // Slice out just the portion after "Add" (e.g., "ProgressBar")
+      expressionText = expressionText![(start + 3)..end];
+    }
+
+    try
+    {
+      action.Invoke();
+    }
+    catch (Exception ex)
+    {
+      NotificationRuntime.Current.RuntimeLog.Error(
+        start != -1 && end != -1
+          ? $"Failed to add toast notification element: {expressionText}"
+          : $"Failed to add toast notification element, unknown which.",
+        ex
+      );
+    }
+  }
+
+  private static void AddTitle(IPushNotification pushNotification, ToastContentBuilder builder)
+  {
     if (!string.IsNullOrWhiteSpace(pushNotification.Title))
     {
       _ = builder.AddText(pushNotification.Title, hintMaxLines: 1);
     }
+  }
 
+  private static void AddBodyText(IPushNotification pushNotification, ToastContentBuilder builder)
+  {
     if (
       !string.IsNullOrWhiteSpace(pushNotification.Contents.Text)
       && pushNotification.Contents.ConversationData == null
@@ -79,30 +145,6 @@ internal static class ToastNotificationTools
     {
       _ = builder.AddText(pushNotification.Contents.Text, AdaptiveTextStyle.Caption);
     }
-
-    // Add message data to the toast
-    AddConversationData(pushNotification, builder);
-
-    // Add actions
-    AddActions(pushNotification, builder);
-
-    // Progress bar?
-    AddProgressBar(pushNotification, builder);
-
-    AddCustomTimeStamp(pushNotification, builder);
-
-    SetNotificationCategory(pushNotification, builder);
-
-    // Add the application (or conversation) icon
-    AddApplicationIcon(pushNotification, builder);
-
-    // Add primary image
-    AddBodyImage(pushNotification, builder);
-
-    // Attribution text
-    AddAttributionText(pushNotification, builder);
-
-    return builder.GetXml();
   }
 
   private static void AddActions(IPushNotification pushNotification, ToastContentBuilder builder)
@@ -339,7 +381,7 @@ internal static class ToastNotificationTools
     pushNotification.Contents.ProgressData != null
     || pushNotification.Contents.ProgressData?.GetPercentage() < 1;
 
-  private static void SetNotificationCategory(
+  private static void AddNotificationCategory(
     IPushNotification pushNotification,
     ToastContentBuilder builder
   )
