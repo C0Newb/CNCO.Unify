@@ -111,7 +111,7 @@ public abstract class Runtime : IRuntime
 
   #region RuntimeLinks
   /// <summary>
-  /// Adds a <see cref="RuntimeLink"/>, such as Unify.SecurityRuntime
+  /// Adds a <see cref="IRuntime"/>, such as Unify.SecurityRuntime
   /// </summary>
   /// <remarks>
   /// Allows Unify libraries to link into the <see cref="IRuntime"/>s of other Unify libraries without depending on those classes.
@@ -120,21 +120,20 @@ public abstract class Runtime : IRuntime
   public void AddRuntimeLink(IRuntime runtime)
   {
     if (runtime != null && !ContainsRuntimeLink(runtime))
+    {
       _runtimeLinks.Add(runtime);
+    }
   }
 
   /// <summary>
-  /// Checks whether a <see cref="RuntimeLink"/> has been added.
+  /// Checks whether a <see cref="IRuntime"/> has been added.
   /// </summary>
   /// <param name="runtime">Link to search for.</param>
   /// <returns>Whether <paramref name="runtime"/> has been added to the list of runtime links.</returns>
-  public bool ContainsRuntimeLink(IRuntime runtime)
-  {
-    return _runtimeLinks.Where(x => x.Equals(runtime)).Any();
-  }
+  public bool ContainsRuntimeLink(IRuntime runtime) => _runtimeLinks.Contains(runtime);
 
   /// <summary>
-  /// Removes a <see cref="RuntimeLink"/> from the list of links.
+  /// Removes a <see cref="IRuntime"/> from the list of links.
   /// </summary>
   /// <param name="runtime">The unique Runtime to remove.</param>
   public void RemoveRuntimeLink(IRuntime runtime)
@@ -145,7 +144,7 @@ public abstract class Runtime : IRuntime
   private static readonly string _assemblyName =
     Assembly.GetExecutingAssembly().GetName().Name ?? "?";
 
-  private bool IsLinkableRuntimePredicate(Type type)
+  private static bool IsLinkableRuntimePredicate(Type type)
   {
     LinkRuntimeAttribute? linkRuntimeAttribute = type.GetCustomAttribute<LinkRuntimeAttribute>();
     if (linkRuntimeAttribute == null)

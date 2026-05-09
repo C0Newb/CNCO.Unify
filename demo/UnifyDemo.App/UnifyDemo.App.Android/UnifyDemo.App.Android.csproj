@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-		<TargetFramework>$(UnifyAndroidTargetFramework)</TargetFramework>
+        <TargetFramework>$(UnifyAndroidTargetFramework)</TargetFramework>
 
-	    <OutputType>Exe</OutputType>
-	    <ApplicationId>com.CNCO.UnifyDemo.App</ApplicationId>
+        <OutputType>Exe</OutputType>
+        <ApplicationId>com.CNCO.UnifyDemo.App</ApplicationId>
         <ApplicationVersion>1</ApplicationVersion>
         <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
         <AndroidPackageFormat>apk</AndroidPackageFormat>

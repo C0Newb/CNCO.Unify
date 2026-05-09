@@ -6,7 +6,7 @@ using CNCO.Unify.Storage;
 namespace CNCO.Unify.Security;
 
 [LinkRuntime(typeof(UnifyRuntime))]
-public class SecurityRuntime : Runtime, IRuntime
+public class SecurityRuntime : Runtime
 {
   private static SecurityRuntime? _instance;
 

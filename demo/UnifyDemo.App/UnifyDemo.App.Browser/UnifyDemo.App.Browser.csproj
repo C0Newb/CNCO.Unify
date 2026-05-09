@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WebAssembly">
-	<PropertyGroup>
-		<TargetFramework>$(UnifyBrowserTargetFramework)</TargetFramework>
-		<OutputType>Exe</OutputType>
-		<UserSecretsId>46623f7d-a960-4655-bf47-ca5a085816ce</UserSecretsId>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>$(UnifyBrowserTargetFramework)</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <UserSecretsId>46623f7d-a960-4655-bf47-ca5a085816ce</UserSecretsId>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Avalonia.Browser" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Browser" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\UnifyDemo.App\UnifyDemo.App.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\UnifyDemo.App\UnifyDemo.App.csproj" />
+    </ItemGroup>
 </Project>

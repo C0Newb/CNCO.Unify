@@ -1,53 +1,53 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>$(UnifyTestsTargetFrameworks)</TargetFrameworks>
-		<Platforms>$(UnifyTargetPlatforms)</Platforms>
-		
-		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>$(UnifyTestsTargetFrameworks)</TargetFrameworks>
+        <Platforms>$(UnifyTargetPlatforms)</Platforms>
+        
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
 
-	<!-- Unit Testing -->
-	<ItemGroup>
-		<PackageReference Include="NUnit.Engine" />
-	</ItemGroup>
+    <!-- Unit Testing -->
+    <ItemGroup>
+        <PackageReference Include="NUnit.Engine" />
+    </ItemGroup>
 
-	<!-- Android -->
-	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyAndroidTargetFramework)'">
-		<PackageReference Include="IKVM" />
-		<PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
-		<PackageReference Include="Xamarin.AndroidX.Core" />
-	</ItemGroup>
+    <!-- Android -->
+    <ItemGroup Condition="'$(TargetFramework)' == '$(UnifyAndroidTargetFramework)'">
+        <PackageReference Include="IKVM" />
+        <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
+        <PackageReference Include="Xamarin.AndroidX.Core" />
+    </ItemGroup>
 
-	<!-- UI -->
-	<ItemGroup>
-		<PackageReference Include="Avalonia" />
-		<PackageReference Include="Avalonia.Themes.Fluent" />
-		<PackageReference Include="Avalonia.Controls.DataGrid" />
-		<PackageReference Include="Avalonia.Fonts.Inter" />
-		<PackageReference Include="Avalonia.Diagnostics">
-			<IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-			<PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="CommunityToolkit.Mvvm" />
-		<PackageReference Include="DialogHost.Avalonia" />
-	</ItemGroup>
+    <!-- UI -->
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+        <PackageReference Include="Avalonia.Controls.DataGrid" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+        <PackageReference Include="Avalonia.Diagnostics">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="DialogHost.Avalonia" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<AvaloniaResource Include="Assets\**" />
-		<Compile Update="Views\MainWindowView.axaml.cs">
-			<DependentUpon>MainWindowView.axaml</DependentUpon>
-		</Compile>
-		<Compile Update="Views\MainView.axaml.cs">
-			<DependentUpon>MainView.axaml</DependentUpon>
-		</Compile>
-	</ItemGroup>
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+        <Compile Update="Views\MainWindowView.axaml.cs">
+            <DependentUpon>MainWindowView.axaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\MainView.axaml.cs">
+            <DependentUpon>MainView.axaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\src\Unify.Security\Unify.Security.csproj" />
-		<ProjectReference Include="..\..\UnifyTests.Communications\UnifyTests.Communications.csproj" />
-		<ProjectReference Include="..\..\UnifyTests.Configuration\UnifyTests.Configuration.csproj" />
-		<ProjectReference Include="..\..\UnifyTests.Notifications\UnifyTests.Notifications.csproj" />
-		<ProjectReference Include="..\..\UnifyTests.Security\UnifyTests.Security.csproj" />
-		<ProjectReference Include="..\..\UnifyTests\UnifyTests.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\src\Unify.Security\Unify.Security.csproj" />
+        <ProjectReference Include="..\..\UnifyTests.Communications\UnifyTests.Communications.csproj" />
+        <ProjectReference Include="..\..\UnifyTests.Configuration\UnifyTests.Configuration.csproj" />
+        <ProjectReference Include="..\..\UnifyTests.Notifications\UnifyTests.Notifications.csproj" />
+        <ProjectReference Include="..\..\UnifyTests.Security\UnifyTests.Security.csproj" />
+        <ProjectReference Include="..\..\UnifyTests\UnifyTests.csproj" />
+    </ItemGroup>
 </Project>

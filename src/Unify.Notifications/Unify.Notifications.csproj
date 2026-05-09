@@ -1,105 +1,105 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>$(UnifyTargetFrameworks)</TargetFrameworks>
-		<Platforms>$(UnifyTargetPlatforms)</Platforms>
-	</PropertyGroup>
-	
-	<PropertyGroup>
-		<RootNamespace>CNCO.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
-		<SingleProject>true</SingleProject>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>$(UnifyTargetFrameworks)</TargetFrameworks>
+        <Platforms>$(UnifyTargetPlatforms)</Platforms>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <RootNamespace>CNCO.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+        <SingleProject>true</SingleProject>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
 
-	<!-- For NotificationImages -->
-	<ItemGroup>
-		<PackageReference Include="SkiaSharp" Version="3.119.1" />
-	</ItemGroup>
-	
-	<!-- 
-		Notification Platform Support Flags
-		
-		NOTE:
-			These are here to easily disable support and to not include every platform specific
-			implementation in each build.
-			
-			This controls wether 
-	-->
+    <!-- For NotificationImages -->
+    <ItemGroup>
+        <PackageReference Include="SkiaSharp" Version="3.119.2" />
+    </ItemGroup>
+    
+    <!-- 
+        Notification Platform Support Flags
+        
+        NOTE:
+            These are here to easily disable support and to not include every platform specific
+            implementation in each build.
+            
+            This controls wether 
+    -->
 
-	<!-- Windows Toast Notifications -->
-	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
-		<DefineConstants>$(DefineConstants);WINDOWS_TOAST_NOTIFICATIONS</DefineConstants>
-	</PropertyGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
-		<PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
-	</ItemGroup>
+    <!-- Windows Toast Notifications -->
+    <PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
+        <DefineConstants>$(DefineConstants);WINDOWS_TOAST_NOTIFICATIONS</DefineConstants>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
+        <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+    </ItemGroup>
 
 
-	<!-- Platform specific -->
-	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyIosTargetFramework)'">
-		<DefineConstants>$(DefineConstants);IOS_PUSH_NOTIFICATIONS</DefineConstants>
-	</PropertyGroup>
+    <!-- Platform specific -->
+    <PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyIosTargetFramework)'">
+        <DefineConstants>$(DefineConstants);IOS_PUSH_NOTIFICATIONS</DefineConstants>
+    </PropertyGroup>
 
-	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyMacTargetFramework)'">
-		<DefineConstants>$(DefineConstants);MAC_PUSH_NOTIFICATIONS</DefineConstants>
-	</PropertyGroup>
+    <PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyMacTargetFramework)'">
+        <DefineConstants>$(DefineConstants);MAC_PUSH_NOTIFICATIONS</DefineConstants>
+    </PropertyGroup>
 
-	<!-- Linux (there is not target framework specifically for Linux) -->
-	<PropertyGroup>
-		<DefineConstants>$(DefineConstants);LINUX_PUSH_NOTIFICATIONS</DefineConstants>
-	</PropertyGroup>
+    <!-- Linux (there is not target framework specifically for Linux) -->
+    <PropertyGroup>
+        <DefineConstants>$(DefineConstants);LINUX_PUSH_NOTIFICATIONS</DefineConstants>
+    </PropertyGroup>
 
-	<!-- Android -->
-	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyAndroidTargetFramework)'">
-		<DefineConstants>$(DefineConstants);ANDROID_PUSH_NOTIFICATIONS</DefineConstants>
-	</PropertyGroup>
+    <!-- Android -->
+    <PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyAndroidTargetFramework)'">
+        <DefineConstants>$(DefineConstants);ANDROID_PUSH_NOTIFICATIONS</DefineConstants>
+    </PropertyGroup>
 
-	<!-- WASM (Browser) -->
-	<PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
-		<DefineConstants>$(DefineConstants);WASM_PUSH_NOTIFICATIONS</DefineConstants>
-		<GeneratedJSFolder>Platforms\Browser\GeneratedJS</GeneratedJSFolder>
-		<_AssetsFolder>$( [System.IO.Path]::GetFullPath( $(MSBuildThisFileDirectory)/$(GeneratedJSFolder)/ ) )</_AssetsFolder>
-		<_AssetsRuntimeFolder>_cnco/Unify.Notifications</_AssetsRuntimeFolder>
-	</PropertyGroup>
-	
-	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
-		<Content Include="tsconfig.json" />
-		<None Remove="$(GeneratedJSFolder)" />
-		<Compile Remove="$(GeneratedJSFolder)" />
+    <!-- WASM (Browser) -->
+    <PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
+        <DefineConstants>$(DefineConstants);WASM_PUSH_NOTIFICATIONS</DefineConstants>
+        <GeneratedJSFolder>Platforms\Browser\GeneratedJS</GeneratedJSFolder>
+        <_AssetsFolder>$( [System.IO.Path]::GetFullPath( $(MSBuildThisFileDirectory)/$(GeneratedJSFolder)/ ) )</_AssetsFolder>
+        <_AssetsRuntimeFolder>_cnco/Unify.Notifications</_AssetsRuntimeFolder>
+    </PropertyGroup>
+    
+    <ItemGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
+        <Content Include="tsconfig.json" />
+        <None Remove="$(GeneratedJSFolder)" />
+        <Compile Remove="$(GeneratedJSFolder)" />
 
-		<!-- For NotificationImages -->
-		<PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.1" />
-		
-		<!-- For transpiling the TypeScript to JavaScript -->
-		<PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3" />
+        <!-- For NotificationImages -->
+        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.2" />
+        
+        <!-- For transpiling the TypeScript to JavaScript -->
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3" />
 
-		<!-- Foundational JS -->
-		<EmbeddedResource Include="$(GeneratedJSFolder)\*.js" />
-		<EmbeddedResource Include="$(GeneratedJSFolder)\..\*.js" />
+        <!-- Foundational JS -->
+        <EmbeddedResource Include="$(GeneratedJSFolder)\*.js" />
+        <EmbeddedResource Include="$(GeneratedJSFolder)\..\*.js" />
 
-		<!-- Serve it -->
-		<WasmExtraFilesToDeploy Include="$(GeneratedJSFolder)\*.js" />
-		<WasmExtraFilesToDeploy Include="$(GeneratedJSFolder)\..\*.js" />
-	</ItemGroup>
-	
-	<!-- Injecting ServiceWorker code -->
-	<ItemGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
-		<_WebAssets Include="$(_AssetsFolder)**/*.*" />
-		<StaticWebAsset Include="@(_WebAssets)">
-			<SourceId>Unify.Notifications</SourceId>
-			<ContentRoot>$(_AssetsFolder)</ContentRoot>
-			<BasePath>/</BasePath>
-			<RelativePath>$(_AssetsRuntimeFolder)/%(FileName)%(Extension)</RelativePath>
-			<AssetKind>All</AssetKind>
-			<AssetMode>All</AssetMode>
-			<AssetRole>Primary</AssetRole>
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-			<OriginalItemSpec>$(_AssetsFolder)%(FileName)%(Extension)</OriginalItemSpec>
-		</StaticWebAsset>
-	</ItemGroup>	
-	
-	<ItemGroup>
-		<ProjectReference Include="..\Unify\Unify.csproj" />
-	</ItemGroup>
+        <!-- Serve it -->
+        <WasmExtraFilesToDeploy Include="$(GeneratedJSFolder)\*.js" />
+        <WasmExtraFilesToDeploy Include="$(GeneratedJSFolder)\..\*.js" />
+    </ItemGroup>
+    
+    <!-- Injecting ServiceWorker code -->
+    <ItemGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
+        <_WebAssets Include="$(_AssetsFolder)**/*.*" />
+        <StaticWebAsset Include="@(_WebAssets)">
+            <SourceId>Unify.Notifications</SourceId>
+            <ContentRoot>$(_AssetsFolder)</ContentRoot>
+            <BasePath>/</BasePath>
+            <RelativePath>$(_AssetsRuntimeFolder)/%(FileName)%(Extension)</RelativePath>
+            <AssetKind>All</AssetKind>
+            <AssetMode>All</AssetMode>
+            <AssetRole>Primary</AssetRole>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+            <OriginalItemSpec>$(_AssetsFolder)%(FileName)%(Extension)</OriginalItemSpec>
+        </StaticWebAsset>
+    </ItemGroup>	
+    
+    <ItemGroup>
+        <ProjectReference Include="..\Unify\Unify.csproj" />
+    </ItemGroup>
 </Project>

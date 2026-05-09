@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>$(UnifyIosTargetFramework)</TargetFramework>
-		<Platforms>$(UnifyTargetPlatforms)</Platforms>
-		<OutputType>Exe</OutputType>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>$(UnifyIosTargetFramework)</TargetFramework>
+        <Platforms>$(UnifyTargetPlatforms)</Platforms>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Avalonia.iOS" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.iOS" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\UnifyTestRunner\UnifyTestRunner.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\UnifyTestRunner\UnifyTestRunner.csproj" />
+    </ItemGroup>
 </Project>

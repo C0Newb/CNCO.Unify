@@ -1,31 +1,31 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFramework>$(UnifyAndroidTargetFramework)</TargetFramework>
-		<Platforms>$(UnifyTargetPlatforms)</Platforms>
-		<OutputType>Exe</OutputType>
-		<SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>$(UnifyAndroidTargetFramework)</TargetFramework>
+        <Platforms>$(UnifyTargetPlatforms)</Platforms>
+        <OutputType>Exe</OutputType>
+        <SupportedOSPlatformVersion>26.0</SupportedOSPlatformVersion>
+    </PropertyGroup>
 
-	<PropertyGroup>
-		<ApplicationId>com.CNCO.Unify.UnifyTestRunner</ApplicationId>
-		<ApplicationVersion>1</ApplicationVersion>
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<AndroidPackageFormat>apk</AndroidPackageFormat>
-		<AndroidEnableProfiledAot>False</AndroidEnableProfiledAot>
-	</PropertyGroup>
+    <PropertyGroup>
+        <ApplicationId>com.CNCO.Unify.UnifyTestRunner</ApplicationId>
+        <ApplicationVersion>1</ApplicationVersion>
+        <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+        <AndroidPackageFormat>apk</AndroidPackageFormat>
+        <AndroidEnableProfiledAot>False</AndroidEnableProfiledAot>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<AndroidResource Include="Icon.png">
-			<Link>Resources\drawable\Icon.png</Link>
-		</AndroidResource>
-	</ItemGroup>
+    <ItemGroup>
+        <AndroidResource Include="Icon.png">
+            <Link>Resources\drawable\Icon.png</Link>
+        </AndroidResource>
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Avalonia.Android" />
-		<PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
-	</ItemGroup>
-	
-	<ItemGroup>
-		<ProjectReference Include="..\UnifyTestRunner\UnifyTestRunner.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia.Android" />
+        <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
+    </ItemGroup>
+    
+    <ItemGroup>
+        <ProjectReference Include="..\UnifyTestRunner\UnifyTestRunner.csproj" />
+    </ItemGroup>
 </Project>

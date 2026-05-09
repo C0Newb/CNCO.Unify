@@ -55,12 +55,6 @@
 		<SupportedOSPlatformVersion >14.0</SupportedOSPlatformVersion>
 	</PropertyGroup>
 
-
-
-	<PropertyGroup>
-		<AvaloniaVersion>11.0.2</AvaloniaVersion>
-	</PropertyGroup>
-
 	<!-- Android AoT and Optimizations -->
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)'=='Debug|$(UnifyDotNetVersion)-android'">
 		<IsTrimmable>True</IsTrimmable>

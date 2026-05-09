@@ -1,45 +1,45 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-	<PropertyGroup>
-		<TargetFrameworks>$(UnifyTargetFrameworks)</TargetFrameworks>
-		<Platforms>$(UnifyTargetPlatforms)</Platforms>
+    <PropertyGroup>
+        <TargetFrameworks>$(UnifyTargetFrameworks)</TargetFrameworks>
+        <Platforms>$(UnifyTargetPlatforms)</Platforms>
 
-		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-	</PropertyGroup>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    </PropertyGroup>
 
-	<ItemGroup>
-	  <AvaloniaResource Include="Assets\**" />
-	</ItemGroup>
+    <ItemGroup>
+      <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Avalonia" />
-		<PackageReference Include="Avalonia.Themes.Fluent" />
-		<PackageReference Include="Avalonia.Fonts.Inter" />
-		<PackageReference Include="Avalonia.Diagnostics">
-			<IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
-			<PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="CommunityToolkit.Mvvm" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Themes.Fluent" />
+        <PackageReference Include="Avalonia.Fonts.Inter" />
+        <PackageReference Include="Avalonia.Diagnostics">
+            <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+            <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\src\Unify.Communications\Unify.Communications.csproj" />
-		<ProjectReference Include="..\..\..\src\Unify.Notifications\Unify.Notifications.csproj" />
-		<ProjectReference Include="..\..\..\src\Unify.Security\Unify.Security.csproj" />
-		<ProjectReference Include="..\..\..\src\Unify\Unify.csproj" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\src\Unify.Communications\Unify.Communications.csproj" />
+        <ProjectReference Include="..\..\..\src\Unify.Notifications\Unify.Notifications.csproj" />
+        <ProjectReference Include="..\..\..\src\Unify.Security\Unify.Security.csproj" />
+        <ProjectReference Include="..\..\..\src\Unify\Unify.csproj" />
+    </ItemGroup>
 
-	<ItemGroup>
-	  <Compile Update="Properties\Resources.Designer.cs">
-	    <DesignTime>True</DesignTime>
-	    <AutoGen>True</AutoGen>
-	    <DependentUpon>Resources.resx</DependentUpon>
-	  </Compile>
-	</ItemGroup>
+    <ItemGroup>
+      <Compile Update="Properties\Resources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Resources.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
 
-	<ItemGroup>
-	  <EmbeddedResource Update="Properties\Resources.resx">
-	    <Generator>ResXFileCodeGenerator</Generator>
-	    <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-	  </EmbeddedResource>
-	</ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Update="Properties\Resources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
 </Project>
