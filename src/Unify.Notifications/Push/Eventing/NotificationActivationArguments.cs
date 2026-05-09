@@ -27,5 +27,6 @@ public class NotificationActivationArguments
   {
     Action = action;
     UserInput = userInput ?? new Dictionary<INotificationAction, string?>();
+    // Note to self: do not activate the actions here!
   }
 }

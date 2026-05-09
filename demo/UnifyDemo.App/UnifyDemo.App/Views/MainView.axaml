@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:UnifyDemo.App.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="UnifyDemo.App.Views.MainView"
+             x:DataType="vm:MainViewModel">
+
+    <Grid>
+		<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+            <Label x:Name="lbl" Content="Action has taken place yet..." />
+            <Button Content="Send notification" Click="BtnSend_Click" HorizontalAlignment="Center"/>
+            <Button Content="Send notification (with a progress bar)" Click="BtnSendWithProgressbar_Click" HorizontalAlignment="Center"/>
+            <Button Content="Clear all" Click="BtnClearAll_Click" HorizontalAlignment="Center"/>
+       </StackPanel>
+    </Grid>
+
+</UserControl>

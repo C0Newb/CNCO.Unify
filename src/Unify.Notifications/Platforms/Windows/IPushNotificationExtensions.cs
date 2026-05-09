@@ -11,7 +11,7 @@ public static class INotificationActionExtensions
   public static string GetWindowsComponentId(this INotificationAction action)
   {
     byte[] bytes = Encoding.UTF8.GetBytes(action.Id);
-    return $"{action.Type}{ActionDelimiter}{Convert.ToBase64String(bytes)}";
+    return $"{action.GetType().Name}{ActionDelimiter}{Convert.ToBase64String(bytes)}";
   }
 }
 #endif

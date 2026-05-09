@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFrameworks>$(UnifyTestsTargetFrameworks)</TargetFrameworks>
-		<Platforms>$(UnifyTestsTargetPlatforms)</Platforms>
+		<Platforms>$(UnifyTargetPlatforms)</Platforms>
 		
 		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
 	</PropertyGroup>

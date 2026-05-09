@@ -181,7 +181,6 @@ public abstract class Runtime : IRuntime
   }
   #endregion
 
-  #region Initialization
   /// <summary>
   /// Initializes this <see cref="IRuntime"/>, runs added <see cref="RuntimeHook"/>, and links dependent runtimes.
   /// </summary>
@@ -225,7 +224,20 @@ public abstract class Runtime : IRuntime
         UnifyRuntime.ApplicationLog.Info(section, $"All hooks {hooksCount} called, 0 failed.");
     }
   }
-  #endregion
+
+  public virtual async Task ShutdownAsync()
+  {
+    if (!_initialized)
+    {
+      return;
+    }
+
+    foreach (var link in _runtimeLinks)
+    {
+      await link.ShutdownAsync();
+    }
+    _initialized = false;
+  }
 
   public override bool Equals(object? obj)
   {

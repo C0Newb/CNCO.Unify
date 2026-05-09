@@ -1,0 +1,16 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": false,
+    "target": "ES6",
+    "lib": [ "ES6", "DOM", "DOM.Iterable" ],
+    "outDir": "./Platforms/Browser/GeneratedJS/"
+  },
+  "include": [
+    "./Platforms/Browser/*.ts"
+  ],
+  "exclude": []
+}

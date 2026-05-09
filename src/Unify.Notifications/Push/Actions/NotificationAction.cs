@@ -7,23 +7,9 @@ namespace CNCO.Unify.Notifications.Push.Actions;
 /// </summary>
 public abstract class NotificationAction : INotificationAction
 {
-  /// <summary>
-  /// Type of notification action.
-  /// </summary>
-  public abstract NotificationActionType Type { get; }
-
-  /// <summary>
-  /// Name of the action.
-  /// </summary>
-  public string Id { get; set; }
+  public string Id { get; } = Guid.NewGuid().ToString();
 
   public event NotificationActionActivatedEventHandler? ActionActivated;
 
-  public NotificationAction(string id)
-  {
-    ArgumentNullException.ThrowIfNullOrEmpty(id);
-    Id = id;
-  }
-
-  public void OnActivated(string? value = null) => ActionActivated?.Invoke(this, value);
+  public virtual void OnActivated(string? value = null) => ActionActivated?.Invoke(this, value);
 }

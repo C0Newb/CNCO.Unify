@@ -243,7 +243,7 @@ public class WebServer : IWebServer
 
   private void HandleRequest(HttpListenerContext context)
   {
-    string tag = $"{GetType().Name}::{nameof(HandleRequest)}";
+    string? tag = null;
 
     if (Router == null)
     {
@@ -259,15 +259,15 @@ public class WebServer : IWebServer
 
       if (_logAccess)
       {
+        tag ??= $"{GetType().Name}::{nameof(HandleRequest)}";
         CommunicationsRuntime.Current.RuntimeLog.Debug(tag, $"HTTP-{request.Verb} {request.Path}");
       }
 
       Router.Process(request, response);
-      //response.Status(200);
-      //response.Send("test");
     }
     catch (Exception e)
     {
+      tag ??= $"{GetType().Name}::{nameof(HandleRequest)}";
       string path = "UNKNOWN";
       try
       {

@@ -5,12 +5,11 @@ using CNCO.Unify.Storage;
 namespace CNCO.Unify.Notifications;
 
 [LinkRuntime(typeof(UnifyRuntime))]
-public class NotificationRuntime : Runtime, IRuntime
+public class NotificationRuntime : Runtime
 {
   private static NotificationRuntime? _instance;
-  private static INotificationManager? _notificationManager;
+  private static IPlatformPushNotificationManager? _notificationManager;
   private static ILocalFileStorage? _imageFileStore;
-  private static bool _hookedAdded = false;
 
   #region Locks
   // Lock used when initializing this class.
@@ -23,9 +22,9 @@ public class NotificationRuntime : Runtime, IRuntime
   }
 
   /// <summary>
-  /// Current, shared <see cref="IPlatformNotificationManager"/>.
+  /// Current, shared <see cref="IPlatformPushNotificationManager"/>.
   /// </summary>
-  public static INotificationManager NotificationManager
+  public static INotificationsManager NotificationManager
   {
     get
     {
@@ -33,7 +32,7 @@ public class NotificationRuntime : Runtime, IRuntime
       {
         lock (_initializationLock)
         {
-          _notificationManager ??= NotificationManagerFactory.GetPlatformNotificationManager();
+          _notificationManager ??= new Push.NotificationManager();
         }
       }
       return _notificationManager;
@@ -72,10 +71,15 @@ public class NotificationRuntime : Runtime, IRuntime
     }
   }
 
-  public NotificationRuntime()
+  public NotificationRuntimeConfiguration Configuration { get; init; }
+
+  public NotificationRuntime(NotificationRuntimeConfiguration? configuration = null)
   {
+    Configuration = configuration ?? new();
     if (_instance != null)
+    {
       return;
+    }
 
     lock (_initializationLock)
     {
@@ -84,39 +88,43 @@ public class NotificationRuntime : Runtime, IRuntime
       _instance = this;
     }
 
-    // realistically this should be true if the instance is already created .. but double check! We really don't want to do this twice!
-    if (_hookedAdded)
-      return;
-
-    lock (_initializationLock)
+    // This will be ran once UnifyRuntime.Initialize() is invoked.
+    var hookAction = new Action<UnifyRuntime>(async runtimeTarget =>
     {
-      if (_hookedAdded)
-        return;
-
-      // This will be ran once UnifyRuntime.Initialize() is invoked.
-      var hookAction = new Action<UnifyRuntime>(runtimeTarget =>
+      try
       {
-        try
+        if (NotificationManager is IPlatformPushNotificationManager platformPushNotificationManager)
         {
-          // need to do this somewhere .. guess that'll be here :)
-          NotificationManager.Register();
+          await platformPushNotificationManager.RegisterAsync();
         }
-        catch (Exception ex)
-        {
-          Current.RuntimeLog.Error(
-            $"{nameof(NotificationRuntime)}::{nameof(NotificationManager)}::{nameof(NotificationManager.Register)}()",
-            "Unable to register platform notification manager!",
-            ex
-          );
-        }
-      });
-      RuntimeHook notificationRegisterHook = new RuntimeHook(
-        $"{GetType().Name}${nameof(NotificationManager)}-Register",
-        hookAction
-      );
-      AddHook(notificationRegisterHook);
-      _hookedAdded = true;
+      }
+      catch (Exception ex)
+      {
+        var tag = $"{nameof(NotificationRuntime)}::{nameof(NotificationManager)}";
+        var notificationManagerTag =
+          $"{_notificationManager?.GetType().Name ?? "NO_TYPE"}::{nameof(IPlatformPushNotificationManager.RegisterAsync)}";
+        Current.RuntimeLog.Error(
+          $"{tag}=>{notificationManagerTag}()",
+          "Unable to register platform notification manager!",
+          ex
+        );
+      }
+    });
+    RuntimeHook notificationRegisterHook = new RuntimeHook()
+    {
+      Name = $"{GetType().Name}${nameof(NotificationManager)}-Register",
+      Action = hookAction,
+    };
+    AddHook(notificationRegisterHook);
+  }
+
+  public override async Task ShutdownAsync()
+  {
+    if (_notificationManager != null)
+    {
+      await _notificationManager.UnregisterAsync();
     }
+    await base.ShutdownAsync();
   }
 
   public static NotificationRuntime Create() => Current;

@@ -3,17 +3,15 @@
 /// <summary>
 /// Specifically used by platform specific notification managers.
 /// </summary>
-public interface IPlatformNotificationManager
+internal interface IPlatformPushNotificationManager : INotificationsManager
 {
-  public PlatformID PlatformId { get; }
-
   /// <summary>
   /// Sets up push notification support for this operating system.
   /// </summary>
-  public void Register();
+  public Task RegisterAsync();
 
   /// <summary>
   /// Unregisters push notification support for this application on the current operating system.
   /// </summary>
-  public void Unregister();
+  public Task UnregisterAsync();
 }

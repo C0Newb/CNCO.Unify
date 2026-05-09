@@ -1,4 +1,6 @@
-﻿namespace CNCO.Unify.Notifications.Push;
+﻿using System.Runtime.Versioning;
+
+namespace CNCO.Unify.Notifications.Push;
 
 /// <summary>
 /// Progress bar properties.
@@ -20,7 +22,10 @@ public class NotificationProgressData
   /// </summary>
   /// <remarks>
   /// Buffering is an example of when this should be <see langword="true"/>.
+  ///
+  /// Ignored on WASM.
   /// </remarks>
+  [UnsupportedOSPlatform("browser")]
   public bool IsIndeterminate { get; set; } = false;
 
   /// <summary>

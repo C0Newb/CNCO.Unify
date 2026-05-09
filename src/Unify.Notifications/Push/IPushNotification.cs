@@ -26,15 +26,9 @@ public interface IPushNotification
   public string Title { get; set; }
 
   /// <summary>
-  /// Attributes and miscellaneous data to transmit with the notification.
-  /// This is not viewable by the user.
-  /// </summary>
-  public List<string> Attributes { get; set; }
-
-  /// <summary>
   /// Contents of the push notification.
   /// </summary>
-  public NotificationContents Contents { get; set; }
+  public NotificationContents Contents { get; init; }
 
   /// <summary>
   /// Displayed timestamp.
@@ -50,7 +44,7 @@ public interface IPushNotification
   /// Whether the notification is displayed silently or not.
   /// </summary>
   /// <remarks>
-  /// <see langword="true"/> if <see cref="Priority"/> is <see cref="NotificationPriority.Minimum"/> or <see cref="NotificationPriority.Low"/>.
+  /// <see langword="true"/> if <see cref="Priority"/> is <see cref="NotificationPriority.Low"/> or <see cref="NotificationPriority.Low"/>.
   /// </remarks>
   public bool IsSilent { get; }
 
@@ -60,18 +54,31 @@ public interface IPushNotification
   public NotificationCategory Category { get; set; }
 
   /// <summary>
-  /// Pushes the notification to the user via the operating system.
-  /// </summary>
-  public void Send();
-
-  /// <summary>
   /// Delete the notification from the operating system.
   /// </summary>
-  public void Cancel();
+  public bool Cancel();
+
+  /// <summary>
+  /// Clears the contents of the notification.
+  /// </summary>
+  public void ClearContents();
+
+  /// <summary>
+  /// Pushes the notification to the user via the operating system.
+  /// </summary>
+  public Task<bool> SendAsync();
+
+  /// <summary>
+  /// Sets the contents of the notification.
+  /// </summary>
+  /// <param name="contents">
+  /// Contents to set the notification to.
+  /// </param>
+  public void SetContents(NotificationContents contents);
 
   #region Eventing
   /// <summary>
-  /// Event fired when the notification is activated by the user.
+  /// Fired when the notification is activated by the user.
   /// </summary>
   /// <remarks>
   /// This is fired after all <see cref="NotificationActionActivatedEventHandler"/> events
@@ -80,20 +87,35 @@ public interface IPushNotification
   public event NotificationActivatedEventHandler? NotificationActivated;
 
   /// <summary>
-  /// When the notification fails to be sent or displayed.
+  /// Fired when the notification fails to be sent or displayed.
   /// </summary>
   public event NotificationFailedEventHandler? NotificationFailed;
 
   /// <summary>
-  /// When the notification is dismissed and no longer visible to the user.
+  /// Fired when the notification is dismissed and no longer visible to the user.
   /// </summary>
   /// <remarks>
-  /// Includes dismassals by this application. Be sure to check the <see cref="NotificationDismissalReason"/>.
+  /// Includes dismissals by this application. Be sure to check the <see cref="NotificationDismissalReason"/>.
   /// </remarks>
   public event NotificationDismissedEventHandler? NotificationDismissed;
 
+  /// <summary>
+  /// Fired when the notification is activated, either via itself or a <see cref="NotificationContents.Actions"/>.
+  /// </summary>
+  /// <param name="args">Notification activation data.</param>
   void OnActivated(NotificationActivationArguments args);
+
+  /// <summary>
+  /// Fired when a notification failed to send.
+  /// </summary>
+  /// <param name="reason">Reason the notification failed.</param>
+  /// <param name="details">Detailed explanation as to why it failed to display.</param>
   void OnFailed(NotificationFailureReason reason, string? details);
-  void OnDimsissed(NotificationDismissalReason reason);
+
+  /// <summary>
+  /// Fired when a notification is dismissed (canceled).
+  /// </summary>
+  /// <param name="reason">Reason the notification was dismissed, if possible.</param>
+  void OnDismissed(NotificationDismissalReason reason);
   #endregion
 }
