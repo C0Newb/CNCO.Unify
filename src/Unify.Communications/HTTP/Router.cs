@@ -1,7 +1,10 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using CNCO.Unify.Communications.Http.Routing;
+using CNCO.Unify.Communications.Http.Routing.ControllerInvoker;
 
 namespace CNCO.Unify.Communications.Http;
 
@@ -31,14 +34,13 @@ public class Router : IRouter
     public Action<IWebRequest, IWebResponse>? OnWebRequest { get; private set; }
     public Action<IWebSocket>? OnWebSocketRequest { get; private set; }
 
-    //public Task? Task { get; set; }
     public bool IsWebSocket { get; set; } = false;
 
     private Listener(HttpVerb verb, string path)
     {
       Verb = verb;
       Path = '/' + path.Trim('/'); // force only one '/' at the start :)
-      PathRegex = Regex.Replace(path, @":.*?:|\{.*?\}", ".*");
+      PathRegex = Regex.Replace(Path, @":.*?:|\{.*?\}", ".*");
     }
 
     public Listener(HttpVerb verb, string path, Action<IWebRequest, IWebResponse> onWebRequest)
@@ -60,10 +62,8 @@ public class Router : IRouter
       return false;
     }
 
-    public override int GetHashCode()
-    {
-      return base.GetHashCode();
-    }
+    public override int GetHashCode() =>
+      HashCode.Combine(Path ?? string.Empty, PathRegex ?? string.Empty, Verb);
   }
 
   private readonly Dictionary<string, List<Listener>> Listeners = [];
@@ -273,8 +273,8 @@ public class Router : IRouter
             WarnAboutMixingHttpAndWebSocketRoutes();
 
           // same path, same verb, send er...
-          Task httpTask = new Task(() => listener.OnWebRequest(request, response));
-          listenerTasks.TryAdd(listener, httpTask);
+          Task httpTask = new Task(() => WrapListenerInvoke(listener, request, response));
+          _ = listenerTasks.TryAdd(listener, httpTask);
           httpTask.Start();
           listenerFired = true;
         }
@@ -301,7 +301,12 @@ public class Router : IRouter
           task.Wait(
             CommunicationsRuntime.Current.Configuration.Http.Router.ResponseTimeoutMilliseconds
           ); // it should be cancelling, but ...
-          //task.Wait();
+
+          if (task.IsFaulted && task.Exception != null)
+          {
+            throw task.Exception;
+          }
+
           try
           {
             task?.Dispose();
@@ -315,9 +320,16 @@ public class Router : IRouter
           }
         }
       }
-      catch (OperationCanceledException) { }
+      catch (OperationCanceledException)
+      {
+        // Ignore
+      }
       catch (AggregateException e)
       {
+        if (e.InnerException?.GetType() == typeof(ListenerOnWebRequestException))
+        {
+          throw e.InnerException;
+        }
         if (
           e.Message.Contains("websocket request without", StringComparison.OrdinalIgnoreCase)
           && e.Message.Contains("header", StringComparison.OrdinalIgnoreCase)
@@ -325,7 +337,11 @@ public class Router : IRouter
         {
           hasActivatedWebSocket = true;
           listenerFired = false; // forces a 400 later.
+          return;
         }
+
+        // no idea, re-throw
+        throw;
       }
     }
 
@@ -389,9 +405,8 @@ public class Router : IRouter
   }
 
   // Checks whether the request contains the headers required for a WebSocket connection handshake
-  private static bool HasValidWebSocketConnectHandshakeHeaders(IWebRequest request)
-  {
-    return !(
+  private static bool HasValidWebSocketConnectHandshakeHeaders(IWebRequest request) =>
+    !(
       string.IsNullOrEmpty(request.Headers["Connection"])
       || string.IsNullOrEmpty(request.Headers["Upgrade"])
       || string.IsNullOrEmpty(request.Headers["Sec-WebSocket-Version"])
@@ -400,178 +415,36 @@ public class Router : IRouter
       || !request.Headers["Connection"]!.Equals("upgrade", StringComparison.OrdinalIgnoreCase)
       || !request.Headers["Upgrade"]!.Equals("websocket", StringComparison.OrdinalIgnoreCase)
     );
-  }
 
-  #region Route initialization
-  /// <summary>
-  /// Adds all routes in controllers to this router.
-  /// </summary>
-  public void InitializeRoutes()
-  {
-    IEnumerable<Type> controllers = GetControllers();
-
-    foreach (var controller in controllers)
-    {
-      if (controller == typeof(Controller))
-        continue;
-
-      string controllerRoute = GetControllerRoute(controller);
-      var methods = GetMethods(controller);
-
-      foreach (var method in methods)
-      {
-        AddControllerListener(controllerRoute, method);
-      }
-    }
-  }
-
-  private static IEnumerable<Type> GetControllers()
-  {
-    return from assemblies in AppDomain.CurrentDomain.GetAssemblies()
-      from types in assemblies.GetTypes()
-      where types.IsDefined(typeof(ControllerAttribute), true)
-      select types;
-  }
-
-  private static string GetControllerRoute(Type controller)
-  {
-    string route = '/' + controller.Name.ToLower();
-    var controllerAttribute = controller.GetCustomAttribute<ControllerAttribute>(false);
-    if (controllerAttribute != null && controllerAttribute.Template != null)
-    {
-      route = controllerAttribute.Template.Replace("[controller]", controller.Name.ToLower());
-      if (!route.StartsWith('/'))
-        route = '/' + route;
-      return route;
-    }
-
-    var routeAttribute = controller.GetCustomAttribute<RouteAttribute>(false);
-    if (routeAttribute == null)
-      return route; // none defined, use controller name.
-
-    route = routeAttribute.Template.Replace("[controller]", controller.Name.ToLower());
-    if (!route.StartsWith('/'))
-      route = '/' + route;
-    route = route.TrimEnd('/');
-    return route;
-  }
-
-  private static string GetMethodRoute(MethodInfo method, Type routeAttributeType)
+  private static void WrapListenerInvoke(
+    Listener listener,
+    IWebRequest request,
+    IWebResponse response
+  )
   {
     try
     {
-      IRouteTemplate? methodAttribute = (IRouteTemplate)
-        method.GetCustomAttributes(routeAttributeType, false)[0];
-
-      if (methodAttribute == null)
-        return string.Empty; //'/' + method.Name.ToLower();
-
-      var route = methodAttribute.Template ?? string.Empty;
-      if (!route.StartsWith('/'))
-        route = '/' + route;
-      route = route.TrimEnd('/');
-      return route;
+      if (listener.OnWebRequest == null)
+      {
+        throw new InvalidOperationException(
+          "Attempt to invoke web request for web socket listener!"
+        );
+      }
+      listener.OnWebRequest(request, response);
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
       CommunicationsRuntime.Current.RuntimeLog.Error(
-        $"{typeof(Router).FullName}::{nameof(GetMethodRoute)}({method}, {routeAttributeType})",
-        "Failed to get method route!",
-        e
+        $"{nameof(Router)}::{nameof(WrapListenerInvoke)}",
+        $"Error invoking listener for {listener.Verb} \"{listener.Path}\"",
+        ex
       );
-      return string.Empty;
+      throw new ListenerOnWebRequestException(ex);
     }
   }
 
-  private static List<ControllerInvoker> GetMethods(Type controller)
-  {
-    var controllerMethods = new List<ControllerInvoker>();
-    var methods = controller.GetMethods(
-      BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly
-    );
-
-    foreach (var method in methods)
-    {
-      var httpMethodAttributes = method.GetCustomAttributes<HttpMethodAttribute>();
-      var webSocketMethodAttributes = method.GetCustomAttributes<WebSocketAttribute>(false);
-      if (httpMethodAttributes == null && webSocketMethodAttributes == null) // No listeners here!
-        continue;
-
-      controllerMethods.Add(
-        new(controller, httpMethodAttributes, webSocketMethodAttributes, method)
-      );
-    }
-
-    return controllerMethods;
-  }
-
-  private void AddControllerListener(string route, ControllerInvoker method)
-  {
-    Action<IWebRequest, IWebResponse> httpCallback = (req, res) => method.Invoke(req, res, null);
-    Action<IWebSocket> webSocketCallback = (socket) =>
-      method.Invoke(socket.WebRequest, null, socket);
-
-    route = '/' + route.Trim('/');
-
-    // HTTP requests
-    foreach (var httpMethodAttribute in method.HttpMethodAttributes)
-    {
-      string methodRoute = route + GetMethodRoute(method.MethodInfo, httpMethodAttribute.GetType());
-
-      foreach (var httpMethod in httpMethodAttribute.HttpMethods)
-      {
-        switch (httpMethod)
-        {
-          case HttpVerb.Any:
-            Any(methodRoute, httpCallback);
-            break;
-
-          case HttpVerb.Get:
-            Get(methodRoute, httpCallback);
-            break;
-          case HttpVerb.Post:
-            Post(methodRoute, httpCallback);
-            break;
-          case HttpVerb.Patch:
-            Patch(methodRoute, httpCallback);
-            break;
-          case HttpVerb.Put:
-            Put(methodRoute, httpCallback);
-            break;
-          case HttpVerb.Delete:
-            Delete(methodRoute, httpCallback);
-            break;
-          case HttpVerb.Trace:
-            Trace(methodRoute, httpCallback);
-            break;
-          case HttpVerb.Head:
-            Head(methodRoute, httpCallback);
-            break;
-          case HttpVerb.Connect:
-            Connect(methodRoute, httpCallback);
-            break;
-          case HttpVerb.Options:
-            Options(methodRoute, httpCallback);
-            break;
-
-          default: // ? what
-            CommunicationsRuntime.Current.RuntimeLog.Alert(
-              $"{GetType()}::{nameof(AddControllerListener)}",
-              $"Unknown HttpMethod was attempted to be added via a {typeof(HttpMethodAttribute).FullName}! Method: {httpMethod}. "
-                + $"Defaulting to {HttpVerb.Any}."
-            );
-            Any(methodRoute, httpCallback);
-            break;
-        }
-      }
-    }
-
-    // WebSockets
-    foreach (var webSocket in method.WebSocketAttributes)
-    {
-      string methodRoute = route + GetMethodRoute(method.MethodInfo, typeof(WebSocketAttribute));
-      WebSocket(methodRoute, webSocketCallback);
-    }
-  }
-  #endregion
+  /// <summary>
+  /// Adds all routes in controllers to this router.
+  /// </summary>
+  public void InitializeRoutes() => RouteControllerInitializer.Initialize(this);
 }

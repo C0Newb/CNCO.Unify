@@ -1,9 +1,11 @@
-﻿namespace CNCO.Unify.Communications.Http.Routing;
+﻿using CNCO.Unify.Communications.Http.Routing.ControllerInvoker;
+
+namespace CNCO.Unify.Communications.Http.Routing;
 
 [Controller]
 public abstract class Controller
 {
-  private readonly object _lockObject = new object();
+  private readonly Lock _lockObject = new();
 
   private IControllerContext? _controllerContext;
 

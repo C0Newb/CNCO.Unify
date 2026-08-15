@@ -18,7 +18,7 @@ public class RouteAttribute : Attribute, IRouteTemplate
   /// <param name="template">The route template. May not be null.</param>
   public RouteAttribute([StringSyntax("Route")] string template)
   {
-    ArgumentNullException.ThrowIfNull(nameof(template));
+    ArgumentNullException.ThrowIfNull(template);
 
     template = template.TrimStart('/');
 

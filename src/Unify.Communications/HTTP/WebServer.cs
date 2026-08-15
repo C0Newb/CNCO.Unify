@@ -1,6 +1,7 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 using System.Security;
-using System.Text;
+using CNCO.Unify.Communications.Http.Routing;
 
 namespace CNCO.Unify.Communications.Http;
 
@@ -267,7 +268,6 @@ public class WebServer : IWebServer
     }
     catch (Exception e)
     {
-      tag ??= $"{GetType().Name}::{nameof(HandleRequest)}";
       string path = "UNKNOWN";
       try
       {
@@ -283,6 +283,14 @@ public class WebServer : IWebServer
         // Ignore path resolve issues
       }
 
+      // Bubble up?
+      if (e is ListenerOnWebRequestException listenerOnWebRequestException)
+      {
+        Debugger.BreakForUserUnhandledException(listenerOnWebRequestException.ListenerException);
+        throw listenerOnWebRequestException.ListenerException;
+      }
+
+      tag ??= $"{GetType().Name}::{nameof(HandleRequest)}";
       CommunicationsRuntime.Current.RuntimeLog.Error(
         tag,
         $"Failed to process HTTP request {path}",

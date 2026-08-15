@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Globalization;
+using System.Numerics;
 using System.Text.RegularExpressions;
 
 namespace CNCO.Unify.Communications.Http.Routing;
@@ -63,6 +64,8 @@ public sealed partial class RouteParameter
   /// </summary>
   /// <returns>Original string representation of the value.</returns>
   internal object? ToStringValue() => _originalStringValue;
+
+  public override string ToString() => _originalStringValue;
 
   private bool TryParsingNumeric()
   {
@@ -162,18 +165,21 @@ public sealed partial class RouteParameter
     {
       Type = typeof(Guid);
       Value = guid;
-      return;
     }
-    else if (DateTime.TryParse((string)Value, out DateTime dateTime))
+    else if (
+      DateTime.TryParse(
+        (string)Value,
+        provider: CultureInfo.InvariantCulture.DateTimeFormat,
+        out DateTime dateTime
+      )
+    )
     {
       Type = typeof(DateTime);
       Value = dateTime;
-      return;
     }
     else
     {
       Type = typeof(string);
-      return;
     }
   }
 

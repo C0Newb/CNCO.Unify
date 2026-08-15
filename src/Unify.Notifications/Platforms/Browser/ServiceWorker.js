@@ -8,11 +8,17 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
     event.respondWith(
-        caches.match(event.request).then((response) => {
+        caches.match(event.request).then(async (response) => {
             if (response) {
                 return response;
             }
-            return fetch(event.request);
+
+            try {
+                const newResponse = await fetch(event.request);
+                return newResponse;
+            } catch (ex) {
+                console.debug(`[NotMan::SW] #fetch: failed to fetch request {event.request}`, ex);
+            }
         }),
     );
 });

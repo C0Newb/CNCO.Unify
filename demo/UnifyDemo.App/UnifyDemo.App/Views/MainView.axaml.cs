@@ -1,5 +1,4 @@
 using System;
-using System.Resources;
 using System.Security;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -8,7 +7,6 @@ using CNCO.Unify.Communications.Http;
 using CNCO.Unify.Notifications;
 using CNCO.Unify.Notifications.Push;
 using CNCO.Unify.Notifications.Push.Actions;
-using CNCO.Unify.Notifications.Push.Eventing;
 using CNCO.Unify.Notifications.Push.Imaging;
 
 namespace UnifyDemo.App.Views;
@@ -16,7 +14,7 @@ namespace UnifyDemo.App.Views;
 public partial class MainView : UserControl
 {
   private int count = 0;
-  private IPushNotification _notification;
+  private IPushNotification? _notification;
 
   public MainView()
   {
@@ -24,7 +22,7 @@ public partial class MainView : UserControl
 
     try
     {
-      var router = new Router(false);
+      var router = new Router();
       App.WebServer = new WebServer(router, new WebServerOptions() { Port = 8008 });
 
       try
@@ -38,7 +36,7 @@ public partial class MainView : UserControl
       }
 
       router.Any(
-        "test",
+        "Test",
         (request, response) =>
         {
           response.Status(299);

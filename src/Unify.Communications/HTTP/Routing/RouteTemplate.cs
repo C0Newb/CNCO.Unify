@@ -11,7 +11,7 @@ public sealed class RouteTemplate : IRouteTemplate
   /// Creates a new <see cref="RouteAttribute"/> with the given route template.
   /// </summary>
   /// <param name="template">The route template. May not be null.</param>
-  public RouteTemplate([StringSyntax("Route")] string template)
+  private RouteTemplate([StringSyntax("Route")] string template)
   {
     Template = template ?? throw new ArgumentNullException(nameof(template));
     RequestRoute = template;
@@ -45,12 +45,8 @@ public sealed class RouteTemplate : IRouteTemplate
   {
     get
     {
-      var parameters = new Dictionary<string, RouteParameter>();
-      foreach (RouteParameter parameter in RouteParameters)
-      {
-        parameters.Add(parameter.Name, parameter);
-      }
-      return parameters;
+      field ??= RouteParameters.ToDictionary(rP => rP.Name);
+      return field;
     }
   }
 
@@ -70,17 +66,12 @@ public sealed class RouteTemplate : IRouteTemplate
     for (int i = 0; i < originalPathParts.Length; i++)
     {
       var part = originalPathParts[i];
-      if (
-        !(part.StartsWith(':') && part.EndsWith(':'))
-        && !(part.StartsWith('{') && part.EndsWith('}'))
-      )
+      if (part.StartsWith(':') && part.EndsWith(':') || part.StartsWith('{') && part.EndsWith('}'))
       {
-        continue;
+        // path parameter
+        var routeParameter = new RouteParameter(part[1..^1], requestPathParts[i]);
+        parameters.Add(routeParameter);
       }
-
-      // path parameter
-      var routeParameter = new RouteParameter(part[1..^1], requestPathParts[i]);
-      parameters.Add(routeParameter); // Get the parameter name and value
     }
 
     RouteParameters = parameters;

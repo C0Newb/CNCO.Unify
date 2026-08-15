@@ -8,7 +8,7 @@ namespace CNCO.Unify.Communications.Http;
 /// Represents a blank, no-operation WebResponse.
 /// </summary>
 /// <remarks>
-/// This is primarily used by <see cref="Routing.ControllerContext"/> when a <see cref="WebSocket"/> is in use.
+/// This is primarily used by <see cref="Routing.Controller.ControllerContext"/> when a <see cref="WebSocket"/> is in use.
 /// </remarks>
 public class NoopWebResponse : IWebResponse
 {

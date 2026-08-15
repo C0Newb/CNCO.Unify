@@ -2,10 +2,16 @@
     public action: string;
     public title: string;
     public icon?: string;
+
+    constructor(action: string, title: string, icon?: string) {
+        this.action = action;
+        this.title = title;
+        this.icon = icon;
+    }
 }
 
 class PushNotification {
-    private $uuid: string;
+    private readonly $uuid: string;
     private $notification: Notification | undefined;
     private $hasEvented: boolean = false; // Prevent onclick then onclose calling.
 
@@ -24,13 +30,13 @@ class PushNotification {
     public group: string;
     public title: string;
 
-    public text: string;
+    public text?: string;
     public iconUrl?: string;
     public imageUrl?: string;
     public actions?: PushNotificationAction[];
 
-    public isPersistent: boolean;
-    public isSilent: boolean;
+    public isPersistent: boolean = false;
+    public isSilent: boolean = false;
 
     /**
      * Epoc based timestamp.
@@ -45,7 +51,27 @@ class PushNotification {
         onShow: Function
     ) {
         const jsonObject = JSON.parse(pushNotificationJson);
+        // Funny this is this already set all our fields/properties, but isn't detected by the compiler...
+        // which is techincally correct since they object may *not* have a value but meh.
         Object.assign(this, jsonObject);
+
+        this.id = jsonObject.id;
+        if (typeof(this.id) !== "string" || this.id.trim() === "") {
+            throw new Error("Non-empty notification id is required!");
+        }
+
+        this.group = jsonObject.group ?? "default";
+        this.$uuid = NotificationManager.getNotificationIdentifier(this.id, this.group);
+
+        this.title = jsonObject.title;
+        const titleEmtpy = typeof (this.title) !== "string" || this.title.trim() === "";
+        const textEmpty = typeof (this.text) !== "string" || this.text.trim() === "";
+        if (titleEmtpy && textEmpty) {
+            throw new Error("Non-empty notification title and/or text is required!");
+        }
+
+        // erhhmm set it to empty string.
+        this.title = this.title ?? "";
 
         this.$onClickAction = onClick;
         this.$onErrorAction = onError;
@@ -81,8 +107,6 @@ class PushNotification {
         registration?: ServiceWorkerRegistration,
         update: boolean = false
     ): Promise<void> {
-        this.$uuid = NotificationManager.getNotificationIdentifier(this.id, this.group);
-
         const notificationOptions = {
             //renotify: update,
             tag: this.group,
@@ -127,6 +151,10 @@ class PushNotification {
             this.$notification = notifications.find((notification) => notification.data.uuid == this.$uuid);
         }
 
+        if (this.$notification == undefined) {
+            return
+        }
+
         // onclick is handled by the service worker.
 
         this.$notification.onerror = () => {
@@ -151,7 +179,7 @@ class NotificationManager {
      */
     private readonly $notifications: Map<string, PushNotification> = new Map<string, PushNotification>;
 
-    private $serviceWorker: ServiceWorkerRegistration;
+    private $serviceWorker: ServiceWorkerRegistration | undefined;
 
     public static getNotificationIdentifier(id: string, group: string) {
         return btoa(`${group ?? "default"}::${id}`);
@@ -178,6 +206,7 @@ class NotificationManager {
         return new Promise((res) => {
             if (this.$serviceWorker == undefined) {
                 res(true);
+                return;
             }
 
             return this.$serviceWorker.unregister();
@@ -188,7 +217,8 @@ class NotificationManager {
         const identifier = NotificationManager.getNotificationIdentifier(id, group);
         try {
             const pushNotification = this.$notifications.get(identifier);
-            pushNotification.toNotification(this.$serviceWorker).close();
+            // I was considering returning false, but if we can't find it then it's closed, right?
+            pushNotification?.toNotification(this.$serviceWorker)?.close();
             return true;
         } catch (e) {
             console.error("[NotMan] Failed to delete notification!");
@@ -205,10 +235,10 @@ class NotificationManager {
         });
     }
 
-    public getNotificationActivationReason(id: string, group: string): string {
+    public getNotificationActivationReason(id: string, group: string): string | undefined {
         try {
             const notification = this.$notifications.get(NotificationManager.getNotificationIdentifier(id, group));
-            return notification.activatedButtonId;
+            return notification?.activatedButtonId;
         } catch (e) {
             console.error("[NotMan] Cannot get activation reason for push notification!", e);
             return '';
@@ -255,27 +285,31 @@ class NotificationManager {
     }
 
     public loadServiceWorker(serviceWorkerUrl: string): Promise<boolean> {
-        return new Promise((res) => {
-            navigator.serviceWorker.register(serviceWorkerUrl).then(() => {
-                navigator.serviceWorker.ready.then((registration) => {
-                    navigator.serviceWorker.addEventListener('message', (event) => {
-                        this.handleServiceWorkerMessage(event);
-                    });
-                    this.$serviceWorker = registration;
-                    console.log("[NotMan] Service worker registered!");
-                    res(true);
+        return new Promise(async (res) => {
+            try {
+                // Register...
+                await navigator.serviceWorker.register(serviceWorkerUrl);
+                // Wait for it to be ready (register)...
+                this.$serviceWorker = await navigator.serviceWorker.ready
+
+                // Register message handler...
+                navigator.serviceWorker.addEventListener('message', (event) => {
+                    this.handleServiceWorkerMessage(event);
                 });
-            }).catch((err) => {
+                
+                console.log("[NotMan] Service worker registered!");
+                res(true);
+            } catch (err) {
                 console.warn("[NotMan] Service worker failed to register! Error:", err);
                 res(false)
-            });
+            };
         });
     }
 
     private handleServiceWorkerMessage(event: any): void {
         try {
             const notification = this.$notifications.get(event.data.notificationUuid);
-            notification.activated(event.data.actionId);
+            notification?.activated(event.data.actionId);
         }
         catch {
             console.error("[NotMan] Cannot handle activation for push notification!", event?.data);

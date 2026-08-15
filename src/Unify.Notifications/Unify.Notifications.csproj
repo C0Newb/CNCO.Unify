@@ -13,7 +13,7 @@
 
     <!-- For NotificationImages -->
     <ItemGroup>
-        <PackageReference Include="SkiaSharp" Version="3.119.2" />
+        <PackageReference Include="SkiaSharp" Version="4.151.1" />
     </ItemGroup>
     
     <!-- 
@@ -68,10 +68,10 @@
         <Compile Remove="$(GeneratedJSFolder)" />
 
         <!-- For NotificationImages -->
-        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="3.119.2" />
+        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.151.1" />
         
         <!-- For transpiling the TypeScript to JavaScript -->
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="5.9.3" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="7.0.0" />
 
         <!-- Foundational JS -->
         <EmbeddedResource Include="$(GeneratedJSFolder)\*.js" />
