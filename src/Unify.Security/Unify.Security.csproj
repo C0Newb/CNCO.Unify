@@ -10,14 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageReference Include="BCrypt.Net-Next" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-android'">
-    <PackageReference Include="IKVM" Version="8.15.0" />
-    <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto">
-      <Version>1.1.0.3</Version>
-    </PackageReference>
+    <PackageReference Include="IKVM" />
+    <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
   </ItemGroup>
 
   <ItemGroup>

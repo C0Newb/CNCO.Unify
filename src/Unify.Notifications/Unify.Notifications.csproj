@@ -13,7 +13,7 @@
 
     <!-- For NotificationImages -->
     <ItemGroup>
-        <PackageReference Include="SkiaSharp" Version="4.151.1" />
+        <PackageReference Include="SkiaSharp" />
     </ItemGroup>
     
     <!-- 
@@ -31,7 +31,7 @@
         <DefineConstants>$(DefineConstants);WINDOWS_TOAST_NOTIFICATIONS</DefineConstants>
     </PropertyGroup>
     <ItemGroup Condition="'$(TargetFramework)' == '$(UnifyWindowsTargetFramework)'">
-        <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+        <PackageReference Include="Microsoft.Toolkit.Uwp.Notifications" />
     </ItemGroup>
 
 
@@ -53,6 +53,10 @@
     <PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyAndroidTargetFramework)'">
         <DefineConstants>$(DefineConstants);ANDROID_PUSH_NOTIFICATIONS</DefineConstants>
     </PropertyGroup>
+    <ItemGroup Condition="'$(TargetFramework)' == '$(UnifyAndroidTargetFramework)'">
+        <!-- For NotificationCompat/NotificationManagerCompat (channel + permission helpers) -->
+        <PackageReference Include="Xamarin.AndroidX.Core" />
+    </ItemGroup>
 
     <!-- WASM (Browser) -->
     <PropertyGroup Condition="'$(TargetFramework)' == '$(UnifyBrowserTargetFramework)'">
@@ -68,10 +72,10 @@
         <Compile Remove="$(GeneratedJSFolder)" />
 
         <!-- For NotificationImages -->
-        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.151.1" />
-        
+        <PackageReference Include="SkiaSharp.NativeAssets.WebAssembly" />
+
         <!-- For transpiling the TypeScript to JavaScript -->
-        <PackageReference Include="Microsoft.TypeScript.MSBuild" Version="7.0.0" />
+        <PackageReference Include="Microsoft.TypeScript.MSBuild" />
 
         <!-- Foundational JS -->
         <EmbeddedResource Include="$(GeneratedJSFolder)\*.js" />

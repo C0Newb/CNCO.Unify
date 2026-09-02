@@ -2,6 +2,14 @@
   <!-- https://learn.microsoft.com/en-us/nuget/consume-packages/central-package-management -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!--
+      Needed so the Xamarin.AndroidX.Core.Core.Ktx pin below actually applies: it's never
+      directly referenced by any project here, only pulled in transitively (via
+      Avalonia.Android / Xamarin.AndroidX.Core.SplashScreen -> AppCompatResources). Without
+      this flag, CPM only pins packages that are directly referenced, and Core.Ktx would keep
+      floating to whatever NuGet resolves on its own.
+    -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
   <ItemGroup>
     <!-- Avalonia packages -->
@@ -25,10 +33,19 @@
     <PackageVersion Include="NUnit.Engine" Version="3.22.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == '$(UnifyAndroidTargetFramework)'">
-    <PackageVersion Include="IKVM" Version="8.15.0" />
+    <PackageVersion Include="IKVM" Version="8.16.0" />
     <PackageVersion Include="Xamarin.AndroidX.Security.SecurityCrypto">
       <Version>1.1.0.3</Version>
     </PackageVersion>
+    <!--
+      Xamarin.AndroidX.AppCompat.AppCompatResources (pulled in transitively via
+      Xamarin.AndroidX.Core.SplashScreen) forces Xamarin.AndroidX.Core up to 1.19.0.1, while
+      Xamarin.AndroidX.Core.Core.Ktx otherwise resolves to an older, mismatched 1.17.0.2.
+      A mismatched core/core-ktx pair ships duplicate Kotlin-extension classes and R8/D8
+      fails with "Type ... is defined multiple times" at dex-merge time - pin both to the
+      same matching version.
+    -->
     <PackageVersion Include="Xamarin.AndroidX.Core" Version="1.19.0.1" />
+    <PackageVersion Include="Xamarin.AndroidX.Core.Core.Ktx" Version="1.19.0.1" />
   </ItemGroup>
 </Project>

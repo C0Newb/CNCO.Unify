@@ -1,0 +1,35 @@
+<Project>
+  <!--
+    Central package management for src/ (and anything else that doesn't have a closer
+    Directory.Packages.props of its own). NuGet resolves the nearest Directory.Packages.props
+    walking up from each project, so demo/UnifyDemo.App and tests/UnifyTestRunner keep using
+    their own files - this one is the base for everything without a more specific override.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Unify.Security -->
+    <PackageVersion Include="BCrypt.Net-Next" Version="4.2.0" />
+    <PackageVersion Include="IKVM" Version="8.16.0" />
+    <PackageVersion Include="Xamarin.AndroidX.Security.SecurityCrypto" Version="1.1.0.3" />
+    
+    <!-- Unify.Device -->
+    <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="10.0.11" />
+
+    <!-- Unify.Notifications -->
+    <PackageVersion Include="SkiaSharp" Version="4.151.1" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.WebAssembly" Version="4.151.1" />
+    <PackageVersion Include="Microsoft.Toolkit.Uwp.Notifications" Version="7.1.3" />
+    <PackageVersion Include="Xamarin.AndroidX.Core" Version="1.19.0.1" />
+    <PackageVersion Include="Microsoft.TypeScript.MSBuild" Version="7.0.1" />
+
+    <!-- tests/UnifyTests.* (no Directory.Packages.props of their own; they fall back to this one) -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+    <PackageVersion Include="NUnit" Version="4.6.1" />
+    <PackageVersion Include="NUnit3TestAdapter" Version="6.3.0" />
+    <PackageVersion Include="NUnit.Analyzers" Version="4.14.0" />
+    <PackageVersion Include="coverlet.collector" Version="10.0.1" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+  </ItemGroup>
+</Project>
